@@ -1,7 +1,7 @@
 [build]
 base = "app/web"
 command = "npm run build"
-publish = "app/web/dist"
+publish = "dist"
 
 [build.environment]
 VITE_SUPABASE_URL = "https://mzndtvnemidtppysemml.supabase.co"
