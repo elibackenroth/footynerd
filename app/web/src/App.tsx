@@ -39,7 +39,7 @@ function incrementGuestPlayCount() { localStorage.setItem(GUEST_PLAYS_KEY, Strin
 function matchIdentityKey(matchId: string) { return 'footynerd_match_identity_' + matchId; }
 
 export default function App() {
-  const { user, profile, refreshProfile, signUp, signIn, signInWithGoogle, signOut } = useAuth();
+  const { user, profile, refreshProfile, signUp, signIn, signOut } = useAuth();
 
   const [view, setView] = useState<ViewName>('home');
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -398,9 +398,9 @@ export default function App() {
             totalPoints={totalPoints}
             quizzesPassedCount={quizzesPassedCount}
             onSaveSettings={saveAccountSettings}
-            onSignInWithGoogle={signInWithGoogle}
             onAuthSubmit={handleAccountAuthSubmit}
             onSignOut={signOut}
+            onProfileChanged={refreshProfile}
           />
         )}
 

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { colors, fonts, DIFFICULTY_LABEL } from '../lib/tokens';
+import { useState, useEffect, useRef } from 'react';
+import { colors, fonts, DIFFICULTY_LABEL, initials } from '../lib/tokens';
+import { uploadAvatar, removeAvatar } from '../lib/api';
 import type { Quiz, QuizAttempt, Profile } from '../lib/types';
 
 export default function Account({
@@ -9,9 +10,9 @@ export default function Account({
   totalPoints,
   quizzesPassedCount,
   onSaveSettings,
-  onSignInWithGoogle,
   onAuthSubmit,
   onSignOut,
+  onProfileChanged,
 }: {
   profile: Profile | null;
   quizzes: Quiz[];
@@ -19,9 +20,9 @@ export default function Account({
   totalPoints: number;
   quizzesPassedCount: number;
   onSaveSettings: (name: string, email: string) => Promise<void>;
-  onSignInWithGoogle: () => void;
   onAuthSubmit: (mode: 'signin' | 'signup', email: string, password: string, name: string) => Promise<string | null>;
   onSignOut: () => void;
+  onProfileChanged: () => Promise<void>;
 }) {
   return profile ? (
     <SignedInAccount
@@ -32,9 +33,10 @@ export default function Account({
       quizzesPassedCount={quizzesPassedCount}
       onSaveSettings={onSaveSettings}
       onSignOut={onSignOut}
+      onProfileChanged={onProfileChanged}
     />
   ) : (
-    <SignedOutAccount onSignInWithGoogle={onSignInWithGoogle} onAuthSubmit={onAuthSubmit} />
+    <SignedOutAccount onAuthSubmit={onAuthSubmit} />
   );
 }
 
@@ -46,6 +48,7 @@ function SignedInAccount({
   quizzesPassedCount,
   onSaveSettings,
   onSignOut,
+  onProfileChanged,
 }: {
   profile: Profile;
   quizzes: Quiz[];
@@ -54,16 +57,42 @@ function SignedInAccount({
   quizzesPassedCount: number;
   onSaveSettings: (name: string, email: string) => Promise<void>;
   onSignOut: () => void;
+  onProfileChanged: () => Promise<void>;
 }) {
   const [name, setName] = useState(profile.name || '');
   const [email, setEmail] = useState(profile.email || '');
   const [saved, setSaved] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setName(profile.name || ''); setEmail(profile.email || ''); }, [profile.name, profile.email]);
 
   async function save() {
     await onSaveSettings(name.trim(), email.trim());
     setSaved(true);
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      await uploadAvatar(profile.id, file);
+      await onProfileChanged();
+    } finally {
+      setPhotoBusy(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  async function handleRemovePhoto() {
+    setPhotoBusy(true);
+    try {
+      await removeAvatar(profile.id);
+      await onProfileChanged();
+    } finally {
+      setPhotoBusy(false);
+    }
   }
 
   return (
@@ -82,6 +111,25 @@ function SignedInAccount({
 
       <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 20, margin: '0 0 20px' }}>Account settings</h2>
       <div style={{ border: `1px solid ${colors.border}`, borderRadius: 4, padding: 28, maxWidth: 420, marginBottom: 56 }}>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Profile photo</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18 }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: colors.primary, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22, overflow: 'hidden', position: 'relative', flexShrink: 0, border: `1px solid ${colors.border}` }}>
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="Your profile photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              initials(profile.name)
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ display: 'inline-block', background: 'white', color: 'oklch(0.25 0.01 250)', border: `1px solid ${colors.border}`, padding: '8px 16px', fontSize: 13, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body, width: 'fit-content' }}>
+              {photoBusy ? 'Uploading…' : 'Upload photo'}
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} disabled={photoBusy} style={{ display: 'none' }} />
+            </label>
+            {profile.avatar_url && (
+              <div onClick={handleRemovePhoto} style={{ cursor: 'pointer', fontSize: 12, color: colors.textMuted, textDecoration: 'underline', width: 'fit-content' }}>Remove photo</div>
+            )}
+          </div>
+        </div>
         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Name</label>
         <input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} placeholder="Your name" style={{ width: '100%', padding: '12px 14px', border: `1px solid ${colors.border}`, borderRadius: 4, fontSize: 15, fontFamily: fonts.body, marginBottom: 18 }} />
         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Email</label>
@@ -92,7 +140,7 @@ function SignedInAccount({
 
       <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 20, margin: '0 0 20px' }}>All quizzes</h2>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {quizzes.map((q) => {
+        {quizzes.filter((q) => attempts[q.id]).map((q) => {
           const attempt = attempts[q.id];
           const statusText = attempt ? (attempt.passed ? 'Passed' : 'Failed') : 'Not played';
           const statusColor = attempt ? (attempt.passed ? colors.success : colors.danger) : colors.textFaint;
@@ -123,10 +171,8 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 }
 
 function SignedOutAccount({
-  onSignInWithGoogle,
   onAuthSubmit,
 }: {
-  onSignInWithGoogle: () => void;
   onAuthSubmit: (mode: 'signin' | 'signup', email: string, password: string, name: string) => Promise<string | null>;
 }) {
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
@@ -152,20 +198,6 @@ function SignedOutAccount({
       <p style={{ fontSize: 16, color: colors.textSecondary, margin: '0 0 32px', maxWidth: 480 }}>
         No account yet. Create one to track your streak, points, and quiz history — or just complete a quiz to get started.
       </p>
-
-      <button
-        onClick={onSignInWithGoogle}
-        style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'white', color: 'oklch(0.25 0.01 250)', border: '1px solid oklch(0.85 0.01 250)', padding: '12px 20px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body, marginBottom: 24 }}
-      >
-        <span style={{ width: 18, height: 18, borderRadius: '50%', background: colors.primary, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>G</span>
-        Continue with Google
-      </button>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: 420, marginBottom: 16 }}>
-        <div style={{ flex: 1, height: 1, background: colors.border }} />
-        <div style={{ fontSize: 12, color: 'oklch(0.6 0.01 250)' }}>or</div>
-        <div style={{ flex: 1, height: 1, background: colors.border }} />
-      </div>
 
       {checkEmail ? (
         <p style={{ fontSize: 14, color: colors.success, maxWidth: 420 }}>Check your email to confirm your account, then come back and sign in.</p>

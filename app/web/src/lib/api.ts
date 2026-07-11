@@ -69,6 +69,27 @@ export async function updateProfile(userId: string, fields: Partial<Pick<Profile
   if (error) throw error;
 }
 
+export async function uploadAvatar(userId: string, file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${userId}/avatar.${ext}`;
+  const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+  if (uploadErr) throw uploadErr;
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+  const url = `${data.publicUrl}?t=${Date.now()}`;
+  const { error: updateErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId);
+  if (updateErr) throw updateErr;
+  return url;
+}
+
+export async function removeAvatar(userId: string) {
+  const { data: list } = await supabase.storage.from('avatars').list(userId);
+  if (list && list.length > 0) {
+    await supabase.storage.from('avatars').remove(list.map((f) => `${userId}/${f.name}`));
+  }
+  const { error } = await supabase.from('profiles').update({ avatar_url: null }).eq('id', userId);
+  if (error) throw error;
+}
+
 // ---------- leaderboard ----------
 
 export async function fetchPointsLeaderboard(): Promise<PointsLeaderboardRow[]> {

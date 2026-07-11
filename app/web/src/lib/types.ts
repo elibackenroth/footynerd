@@ -64,6 +64,7 @@ export interface Profile {
   id: string;
   name: string;
   email: string | null;
+  avatar_url: string | null;
   current_streak: number;
   longest_streak: number;
   last_played_date: string | null;

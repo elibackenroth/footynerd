@@ -32,10 +32,19 @@ export default function Nav({ view, go }: { view: ViewName; go: (v: ViewName) =>
             color: user ? colors.primary : 'white',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 700, fontSize: 13, cursor: 'pointer', marginLeft: 4,
-            border: '1px solid rgba(255,255,255,0.5)',
+            border: '1px solid rgba(255,255,255,0.5)', overflow: 'hidden', position: 'relative',
           }}
         >
-          {user ? initials(name) : '?'}
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="Your profile photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : user ? (
+            initials(name)
+          ) : (
+            <>
+              <div style={{ width: 13, height: 13, borderRadius: '50%', background: 'currentColor', position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)' }} />
+              <div style={{ width: 24, height: 16, borderRadius: '12px 12px 0 0', background: 'currentColor', position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)' }} />
+            </>
+          )}
         </div>
       </div>
     </nav>
