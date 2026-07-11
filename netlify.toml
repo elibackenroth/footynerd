@@ -1,0 +1,13 @@
+[build]
+base = "app/web"
+command = "npm run build"
+publish = "app/web/dist"
+
+[build.environment]
+VITE_SUPABASE_URL = "https://mzndtvnemidtppysemml.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16bmR0dm5lbWlkdHBweXNlbW1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NzYyNTMsImV4cCI6MjA5OTM1MjI1M30.TC8BYYyHtg-cwMYJ59x2G_BO6wRle6y6Sgg86aPVZJ4"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
