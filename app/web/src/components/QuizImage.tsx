@@ -8,6 +8,7 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
   'worldcup', 'legends', 'ballondor', 'clubfootball', 'nationalrecords',
   'serieabundesliga', 'womensworldcup', 'goldenboot', 'laligarecords',
   'rivalries', 'playmakers', 'worldcupfinals', 'premierleaguebasics',
+  'ronaldo', 'messi', 'mbappe',
 ]);
 
 export default function QuizImage({ quizId, fallback, alt, style }: { quizId: string; fallback: string | null; alt: string; style?: CSSProperties }) {
