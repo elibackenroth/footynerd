@@ -1,0 +1,13 @@
+{
+  "name": "footynerd",
+  "version": "1.0.0",
+  "description": "FootyNerd — soccer trivia site with a real backend (auth, leaderboard, match rooms, wordle).",
+  "private": true,
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js"
+  }
+}

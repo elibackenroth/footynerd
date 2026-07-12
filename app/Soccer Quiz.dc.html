@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail" data-bg-color="#1a3a6b">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="28" fill="none" stroke="white" stroke-width="3"></circle>
+    <path d="M50 22 L58 38 L42 38 Z" fill="white"></path>
+    <path d="M50 78 L58 62 L42 62 Z" fill="white"></path>
+  </svg>
+</template>
+<helmet>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <script src="./quiz-image-data.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    body { margin: 0; background: oklch(0.99 0.003 250); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: oklch(0.5 0.14 250); }
+    a:hover { color: oklch(0.42 0.15 250); }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; display:flex; flex-direction:column; color:oklch(0.22 0.01 250);">
+
+  <!-- NAV -->
+  <nav style="{{ navStyle }}">
+    <div onClick="{{ goHomePage }}" style="font-family:'Oswald',sans-serif; font-weight:700; font-size:22px; letter-spacing:0.5px; cursor:pointer; display:flex; align-items:center; gap:10px; color:white; line-height:1;">
+      <img src="footynerd-logo.png" alt="FootyNerd home" style="width:26px; height:26px; border-radius:50%; object-fit:cover; background:white;">
+      FOOTYNERD
+    </div>
+    <sc-if value="{{ isDesktopNav }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; align-items:center; gap:32px;">
+        <div onClick="{{ goHomePage }}" style="{{ navHomeStyle }}">Home</div>
+        <div onClick="{{ goQuizzes }}" style="{{ navQuizzesStyle }}">Quizzes</div>
+        <div onClick="{{ goLeaderboard }}" style="{{ navLeaderboardStyle }}">Leaderboard</div>
+      </div>
+    </sc-if>
+    <div style="{{ navRightGroupStyle }}">
+      <sc-if value="{{ isMobileNav }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ toggleMobileMenu }}" style="{{ hamburgerBtnStyle }}">
+          <div style="{{ hamburgerBarStyle }}"></div>
+          <div style="{{ hamburgerBarStyle }}"></div>
+          <div style="{{ hamburgerBarStyle }}"></div>
+        </div>
+      </sc-if>
+      <div onClick="{{ goAccount }}" title="Account" style="width:34px; height:34px; border-radius:50%; background:{{ avatarBg }}; color:{{ avatarColor }}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; cursor:pointer; border:1px solid rgba(255,255,255,0.5); overflow:hidden; position:relative; flex-shrink:0;">
+        <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+          <img src="{{ photoDataUrl }}" alt="Your profile photo" style="width:100%; height:100%; object-fit:cover;">
+        </sc-if>
+        <sc-if value="{{ showInitialsAvatar }}" hint-placeholder-val="{{ false }}">{{ avatarInitials }}</sc-if>
+        <sc-if value="{{ showBlankAvatar }}" hint-placeholder-val="{{ true }}">
+          <div style="width:13px; height:13px; border-radius:50%; background:currentColor; position:absolute; top:6px; left:50%; transform:translateX(-50%);"></div>
+          <div style="width:24px; height:16px; border-radius:12px 12px 0 0; background:currentColor; position:absolute; bottom:0; left:50%; transform:translateX(-50%);"></div>
+        </sc-if>
+      </div>
+    </div>
+    <sc-if value="{{ showMobileDrawer }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ mobileDrawerStyle }}">
+        <div onClick="{{ goHomePage }}" style="{{ mobileDrawerItemStyle }}">Home</div>
+        <div onClick="{{ goQuizzes }}" style="{{ mobileDrawerItemStyle }}">Quizzes</div>
+        <div onClick="{{ goLeaderboard }}" style="{{ mobileDrawerItemStyle }}">Leaderboard</div>
+      </div>
+    </sc-if>
+  </nav>
+
+  <div ref="{{ contentRef }}" style="transition:opacity 0.15s ease; opacity:1;">
+
+  <!-- HOME -->
+  <sc-if value="{{ isHomeView }}" hint-placeholder-val="{{ true }}">
+    <main style="flex:1; width:100%;">
+      <div style="{{ heroSectionStyle }}">
+        <div>
+          <sc-if value="{{ hasNoAccountName }}" hint-placeholder-val="{{ true }}">
+            <h1 style="{{ heroTitleStyle }}">Know your football?</h1>
+            <p style="{{ heroSubStyle }}">Soccer trivia across players, leagues, and national team history. Pass a quiz to earn points, and come back daily to build your streak.</p>
+            <button onClick="{{ goQuizzes }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:16px 36px; font-size:16px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Browse Quizzes</button>
+          </sc-if>
+          <sc-if value="{{ hasAccountName }}" hint-placeholder-val="{{ false }}">
+            
+            
+            <h1 style="{{ heroTitleReturningStyle }}">Ready for today's quiz?</h1><p style="{{ heroSubStyle }}">You've passed {{ quizzesPassedCount }} quizzes and earned {{ totalAccountPoints }} points so far.</p>
+            <button onClick="{{ goQuizzes }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:16px 36px; font-size:16px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Keep Playing</button>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="{{ modeCardsWrapStyle }}">
+        <div style="{{ modeCardsGridStyle }}">
+          <div style="background:oklch(0.97 0.035 250); border:1px solid oklch(0.88 0.05 250); border-radius:8px; padding:24px 24px; display:flex; flex-direction:column; gap:16px; min-width:0;">
+            <div style="{{ modeCardImageWrapStyle }}">
+              <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="mode-image-matchroom" shape="rounded" radius="8" placeholder="Drop a Friend vs Friend image" src="matchroom-image.png" hint-size="100%,120px"></x-import>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:oklch(0.42 0.18 250); margin-bottom:6px;">Friend vs Friend</div>
+              <h3 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:21px; margin:0 0 6px; color:oklch(0.22 0.01 250);">Start a Match Room</h3>
+              <p style="font-size:14px; color:oklch(0.5 0.01 250); margin:0;">Pick a quiz, play it, then send your friend the link to see who scores higher.</p>
+            </div>
+            <button onClick="{{ startMatchSetup }}" style="width:100%; box-sizing:border-box; text-align:center; background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 20px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Start a Match Room</button>
+          </div>
+
+          <div style="background:oklch(0.97 0.035 250); border:1px solid oklch(0.88 0.05 250); border-radius:8px; padding:24px 24px; display:flex; flex-direction:column; gap:16px; min-width:0;">
+            <div style="{{ modeCardImageWrapStyle }}">
+              <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="mode-image-wordle" shape="rounded" radius="8" placeholder="Drop a Word Game image" src="wordle-image.png" hint-size="100%,120px"></x-import>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:oklch(0.42 0.18 250); margin-bottom:6px;">Word Game</div>
+              <h3 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:21px; margin:0 0 6px; color:oklch(0.22 0.01 250);">Football Wordle</h3>
+              <p style="font-size:14px; color:oklch(0.5 0.01 250); margin:0;">Guess the five-letter football word in six tries. Two puzzles to try.</p>
+            </div>
+            <button onClick="{{ startWordlePicker }}" style="width:100%; box-sizing:border-box; text-align:center; background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 20px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play Wordle</button>
+          </div>
+
+          <div style="background:oklch(0.97 0.035 250); border:1px solid oklch(0.88 0.05 250); border-radius:8px; padding:24px 24px; display:flex; flex-direction:column; gap:16px; min-width:0;">
+            <div style="{{ modeCardImageWrapStyle }}">
+              <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="mode-image-transferchain" shape="rounded" radius="8" placeholder="Drop a Club Trivia image" src="transferchain-image.png" hint-size="100%,120px"></x-import>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:oklch(0.42 0.18 250); margin-bottom:6px;">Club Trivia</div>
+              <h3 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:21px; margin:0 0 6px; color:oklch(0.22 0.01 250);">Transfer Chain</h3>
+              <p style="font-size:14px; color:oklch(0.5 0.01 250); margin:0;">9 rounds. Name the player who played for all three clubs shown.</p>
+            </div>
+            <button onClick="{{ startTransferChain }}" style="width:100%; box-sizing:border-box; text-align:center; background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 20px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play Transfer Chain</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="{{ featuredWrapStyle }}">
+        <div style="{{ featuredSplitStyle }}">
+          <div>
+            <h2 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:26px; margin:0 0 28px; color:oklch(0.42 0.18 250);">Featured Quizzes</h2>
+            <div style="{{ featuredGridStyle }}">
+              <sc-for list="{{ featuredQuizzes }}" as="quiz" hint-placeholder-count="2">
+                <div style="border:1px solid oklch(0.92 0.01 250); border-radius:4px; overflow:hidden; display:flex; flex-direction:column;">
+                  <div style="width:100%; height:140px;">
+                    <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="quiz-image-{{ quiz.id }}" shape="rect" placeholder="Drop {{ quiz.title }} image" src="{{ quiz.imageSrc }}" credit="{{ quiz.imageCreditText }}" hint-size="100%,140px"></x-import>
+                  </div>
+                  <div style="padding:24px; display:flex; flex-direction:column; gap:16px; flex:1;">
+                    <div style="font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:oklch(0.42 0.18 250);">{{ quiz.difficultyLabel }}</div>
+                    <h3 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:22px; margin:0; line-height:1.15; color:oklch(0.42 0.18 250);">{{ quiz.title }}</h3>
+                    <p style="font-size:14px; color:oklch(0.5 0.01 250); margin:0; line-height:1.5; flex:1;">{{ quiz.desc }}</p>
+                    <sc-if value="{{ quiz.isNotAttempted }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ quiz.onStart }}" style="align-self:flex-start; background:oklch(0.42 0.18 250); color:white; border:none; padding:10px 20px; font-size:13px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Start Quiz</button>
+                    </sc-if>
+                    <sc-if value="{{ quiz.isAttempted }}" hint-placeholder-val="{{ false }}">
+                      <div style="align-self:flex-start; font-size:13px; font-weight:700; letter-spacing:0.3px; color:{{ quiz.statusColor }};">{{ quiz.statusText }} · no retakes</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div>
+              <button onClick="{{ goQuizzes }}" style="background:transparent; color:oklch(0.42 0.18 250); border:1px solid oklch(0.42 0.18 250); padding:12px 28px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">View All Quizzes</button>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:26px; margin:0 0 28px; color:oklch(0.42 0.18 250);">Leaderboard</h2>
+            <sc-if value="{{ hasHomeLeaderboardEntries }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; border-top:1px solid oklch(0.93 0.01 250); margin-bottom:20px;">
+                <sc-for list="{{ homeLeaderboardTop }}" as="row" hint-placeholder-count="5">
+                  <div style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid oklch(0.93 0.01 250);">
+                    <div style="width:22px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:1px;">
+                      <div style="{{ row.rankStyle }}">{{ row.rank }}</div>
+                      <sc-if value="{{ row.isMedal }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:10px; color:{{ row.medalColor }};">★</div>
+                      </sc-if>
+                    </div>
+                    <div style="width:36px; height:36px; border-radius:50%; background:{{ row.avatarColor }}; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; box-shadow:{{ row.ringStyle }}; overflow:hidden;">
+                      <sc-if value="{{ row.hasPhoto }}" hint-placeholder-val="{{ false }}">
+                        <img src="{{ row.photoUrl }}" alt="{{ row.name }}" style="width:100%; height:100%; object-fit:cover;">
+                      </sc-if>
+                      <sc-if value="{{ row.showInitials }}" hint-placeholder-val="{{ true }}">{{ row.initials }}</sc-if>
+                    </div>
+                    <div style="flex:1; min-width:0; font-weight:600; font-size:15px;">{{ row.name }}</div>
+                    <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:18px;">{{ row.points }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasNoHomeLeaderboardEntries }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:32px 0; color:oklch(0.55 0.01 250); font-size:15px; border-top:1px solid oklch(0.93 0.01 250); margin-bottom:20px;">No scores yet — play a quiz to take the top spot.</div>
+            </sc-if>
+            <div>
+              <button onClick="{{ goLeaderboard }}" style="background:transparent; color:oklch(0.42 0.18 250); border:1px solid oklch(0.42 0.18 250); padding:12px 28px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">View Full Leaderboard</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </sc-if>
+
+  <!-- QUIZZES LIST -->
+  <sc-if value="{{ isQuizzesView }}" hint-placeholder-val="{{ false }}">
+    <main style="{{ quizzesMainStyle }}">
+      <div style="{{ quizzesStatsStyle }}">
+        <div style="text-align:center;">
+          <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:18px; color:oklch(0.42 0.18 250); line-height:1;">{{ quizzesPassedCount }}</div>
+          <div style="font-size:10px; font-weight:600; letter-spacing:0.4px; text-transform:uppercase; color:oklch(0.55 0.01 250);">Passed</div>
+        </div>
+        <div style="width:1px; background:oklch(0.88 0.01 250);"></div>
+        <div style="text-align:center;">
+          <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:18px; color:oklch(0.42 0.18 250); line-height:1;">{{ totalAccountPoints }}</div>
+          <div style="font-size:10px; font-weight:600; letter-spacing:0.4px; text-transform:uppercase; color:oklch(0.55 0.01 250);">Points</div>
+        </div>
+      </div>
+      <aside style="{{ quizzesAsideStyle }}">
+        <div style="font-size:10px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.7 0.01 250); margin-bottom:10px;">Difficulty</div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <sc-for list="{{ difficulties }}" as="diff" hint-placeholder-count="4">
+            <div onClick="{{ diff.onClick }}" style="{{ diff.style }}">{{ diff.label }}</div>
+          </sc-for>
+        </div>
+      </aside>
+      <div style="{{ quizzesContentStyle }}">
+        <h1 style="{{ quizzesH1Style }}">Test your Ball knowledge.</h1>
+        <p style="font-size:18px; color:oklch(0.45 0.01 250); margin:0 0 40px; max-width:520px;">Pick a quiz, answer the questions, and climb the leaderboard.</p>
+
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:48px;">
+          <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="4">
+            <div onClick="{{ cat.onClick }}" style="{{ cat.style }}">{{ cat.label }}</div>
+          </sc-for>
+        </div>
+
+        <div style="{{ quizGridStyle }}">
+          <sc-for list="{{ quizList }}" as="quiz" hint-placeholder-count="3">
+            <div style="border:1px solid oklch(0.92 0.01 250); border-radius:4px; overflow:hidden; height:440px; display:flex; flex-direction:column; transition:border-color 0.15s;" style-hover="border-color:oklch(0.55 0.15 250);">
+              <div style="width:100%; height:160px;">
+                <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="quiz-image-{{ quiz.id }}" shape="rect" placeholder="Drop {{ quiz.title }} image" src="{{ quiz.imageSrc }}" credit="{{ quiz.imageCreditText }}" hint-size="100%,160px"></x-import>
+              </div>
+              <div style="padding:24px 28px 28px; display:flex; flex-direction:column; gap:18px; flex:1;">
+              <div style="font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: oklch(0.42 0.18 250)">{{ quiz.difficultyLabel }}</div>
+              <h2 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:26px; margin:0; line-height:1.15; color:oklch(0.42 0.18 250);">{{ quiz.title }}</h2>
+              <p style="font-size:15px; color:oklch(0.5 0.01 250); margin:0; line-height:1.5; flex:1;">{{ quiz.desc }}</p>
+              <sc-if value="{{ quiz.isNotAttempted }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ quiz.onStart }}" style="align-self:flex-start; background:oklch(0.42 0.18 250); color:white; border:none; padding:12px 24px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Start Quiz</button>
+              </sc-if>
+              <sc-if value="{{ quiz.isAttempted }}" hint-placeholder-val="{{ false }}">
+                <div style="align-self:flex-start; font-size:13px; font-weight:700; letter-spacing:0.3px; color:{{ quiz.statusColor }};">{{ quiz.statusText }} · no retakes</div>
+              </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </main>
+  </sc-if>
+
+  <!-- QUIZ PLAY -->
+  <sc-if value="{{ isPlayingView }}" hint-placeholder-val="{{ false }}">
+    <main style="{{ playMainStyle }}">
+      <sc-if value="{{ matchActive }}" hint-placeholder-val="{{ false }}">
+        <div style="display:inline-block; margin-bottom:14px; padding:4px 10px; border-radius:999px; background:oklch(0.96 0.04 250); color:oklch(0.4 0.14 250); font-size:11px; font-weight:700; letter-spacing:0.5px;">MATCH ROOM</div>
+      </sc-if>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:oklch(0.55 0.15 250);">{{ quizTitle }}</div>
+        <div style="font-size:13px; color:oklch(0.55 0.01 250);">Question {{ questionNumber }} of {{ totalQuestions }}</div>
+      </div>
+      <div style="height:3px; background:oklch(0.93 0.01 250); border-radius:2px; margin-bottom:48px; overflow:hidden;">
+        <div style="height:100%; background:oklch(0.55 0.15 250); border-radius:2px; width:{{ progressPct }}; transition:width 0.25s;"></div>
+      </div>
+
+      <h2 style="{{ questionTextStyle }}">{{ questionText }}</h2>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <sc-for list="{{ optionsView }}" as="opt" hint-placeholder-count="4">
+          <div onClick="{{ opt.onSelect }}" style="border:2px solid {{ opt.borderColor }}; background:{{ opt.bgColor }}; border-radius:4px; padding:18px 22px; cursor:{{ opt.cursor }}; font-size:16px; font-weight:500; display:flex; align-items:center; justify-content:space-between;">
+            <span>{{ opt.text }}</span>
+            <span style="font-size:13px; font-weight:700; letter-spacing:0.5px; color:{{ opt.labelColor }};">{{ opt.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ hasAnswered }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:40px; display:flex; justify-content:flex-end;">
+          <button onClick="{{ nextQuestion }}" style="background:oklch(0.22 0.01 250); color:white; border:none; padding:14px 32px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">{{ nextButtonLabel }}</button>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <!-- RESULT -->
+  <sc-if value="{{ isResultView }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1; max-width:640px; margin:0 auto; padding:96px 48px 120px; width:100%; text-align:center;">
+      <div style="font-size:13px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:oklch(0.55 0.15 250); margin-bottom:16px;">{{ quizTitle }} — Complete</div>
+      <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:88px; line-height:1; margin-bottom:8px;">{{ score }}<span style="font-size:36px; color:oklch(0.55 0.01 250);">/{{ totalQuestions }}</span></div>
+      <p style="font-size:17px; color:oklch(0.45 0.01 250); margin:0 0 8px;">{{ resultMessage }}</p>
+
+      <sc-if value="{{ isPerfect }}" hint-placeholder-val="{{ false }}">
+        <div style="display:inline-block; margin-top:16px; padding:8px 18px; border-radius:999px; background:oklch(0.96 0.04 250); color:oklch(0.4 0.14 250); font-size:13px; font-weight:700; letter-spacing:0.5px;">PERFECT SCORE</div>
+      </sc-if>
+
+      <div style="margin-top:56px; border-top:1px solid oklch(0.93 0.01 250); padding-top:40px;">
+        <sc-if value="{{ showSaveForm }}" hint-placeholder-val="{{ true }}">
+          <p style="font-size:14px; font-weight:600; letter-spacing:0.3px; margin:0 0 18px;">Create an account to save this result</p>
+          <div style="display:flex; gap:12px; justify-content:center; max-width:420px; margin:0 auto;">
+            <input value="{{ nameInput }}" onChange="{{ updateNameInput }}" placeholder="Your name" style="flex:1; padding:14px 16px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif;">
+            <button onClick="{{ saveScore }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 24px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif;">Save Score</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showSavedConfirm }}" hint-placeholder-val="{{ false }}">
+          <p style="font-size:15px; font-weight:600; color:oklch(0.42 0.18 250); margin:0 0 6px;">{{ pointsEarnedText }}</p>
+          <p style="font-size:14px; color:oklch(0.5 0.01 250); margin:0;">Streak: {{ accountStreak }} day(s)</p>
+        </sc-if>
+
+        <div style="margin-top:32px; display:flex; gap:16px; justify-content:center;">
+          <div onClick="{{ goQuizzes }}" style="cursor:pointer; font-size:14px; font-weight:600; color:oklch(0.22 0.01 250); text-decoration:underline;">Back to Quizzes</div>
+          <div onClick="{{ goLeaderboard }}" style="cursor:pointer; font-size:14px; font-weight:600; color:oklch(0.22 0.01 250); text-decoration:underline;">View Leaderboard</div>
+          <div onClick="{{ goAccount }}" style="cursor:pointer; font-size:14px; font-weight:600; color:oklch(0.22 0.01 250); text-decoration:underline;">View Account</div>
+        </div>
+      </div>
+    </main>
+  </sc-if>
+
+  <!-- ACCOUNT -->
+  <sc-if value="{{ isAccountView }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1; max-width:760px; margin:0 auto; padding:80px 48px 120px; width:100%;">
+      <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:44px; margin:0 0 12px; color:oklch(0.42 0.18 250);">Account</h1>
+
+      <sc-if value="{{ hasAccountName }}" hint-placeholder-val="{{ false }}">
+        <p style="font-size:16px; color:oklch(0.45 0.01 250); margin:0 0 48px;">{{ accountName }}’s quiz history and streak.</p>
+
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-bottom:56px;">
+          <div style="border:1px solid oklch(0.92 0.01 250); border-radius:4px; padding:24px;">
+            <div style="font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:8px;">Current Streak</div>
+            <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:36px; color:oklch(0.42 0.18 250);">{{ accountStreak }} day(s)</div>
+          </div>
+          <div style="border:1px solid oklch(0.92 0.01 250); border-radius:4px; padding:24px;">
+            <div style="font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:8px;">Total Points</div>
+            <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:36px;">{{ totalAccountPoints }}</div>
+          </div>
+          <div style="border:1px solid oklch(0.92 0.01 250); border-radius:4px; padding:24px;">
+            <div style="font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:8px;">Quizzes Passed</div>
+            <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:36px;">{{ quizzesPassedCount }}</div>
+          </div>
+        </div>
+
+        <h2 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:20px; margin:0 0 20px;">Account settings</h2>
+        <div style="border:1px solid oklch(0.92 0.01 250); border-radius:4px; padding:28px; max-width:420px; margin-bottom:56px;">
+          <label style="display:block; font-size:12px; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:6px;">Profile photo</label>
+          <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px;">
+            <div style="width:64px; height:64px; border-radius:50%; background:{{ settingsAvatarBg }}; color:{{ settingsAvatarColor }}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; overflow:hidden; position:relative; flex-shrink:0; border:1px solid oklch(0.88 0.01 250);">
+              <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+                <img src="{{ photoDataUrl }}" alt="Your profile photo" style="width:100%; height:100%; object-fit:cover;">
+              </sc-if>
+              <sc-if value="{{ showInitialsAvatar }}" hint-placeholder-val="{{ false }}">{{ avatarInitials }}</sc-if>
+              <sc-if value="{{ showBlankAvatar }}" hint-placeholder-val="{{ true }}">
+                <div style="width:24px; height:24px; border-radius:50%; background:currentColor; position:absolute; top:11px; left:50%; transform:translateX(-50%);"></div>
+                <div style="width:44px; height:28px; border-radius:22px 22px 0 0; background:currentColor; position:absolute; bottom:0; left:50%; transform:translateX(-50%);"></div>
+              </sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="display:inline-block; background:white; color:oklch(0.25 0.01 250); border:1px solid oklch(0.85 0.01 250); padding:8px 16px; font-size:13px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif; width:fit-content;">
+                Upload photo
+                <input type="file" accept="image/*" onChange="{{ updatePhoto }}" style="display:none;">
+              </label>
+              <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ removePhoto }}" style="cursor:pointer; font-size:12px; color:oklch(0.55 0.01 250); text-decoration:underline; width:fit-content;">Remove photo</div>
+              </sc-if>
+            </div>
+          </div>
+          <label style="display:block; font-size:12px; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:6px;">Name</label>
+          <input value="{{ nameInput }}" onChange="{{ updateNameInput }}" placeholder="Your name" style="width:100%; padding:12px 14px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif; margin-bottom:18px;">
+          <label style="display:block; font-size:12px; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:6px;">Email</label>
+          <input value="{{ emailInput }}" onChange="{{ updateEmailInput }}" placeholder="you@example.com" style="width:100%; padding:12px 14px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif; margin-bottom:18px;">
+          <button onClick="{{ saveAccountSettings }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:12px 24px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Save Changes</button>
+          <sc-if value="{{ settingsSaved }}" hint-placeholder-val="{{ false }}">
+            <span style="margin-left:14px; font-size:13px; font-weight:600; color:oklch(0.5 0.14 145);">Saved</span>
+          </sc-if>
+        </div>
+
+        <h2 style="font-family:'Oswald',sans-serif; font-weight:600; font-size:20px; margin:0 0 20px;">All quizzes</h2>
+        <div style="display:flex; flex-direction:column;">
+          <sc-for list="{{ accountRows }}" as="row" hint-placeholder-count="10">
+            <div style="display:flex; align-items:center; gap:16px; padding:16px 0; border-bottom:1px solid oklch(0.93 0.01 250);">
+              <div style="flex:1; min-width:0; font-weight:600; font-size:15px;">{{ row.title }}</div>
+              <div style="width:70px; font-size:13px; color:oklch(0.55 0.01 250);">{{ row.difficultyLabel }}</div>
+              <div style="width:70px; font-size:13px; color:oklch(0.55 0.01 250);">{{ row.scoreText }}</div>
+              <div style="width:90px; font-size:13px; font-weight:700; color:{{ row.statusColor }};">{{ row.statusText }}</div>
+              <div style="width:50px; text-align:right; font-family:'Oswald',sans-serif; font-weight:700; font-size:15px;">{{ row.pointsText }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasNoAccountName }}" hint-placeholder-val="{{ true }}">
+        <p style="font-size:16px; color:oklch(0.45 0.01 250); margin:0 0 32px; max-width:480px;">No account yet. Create one to track your streak, points, and quiz history — or just complete a quiz to get started.</p>
+
+        <div style="display:flex; gap:12px; max-width:420px;">
+          <input value="{{ nameInput }}" onChange="{{ updateNameInput }}" placeholder="Your name" style="flex:1; padding:14px 16px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif;">
+          <button onClick="{{ createAccount }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 24px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif;">Create Account</button>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <!-- LEADERBOARD -->
+  <sc-if value="{{ isLeaderboardView }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1; max-width:760px; margin:0 auto; padding:80px 48px 120px; width:100%;">
+      <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:44px; margin:0 0 12px; color:oklch(0.42 0.18 250);">Leaderboard</h1>
+      <p style="font-size:16px; color:oklch(0.45 0.01 250); margin:0 0 56px;">Points earned across every quiz.</p>
+
+      <sc-if value="{{ hasLeaderboardEntries }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; flex-direction:column;">
+          <sc-for list="{{ leaderboardRows }}" as="row" hint-placeholder-count="5">
+            <div style="display:flex; align-items:center; gap:20px; padding:20px 0; border-bottom:1px solid oklch(0.93 0.01 250);">
+              <div style="width:28px; flex-shrink:0; text-align:center; display:flex; flex-direction:column; align-items:center; gap:1px;">
+                <div style="{{ row.rankStyle }}">{{ row.rank }}</div>
+                <sc-if value="{{ row.isMedal }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12px; color:{{ row.medalColor }};">★</div>
+                </sc-if>
+              </div>
+              <div style="width:44px; height:44px; border-radius:50%; background:{{ row.avatarColor }}; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; box-shadow:{{ row.ringStyle }}; overflow:hidden;">
+                <sc-if value="{{ row.hasPhoto }}" hint-placeholder-val="{{ false }}">
+                  <img src="{{ row.photoUrl }}" alt="{{ row.name }}" style="width:100%; height:100%; object-fit:cover;">
+                </sc-if>
+                <sc-if value="{{ row.showInitials }}" hint-placeholder-val="{{ true }}">{{ row.initials }}</sc-if>
+              </div>
+              <div style="flex:1; min-width:0; overflow:hidden;">
+                <div style="font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ row.name }}</div>
+                <div style="font-size:13px; color:oklch(0.55 0.01 250); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ row.subline }}</div>
+              </div>
+              <sc-if value="{{ row.hasBadge }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px; font-weight:700; letter-spacing:0.4px; padding:5px 10px; border-radius:999px; background:oklch(0.96 0.04 250); color:oklch(0.4 0.14 250); white-space:nowrap; flex-shrink:0;">{{ row.badgeText }}</div>
+              </sc-if>
+              <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:22px; width:80px; flex-shrink:0; text-align:right;">{{ row.points }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hasNoLeaderboardEntries }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center; padding:60px 0; color:oklch(0.55 0.01 250); font-size:15px;">No scores yet — play a quiz to take the top spot.</div>
+      </sc-if>
+
+
+    </main>
+  </sc-if>
+  <!-- MATCH ROOM -->
+  <sc-if value="{{ isMatchView }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1; max-width:640px; margin:0 auto; padding:72px 48px 120px; width:100%;">
+      <div onClick="{{ leaveMatch }}" style="cursor:pointer; font-size:13px; font-weight:600; color:oklch(0.55 0.01 250); margin-bottom:8px;">← Back to Home</div>
+      <div style="font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:oklch(0.55 0.15 250); margin-bottom:20px;">Match Room</div>
+
+      <!-- SETUP: new room -->
+      <sc-if value="{{ isMatchSetupView }}" hint-placeholder-val="{{ true }}">
+        <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:38px; margin:0 0 12px; color:oklch(0.42 0.18 250);">Challenge a Friend</h1>
+        <p style="font-size:15px; color:oklch(0.45 0.01 250); margin:0 0 32px;">Pick a quiz and enter your name. You’ll play first, then get a link to send your friend.</p>
+
+        <div style="font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:12px;">Choose a quiz</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px; margin-bottom:32px;">
+          <sc-for list="{{ matchQuizChoices }}" as="mq" hint-placeholder-count="4">
+            <div onClick="{{ mq.onClick }}" style="{{ mq.style }}">
+              <div style="font-weight:700; font-size:14px; margin-bottom:4px;">{{ mq.title }}</div>
+              <div style="font-size:12px; color:oklch(0.55 0.01 250);">{{ mq.difficultyLabel }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:10px;">Your name</div>
+        <div style="display:flex; gap:12px; max-width:420px; margin-bottom:32px;">
+          <input value="{{ matchNameDraft }}" onChange="{{ updateMatchNameDraft }}" placeholder="Your name" style="flex:1; padding:14px 16px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif;">
+        </div>
+        <button onClick="{{ createMatchRoom }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 32px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play &amp; Create Room</button>
+      </sc-if>
+
+      <!-- REMATCH QUIZ PICK -->
+      <sc-if value="{{ isMatchRematchPickView }}" hint-placeholder-val="{{ false }}">
+        <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:38px; margin:0 0 12px; color:oklch(0.42 0.18 250);">Pick the Next Quiz</h1>
+        <p style="font-size:15px; color:oklch(0.45 0.01 250); margin:0 0 32px;">Round {{ nextRoundNumber }} — choose a quiz, then play it.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px; margin-bottom:32px;">
+          <sc-for list="{{ matchQuizChoices }}" as="mq" hint-placeholder-count="4">
+            <div onClick="{{ mq.onClick }}" style="{{ mq.style }}">
+              <div style="font-weight:700; font-size:14px; margin-bottom:4px;">{{ mq.title }}</div>
+              <div style="font-size:12px; color:oklch(0.55 0.01 250);">{{ mq.difficultyLabel }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ createNextRound }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 32px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play This Round</button>
+      </sc-if>
+
+      <!-- TURN: accept + play -->
+      <sc-if value="{{ isMatchTurnView }}" hint-placeholder-val="{{ false }}">
+        <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:36px; margin:0 0 12px; color:oklch(0.42 0.18 250);">{{ matchChallengerName }} challenged you</h1>
+        <p style="font-size:15px; color:oklch(0.45 0.01 250); margin:0 0 32px;">Quiz: <strong>{{ matchTurnQuizTitle }}</strong>. Play it now to see who scores higher.</p>
+
+        <sc-if value="{{ matchNeedsIdentity }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.55 0.01 250); margin-bottom:10px;">Your name</div>
+          <div style="display:flex; gap:12px; max-width:420px; margin-bottom:28px;">
+            <input value="{{ matchNameDraft }}" onChange="{{ updateMatchNameDraft }}" placeholder="Your name" style="flex:1; padding:14px 16px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif;">
+          </div>
+          <button onClick="{{ acceptMatchChallenge }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 32px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Accept &amp; Play</button>
+        </sc-if>
+        <sc-if value="{{ matchTurnReady }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ playMyTurn }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 32px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play Now</button>
+        </sc-if>
+      </sc-if>
+
+      <!-- WAITING -->
+      <sc-if value="{{ isMatchWaitingView }}" hint-placeholder-val="{{ false }}">
+        <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:36px; margin:0 0 12px; color:oklch(0.42 0.18 250);">You scored {{ matchMyRoundScore }}/{{ matchMyRoundTotal }}</h1>
+        <p style="font-size:15px; color:oklch(0.45 0.01 250); margin:0 0 32px;">Send this link to your friend so they can play <strong>{{ matchWaitingQuizTitle }}</strong> and see how they compare.</p>
+        <div style="display:flex; gap:12px; max-width:520px; margin-bottom:16px;">
+          <input value="{{ matchShareLink }}" readonly="readonly" style="flex:1; padding:14px 16px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:13px; font-family:'Inter',sans-serif; color:oklch(0.45 0.01 250);">
+          <button onClick="{{ copyMatchLink }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 24px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif;">Copy Link</button>
+        </div>
+        <sc-if value="{{ matchLinkCopied }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px; font-weight:600; color:oklch(0.5 0.14 145);">Link copied — waiting for your friend to play.</div>
+        </sc-if>
+      </sc-if>
+
+      <!-- RESULT -->
+      <sc-if value="{{ isMatchResultView }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:13px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:oklch(0.55 0.15 250); margin-bottom:6px;">Round {{ matchResultData.roundNumber }} · {{ matchResultData.quizTitle }}</div>
+        <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:32px; margin:0 0 32px; color:oklch(0.42 0.18 250);">{{ matchResultData.winnerText }}</h1>
+
+        <div style="display:flex; align-items:center; justify-content:center; gap:28px; margin-bottom:24px;">
+          <div style="text-align:center;">
+            <div style="width:64px; height:64px; border-radius:50%; background:oklch(0.42 0.18 250); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; margin:0 auto 10px;">{{ matchResultData.meInitials }}</div>
+            <div style="font-weight:700; font-size:15px;">{{ matchResultData.meName }}</div>
+            <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:30px; color:oklch(0.42 0.18 250);">{{ matchResultData.meScore }}/{{ matchResultData.meTotal }}</div>
+          </div>
+          <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:20px; color:oklch(0.7 0.01 250);">VS</div>
+          <div style="text-align:center;">
+            <div style="width:64px; height:64px; border-radius:50%; background:oklch(0.6 0.17 60); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; margin:0 auto 10px;">{{ matchResultData.oppInitials }}</div>
+            <div style="font-weight:700; font-size:15px;">{{ matchResultData.oppName }}</div>
+            <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:30px; color:oklch(0.6 0.17 60);">{{ matchResultData.oppScore }}/{{ matchResultData.oppTotal }}</div>
+          </div>
+        </div>
+
+        <div style="height:14px; border-radius:7px; background:oklch(0.93 0.01 250); overflow:hidden; display:flex; margin-bottom:8px;">
+          <div style="height:100%; background:oklch(0.42 0.18 250); width:{{ matchResultData.mePct }}%;"></div>
+          <div style="height:100%; background:oklch(0.6 0.17 60); width:{{ matchResultData.oppPct }}%;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:oklch(0.55 0.01 250); margin-bottom:40px;">
+          <span>{{ matchResultData.mePct }}%</span>
+          <span>{{ matchResultData.oppPct }}%</span>
+        </div>
+
+        <div style="border-top:1px solid oklch(0.93 0.01 250); padding-top:28px; margin-bottom:32px;">
+          <div style="font-weight:700; font-size:15px; margin-bottom:16px;">{{ matchResultData.seriesText }}</div>
+          <div style="display:flex; flex-direction:column;">
+            <sc-for list="{{ matchHistoryRows }}" as="row" hint-placeholder-count="1">
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid oklch(0.95 0.01 250); font-size:14px;">
+                <div style="font-weight:600;">{{ row.title }}</div>
+                <div style="color:oklch(0.5 0.01 250);">{{ row.myScore }} – {{ row.oppScore }}</div>
+                <div style="font-weight:700;">{{ row.result }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:16px;">
+          <button onClick="{{ startRematchPick }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 28px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play Next Round</button>
+          <div onClick="{{ leaveMatch }}" style="align-self:center; cursor:pointer; font-size:14px; font-weight:600; color:oklch(0.22 0.01 250); text-decoration:underline;">Done</div>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <!-- WORDLE -->
+  <sc-if value="{{ isWordleView }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1; max-width:640px; margin:0 auto; padding:72px 48px 120px; width:100%;">
+      
+      
+
+      <!-- PICKER -->
+      <sc-if value="{{ isWordlePickerView }}" hint-placeholder-val="{{ true }}">
+        <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:38px; margin:0 0 12px; color:oklch(0.42 0.18 250);">Choose a Wordle</h1>
+        <p style="font-size:15px; color:oklch(0.45 0.01 250); margin:0 0 32px;">Four five-letter football words. Six guesses each. Updates twice a week.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:16px;">
+          <sc-for list="{{ wordleChoices }}" as="w" hint-placeholder-count="4">
+            <div onClick="{{ w.onClick }}" style="border:1px solid oklch(0.88 0.05 250); background:oklch(0.97 0.035 250); border-radius:6px; padding:22px; cursor:pointer;">
+              <div style="font-weight:700; font-size:16px; margin-bottom:6px;">{{ w.label }}</div>
+              <div style="font-size:13px; color:oklch(0.5 0.01 250); margin-bottom:10px;">{{ w.hint }}</div>
+              <div style="font-size:12px; font-weight:700; color:oklch(0.42 0.18 250); letter-spacing:0.3px;">{{ w.statusText }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- PLAY -->
+      <sc-if value="{{ isWordlePlayView }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:28px; margin:0; color:oklch(0.42 0.18 250);">{{ wordleLabel }}</h1>
+          <div style="font-size:13px; color:oklch(0.55 0.01 250);">Guess {{ wordleGuessCount }} of 6</div>
+        </div>
+        <p style="font-size:14px; color:oklch(0.5 0.01 250); margin:0 0 28px;">{{ wordleHint }}</p>
+
+        <div onClick="{{ focusWordleInput }}" style="display:flex; flex-direction:column; gap:8px; align-items:center; margin-bottom:24px; cursor:text;">
+          <sc-for list="{{ wordleRows }}" as="row" hint-placeholder-count="6">
+            <div style="display:flex; gap:8px;">
+              <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="5">
+                <div style="{{ cell.style }}">{{ cell.letter }}</div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+
+        <input ref="{{ wordleInputRef }}" value="{{ wordleCurrentGuess }}" onChange="{{ handleWordleNativeChange }}" onKeyDown="{{ handleWordleNativeKeyDown }}" autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck="false" inputMode="text" enterKeyHint="done" maxLength="5" style="position:absolute; opacity:0; height:1px; width:1px; pointer-events:none;">
+
+        <div style="min-height:24px; text-align:center; margin-bottom:16px;">
+          <sc-if value="{{ wordleHasMessage }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:14px; font-weight:700; color:{{ wordleMessageColor }};">{{ wordleMessage }}</div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:center; margin-bottom:24px;">
+          <sc-for list="{{ wordleKeyboardRows }}" as="krow" hint-placeholder-count="3">
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ krow.keys }}" as="key" hint-placeholder-count="10">
+                <div onClick="{{ key.onClick }}" style="{{ key.style }}">{{ key.label }}</div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ wordleFinished }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; gap:16px; justify-content:center;">
+            <button onClick="{{ startWordlePicker }}" style="background:oklch(0.55 0.15 70); color:white; border:none; padding:14px 28px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play the Other Wordle</button>
+            <div onClick="{{ leaveWordle }}" style="align-self:center; cursor:pointer; font-size:14px; font-weight:600; color:oklch(0.22 0.01 250); text-decoration:underline;">Done</div>
+          </div>
+        </sc-if>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <!-- TRANSFER CHAIN -->
+  <sc-if value="{{ isTransferChainView }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1; max-width:760px; margin:0 auto; padding:72px 48px 120px; width:100%;">
+      <div onClick="{{ leaveTransferChain }}" style="cursor:pointer; font-size:13px; font-weight:600; color:oklch(0.55 0.01 250); margin-bottom:8px;">← Back to Home</div>
+      <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:28px; margin:0 0 8px; color:oklch(0.42 0.18 250);">Transfer Chain</h1>
+
+      <sc-if value="{{ transferNotFinished }}" hint-placeholder-val="{{ true }}">
+        <p style="font-size:15px; color:oklch(0.45 0.01 250); margin:0 0 32px;">Three clubs, one player who's worn all three shirts. Name them — first name, last name, or full name all count, no accents needed. {{ transferProgressText }}</p>
+      </sc-if>
+
+      <sc-if value="{{ transferNotFinished }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:32px; flex-wrap:wrap;">
+          <sc-for list="{{ transferRoundClubs }}" as="rc" hint-placeholder-count="3">
+            <div style="text-align:center;">
+              <div style="width:110px; height:110px; border-radius:8px; overflow:hidden; border:1px solid oklch(0.9 0.01 250); margin:0 auto 10px;">
+                <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ rc.slotId }}" shape="rect" placeholder="Logo" hint-size="110px,110px"></x-import>
+              </div>
+              <div style="font-weight:700; font-size:14px;">{{ rc.name }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="max-width:360px; margin:0 auto;">
+          <sc-if value="{{ transferIsPlaying }}" hint-placeholder-val="{{ true }}">
+            <input value="{{ transferInput }}" onChange="{{ updateTransferInput }}" onKeyDown="{{ handleTransferKeydown }}" placeholder="First name, last name, or full name" style="width:100%; padding:14px 16px; border:1px solid oklch(0.85 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif; text-align:center; margin-bottom:16px;">
+            <button onClick="{{ submitTransferAnswer }}" style="width:100%; background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 24px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Submit</button>
+          </sc-if>
+          <sc-if value="{{ transferShowFeedback }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center; font-size:16px; font-weight:700; margin-bottom:8px; color:{{ transferFeedbackColor }};">{{ transferFeedbackText }}</div>
+            <div style="text-align:center; font-size:14px; color:oklch(0.5 0.01 250); margin-bottom:20px;">Answer: {{ transferAnswerReveal }}</div>
+            <button onClick="{{ nextTransferLink }}" style="width:100%; background:oklch(0.22 0.01 250); color:white; border:none; padding:14px 24px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">{{ transferNextLabel }}</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ transferIsFinished }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;">
+          <h1 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:32px; margin:0 0 12px; color:oklch(0.42 0.18 250);">{{ transferScore }} / {{ transferLinkCount }} rounds solved</h1>
+          <p style="font-size:14px; color:oklch(0.5 0.14 145); font-weight:600; margin:0 0 12px;">{{ transferPointsAwardedText }}</p>
+          <p style="font-size:15px; color:oklch(0.5 0.01 250); margin:0 0 32px;">{{ transferFinalMessage }}</p>
+          <div style="display:flex; gap:16px; justify-content:center;">
+            <button onClick="{{ startTransferChain }}" style="background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 28px; font-size:14px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif;">Play Again</button>
+            <div onClick="{{ leaveTransferChain }}" style="align-self:center; cursor:pointer; font-size:14px; font-weight:600; color:oklch(0.22 0.01 250); text-decoration:underline;">Done</div>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  </div>
+
+  <sc-if value="{{ showEmailGate }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(20,20,30,0.5); display:flex; align-items:center; justify-content:center; z-index:100;">
+      <div style="background:white; border-radius:6px; padding:40px; max-width:420px; width:90%; text-align:center;">
+        <h2 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:26px; margin:0 0 12px; color:oklch(0.42 0.18 250);">Keep the streak going</h2>
+        <p style="font-size:15px; color:oklch(0.45 0.01 250); margin:0 0 24px; line-height:1.5;">You've played 5 quizzes. Enter your email to keep playing.</p>
+        <input value="{{ emailInput }}" onChange="{{ updateEmailInput }}" placeholder="you@example.com" style="width:100%; padding:14px 16px; border:1px solid oklch(0.88 0.01 250); border-radius:4px; font-size:15px; font-family:'Inter',sans-serif; margin-bottom:16px;">
+        <button onClick="{{ submitEmailGate }}" style="width:100%; background:oklch(0.42 0.18 250); color:white; border:none; padding:14px 24px; font-size:15px; font-weight:600; border-radius:4px; cursor:pointer; font-family:'Inter',sans-serif; margin-bottom:12px;">Continue Playing</button>
+        <div onClick="{{ closeEmailGate }}" style="cursor:pointer; font-size:13px; color:oklch(0.55 0.01 250);">Not now</div>
+      </div>
+    </div>
+  </sc-if>
+  <!-- FOOTER -->
+  <footer style="background:oklch(0.24 0.045 250); color:white; padding:80px 48px 32px; margin-top:auto;">
+    <div style="max-width:1160px; margin:0 auto; display:flex; justify-content:space-between; gap:48px; flex-wrap:wrap; margin-bottom:64px;">
+      <div style="max-width:460px; flex:1; min-width:280px;">
+        <h2 style="font-family:'Oswald',sans-serif; font-weight:700; font-size:28px; margin:0 0 28px;">Subscribe For Updates</h2>
+
+        <sc-if value="{{ subscribeDone }}" hint-placeholder-val="{{ false }}">
+          <p style="font-size:15px; color:oklch(0.85 0.02 250); margin:0;">You're on the list — thanks for subscribing.</p>
+        </sc-if>
+
+        <sc-if value="{{ subscribeNotDone }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <label style="display:block; font-weight:700; font-size:14px; margin-bottom:10px;">Enter your email here *</label>
+          <input value="{{ subscribeEmail }}" onChange="{{ updateSubscribeEmail }}" placeholder="" style="width:100%; background:transparent; border:none; border-bottom:1px solid rgba(255,255,255,0.4); color:white; font-size:15px; padding:0 0 12px; margin-bottom:28px; font-family:'Inter',sans-serif;">
+
+          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:24px;">
+            <div onClick="{{ toggleSubscribeChecked }}" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+              <div style="width:18px; height:18px; border:1px solid rgba(255,255,255,0.6); border-radius:2px; background:{{ checkboxFill }}; flex-shrink:0;"></div>
+              <div style="font-size:14px; color:oklch(0.9 0.01 250);">Yes, I want to receive updates *</div>
+            </div>
+            <button onClick="{{ submitSubscribe }}" style="background:oklch(0.5 0.19 258); color:white; border:none; padding:14px 32px; font-size:15px; font-weight:700; border-radius:3px; cursor:pointer; font-family:'Inter',sans-serif;">Subscribe</button>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+
+      <nav style="display:flex; flex-direction:column; gap:22px; padding-top:6px;">
+        <div onClick="{{ goHomePage }}" style="font-family:'Oswald',sans-serif; font-weight:700; font-size:20px; cursor:pointer;">Home</div>
+        <div onClick="{{ goQuizzes }}" style="font-family:'Oswald',sans-serif; font-weight:700; font-size:20px; cursor:pointer;">Quizzes</div>
+        <div onClick="{{ goLeaderboard }}" style="font-family:'Oswald',sans-serif; font-weight:700; font-size:20px; cursor:pointer;">Leaderboard</div>
+      </nav>
+    </div>
+
+    <div style="max-width:1160px; margin:0 auto; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:16px; border-top:1px solid rgba(255,255,255,0.12); padding-top:28px;">
+      <div style="font-size:14px; color:oklch(0.75 0.01 250);">© 2026 by FootyNerd</div>
+    </div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;featuredQuiz1&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;worldcup&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;worldcup&quot;, &quot;legends&quot;, &quot;ballondor&quot;, &quot;clubfootball&quot;, &quot;nationalrecords&quot;, &quot;serieabundesliga&quot;, &quot;womensworldcup&quot;, &quot;goldenboot&quot;, &quot;laligarecords&quot;, &quot;rivalries&quot;, &quot;playmakers&quot;, &quot;ronaldo&quot;, &quot;messi&quot;, &quot;mbappe&quot;, &quot;worldcupfinals&quot;, &quot;eurochampionship&quot;, &quot;worldcuprecords&quot;, &quot;kvaratskhelia&quot;, &quot;wirtz&quot;, &quot;ligue1&quot;, &quot;copaamerica&quot;]},
+  &quot;featuredQuiz2&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;legends&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;worldcup&quot;, &quot;legends&quot;, &quot;ballondor&quot;, &quot;clubfootball&quot;, &quot;nationalrecords&quot;, &quot;serieabundesliga&quot;, &quot;womensworldcup&quot;, &quot;goldenboot&quot;, &quot;laligarecords&quot;, &quot;rivalries&quot;, &quot;playmakers&quot;, &quot;ronaldo&quot;, &quot;messi&quot;, &quot;mbappe&quot;, &quot;worldcupfinals&quot;, &quot;eurochampionship&quot;, &quot;worldcuprecords&quot;, &quot;kvaratskhelia&quot;, &quot;wirtz&quot;, &quot;ligue1&quot;, &quot;copaamerica&quot;]}
+}">
+const CATEGORIES = [
+  { id: 'all', label: 'All Quizzes' },
+  { id: 'players', label: 'Players' },
+  { id: 'leagues', label: 'Leagues' },
+  { id: 'national', label: 'National' },
+  { id: 'clubs', label: 'Clubs' },
+];
+
+const PASS_THRESHOLD = 4;
+const POINTS_BY_DIFFICULTY = { easy: 25, medium: 50, hard: 75 };
+
+const QUIZZES = [
+  {
+    id: 'worldcup',
+    category: 'national',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'World Cup History',
+    desc: 'From 1930 to today, test your World Cup trivia.',
+    questions: [
+      { q: 'Which country has won the most FIFA World Cup titles?', options: ['Germany', 'Argentina', 'Brazil', 'Italy'], answer: 2 },
+      { q: 'Where was the very first World Cup held, in 1930?', options: ['Brazil', 'France', 'Uruguay', 'Italy'], answer: 2 },
+      { q: 'Which country hosted the 2022 World Cup?', options: ['Qatar', 'Russia', 'UAE', 'Japan'], answer: 0 },
+      { q: 'Which country won the 2018 World Cup?', options: ['Croatia', 'France', 'Belgium', 'England'], answer: 1 },
+      { q: 'Who holds the record for most career World Cup goals?', options: ['Pelé', 'Ronaldo Nazário', 'Miroslav Klose', 'Lionel Messi'], answer: 2 },
+      { q: 'Which country has reached the most World Cup Finals of any nation?', options: ['Brazil', 'Germany', 'Argentina', 'Italy'], answer: 1 },
+      { q: 'Which country is the only nation to have played in every FIFA World Cup tournament ever held?', options: ['Germany', 'Brazil', 'Italy', 'Argentina'], answer: 1 },
+    ],
+  },
+  {
+    id: 'legends',
+    category: 'players',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Legendary Players',
+    desc: 'Icons of the sport, past and present.',
+    questions: [
+      { q: 'Known as "The King of Football," this Brazilian legend won three World Cups.', options: ['Ronaldinho', 'Pelé', 'Zico', 'Romário'], answer: 1 },
+      { q: 'Who captained Argentina to victory at the 2022 World Cup?', options: ['Sergio Agüero', 'Ángel Di María', 'Lionel Messi', 'Diego Maradona'], answer: 2 },
+      { q: 'Who is the all-time leading scorer in UEFA Champions League history?', options: ['Cristiano Ronaldo', 'Lionel Messi', 'Robert Lewandowski', 'Karim Benzema'], answer: 0 },
+      { q: 'Which Dutch player is credited with inventing the "Cruyff Turn"?', options: ['Marco van Basten', 'Johan Cruyff', 'Dennis Bergkamp', 'Ruud Gullit'], answer: 1 },
+      { q: 'Which England striker scored a hat-trick in the 1966 World Cup Final?', options: ['Bobby Charlton', 'Gary Lineker', 'Geoff Hurst', 'Jimmy Greaves'], answer: 2 },
+      { q: 'Diego Maradona\u2019s infamous "Hand of God" goal came against which country at the 1986 World Cup?', options: ['England', 'West Germany', 'Brazil', 'Italy'], answer: 0 },
+      { q: 'Franz Beckenbauer, nicknamed "Der Kaiser," is credited with redefining which defensive position?', options: ['Sweeper (libero)', 'Fullback', 'Wing-back', 'Man-marker'], answer: 0 },
+    ],
+  },
+  {
+    id: 'ballondor',
+    category: 'players',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Ballon d\u2019Or Legends',
+    desc: 'Hard mode: the winners, the records, the snubs.',
+    questions: [
+      { q: 'Who won the very first Ballon d\u2019Or in 1956?', options: ['Alfredo Di Stéfano', 'Stanley Matthews', 'Raymond Kopa', 'Ferenc Puskás'], answer: 1 },
+      { q: 'Which player has won the most Ballon d\u2019Or awards outright?', options: ['Cristiano Ronaldo', 'Michel Platini', 'Lionel Messi', 'Johan Cruyff'], answer: 2 },
+      { q: 'Who won the 2018 Ballon d\u2019Or, the same year France won the World Cup?', options: ['Kylian Mbappé', 'Antoine Griezmann', 'Luka Modrić', 'N\u2019Golo Kanté'], answer: 2 },
+      { q: 'George Weah, the 1995 winner, is from which country?', options: ['Ivory Coast', 'Liberia', 'Ghana', 'Senegal'], answer: 1 },
+      { q: 'Who was the first goalkeeper ever to win the Ballon d\u2019Or?', options: ['Gianluigi Buffon', 'Lev Yashin', 'Iker Casillas', 'Peter Schmeichel'], answer: 1 },
+      { q: 'Which player won the Ballon d\u2019Or three consecutive times in the 1980s while at Juventus?', options: ['Michel Platini', 'Marco van Basten', 'Paolo Rossi', 'Zbigniew Boniek'], answer: 0 },
+      { q: 'Luka Modri\u0107\u2019s 2018 Ballon d\u2019Or win ended a run of how many consecutive years won only by Messi and Ronaldo?', options: ['6', '8', '10', '12'], answer: 2 },
+    ],
+  },
+  {
+    id: 'clubfootball',
+    category: 'leagues',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Champions League & Club Football',
+    desc: 'Hard mode: European club football history.',
+    questions: [
+      { q: 'Which club has won the most European Cup / Champions League titles?', options: ['AC Milan', 'Real Madrid', 'Bayern Munich', 'Liverpool'], answer: 1 },
+      { q: 'Which English club completed the continental treble (league, domestic cup, Champions League) in 1998–99?', options: ['Arsenal', 'Chelsea', 'Manchester United', 'Liverpool'], answer: 2 },
+      { q: 'Which club did Pep Guardiola manage to a treble in 2022–23?', options: ['Manchester City', 'Barcelona', 'Bayern Munich', 'Manchester United'], answer: 0 },
+      { q: 'Which Italian club is nicknamed "La Vecchia Signora" (The Old Lady)?', options: ['Inter Milan', 'AC Milan', 'Juventus', 'Roma'], answer: 2 },
+      { q: 'Which club won the first ever UEFA Champions League (rebranded from the European Cup) in 1992–93?', options: ['Marseille', 'AC Milan', 'Barcelona', 'Porto'], answer: 0 },
+      { q: 'Which club won a record five consecutive European Cups from 1956 to 1960?', options: ['Benfica', 'AC Milan', 'Real Madrid', 'Ajax'], answer: 2 },
+      { q: 'Liverpool\u2019s 2005 Champions League final comeback from 3-0 down against AC Milan is known by what nickname?', options: ['The Miracle of Istanbul', 'The Comeback of Cardiff', 'The Anfield Miracle', 'The Great Escape'], answer: 0 },
+    ],
+  },
+  {
+    id: 'nationalrecords',
+    category: 'national',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'National Team Records',
+    desc: 'Hard mode: international football history.',
+    questions: [
+      { q: 'Which country won the first-ever UEFA European Championship, in 1960?', options: ['Soviet Union', 'Yugoslavia', 'West Germany', 'Spain'], answer: 0 },
+      { q: 'Which country won three consecutive major tournaments — Euro 2008, World Cup 2010, and Euro 2012?', options: ['Germany', 'Italy', 'Spain', 'Netherlands'], answer: 2 },
+      { q: 'Which nation hosted and won the very first World Cup, in 1930?', options: ['Argentina', 'Uruguay', 'Brazil', 'Italy'], answer: 1 },
+      { q: 'Which African nation was the first to reach a World Cup quarterfinal, in 1990?', options: ['Nigeria', 'Senegal', 'Cameroon', 'Morocco'], answer: 2 },
+      { q: 'Which country won the first-ever Africa Cup of Nations, in 1957?', options: ['Sudan', 'Egypt', 'Ethiopia', 'South Africa'], answer: 1 },
+      { q: 'Which nation became the first from outside Europe and South America to reach a World Cup semifinal, in 2002?', options: ['Japan', 'South Korea', 'United States', 'Turkey'], answer: 1 },
+      { q: 'Which country holds the record for the biggest winning margin in a World Cup qualifier, beating American Samoa 31\u20130 in 2001?', options: ['New Zealand', 'Australia', 'Fiji', 'Japan'], answer: 1 },
+    ],
+  },
+  {
+    id: 'serieabundesliga',
+    category: 'leagues',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Serie A & Bundesliga Trivia',
+    desc: 'Germany and Italy\u2019s top flights, tested.',
+    questions: [
+      { q: 'Which club has won the most Bundesliga titles?', options: ['Borussia Dortmund', 'Bayern Munich', 'Schalke 04', 'Werder Bremen'], answer: 1 },
+      { q: 'Which club is nicknamed "I Nerazzurri"?', options: ['AC Milan', 'Juventus', 'Inter Milan', 'Napoli'], answer: 2 },
+      { q: 'Which club plays home games at Signal Iduna Park in Dortmund?', options: ['Bayer Leverkusen', 'Borussia Dortmund', 'RB Leipzig', 'Hertha BSC'], answer: 1 },
+      { q: 'Which club won Serie A in 2022–23, its first title since 1990?', options: ['Roma', 'Lazio', 'Napoli', 'Fiorentina'], answer: 2 },
+      { q: 'How many teams compete in a single Bundesliga season?', options: ['16', '18', '20', '22'], answer: 1 },
+      { q: 'Which club has won the most Serie A titles all-time?', options: ['AC Milan', 'Inter Milan', 'Juventus', 'Roma'], answer: 2 },
+      { q: 'Juventus were stripped of two Serie A titles (2005 and 2006) following which major scandal?', options: ['Calciopoli', 'Match-fixing at Bosman', 'The Totonero scandal', 'The Napoli ticket scandal'], answer: 0 },
+    ],
+  },
+  {
+    id: 'womensworldcup',
+    category: 'national',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Women\u2019s World Cup',
+    desc: 'The history of the women\u2019s game on the biggest stage.',
+    questions: [
+      { q: 'Which country has won the most FIFA Women\u2019s World Cup titles?', options: ['Germany', 'United States', 'Norway', 'Brazil'], answer: 1 },
+      { q: 'The 2023 Women\u2019s World Cup was jointly hosted by Australia and which other country?', options: ['New Zealand', 'Japan', 'Canada', 'South Korea'], answer: 0 },
+      { q: 'Which country won the very first Women\u2019s World Cup, in 1991?', options: ['Norway', 'China', 'United States', 'Germany'], answer: 2 },
+      { q: 'Which country won the 2023 Women\u2019s World Cup Final?', options: ['England', 'Spain', 'Sweden', 'Australia'], answer: 1 },
+      { q: 'Megan Rapinoe, a two-time Women\u2019s World Cup winner, played for which country?', options: ['Canada', 'United States', 'England', 'France'], answer: 1 },
+      { q: 'Which country won back-to-back Women\u2019s World Cup titles in 2015 and 2019?', options: ['Germany', 'Japan', 'United States', 'Brazil'], answer: 2 },
+      { q: 'Homare Sawa was named Golden Ball winner after leading which country to the 2011 Women\u2019s World Cup title?', options: ['China', 'Japan', 'North Korea', 'South Korea'], answer: 1 },
+    ],
+  },
+  {
+    id: 'goldenboot',
+    category: 'players',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Golden Boot Winners',
+    desc: 'Hard mode: the tournament\u2019s top scorers.',
+    questions: [
+      { q: 'Who won the Golden Boot (top scorer) at the 2022 World Cup?', options: ['Lionel Messi', 'Kylian Mbappé', 'Olivier Giroud', 'Julián Álvarez'], answer: 1 },
+      { q: 'Who won the Golden Boot at the 2018 World Cup?', options: ['Harry Kane', 'Antoine Griezmann', 'Romelu Lukaku', 'Cristiano Ronaldo'], answer: 0 },
+      { q: 'Which player has won the European Golden Shoe the most times?', options: ['Cristiano Ronaldo', 'Robert Lewandowski', 'Lionel Messi', 'Luis Suárez'], answer: 2 },
+      { q: 'Who was the top scorer of the 2014 World Cup, winning the Golden Boot?', options: ['James Rodríguez', 'Thomas Müller', 'Lionel Messi', 'Neymar'], answer: 0 },
+      { q: 'Who won the Golden Boot at the 1998 World Cup, held in France?', options: ['Ronaldo Nazário', 'Davor Šuker', 'Zinedine Zidane', 'Michael Owen'], answer: 1 },
+      { q: 'Just Fontaine set the record for most goals in a single World Cup (13) at the 1958 tournament, playing for which country?', options: ['Brazil', 'France', 'Hungary', 'West Germany'], answer: 1 },
+      { q: 'Who won the 2010 World Cup Golden Boot with only 5 goals, awarded on a tiebreaker after several players tied?', options: ['Wesley Sneijder', 'David Villa', 'Thomas Müller', 'Diego Forlán'], answer: 2 },
+    ],
+  },
+  {
+    id: 'laligarecords',
+    category: 'leagues',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'La Liga & Premier League Records',
+    desc: 'Hard mode: records from Spain and England\u2019s top flights.',
+    questions: [
+      { q: 'Which player holds the record for most goals in a single Premier League season (38-game era)?', options: ['Mohamed Salah', 'Erling Haaland', 'Alan Shearer', 'Thierry Henry'], answer: 1 },
+      { q: 'Which club has won the most Premier League titles since its 1992 formation?', options: ['Chelsea', 'Arsenal', 'Manchester United', 'Manchester City'], answer: 2 },
+      { q: 'Which club has won the most La Liga titles all-time?', options: ['Atlético Madrid', 'Barcelona', 'Real Madrid', 'Valencia'], answer: 2 },
+      { q: 'Who is La Liga\u2019s all-time top scorer?', options: ['Cristiano Ronaldo', 'Lionel Messi', 'Karim Benzema', 'Raúl'], answer: 1 },
+      { q: 'Which club famously won the Premier League title as 5000-1 outsiders in 2015–16?', options: ['Leicester City', 'West Ham', 'Everton', 'Southampton'], answer: 0 },
+      { q: 'Which player holds the record for most goals in a single Champions League season, with 17 in 2013–14?', options: ['Lionel Messi', 'Cristiano Ronaldo', 'Robert Lewandowski', 'Karim Benzema'], answer: 1 },
+      { q: 'Which club holds the Premier League record for most consecutive match wins, with 18 in a row set in 2017?', options: ['Liverpool', 'Manchester City', 'Chelsea', 'Arsenal'], answer: 1 },
+    ],
+  },
+  {
+    id: 'rivalries',
+    category: 'leagues',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Legendary Rivalries',
+    desc: 'The fiercest derbies in club football.',
+    questions: [
+      { q: '"El Clásico" is the rivalry between Real Madrid and which other club?', options: ['Atlético Madrid', 'Barcelona', 'Sevilla', 'Valencia'], answer: 1 },
+      { q: 'The "North West Derby" in English football is contested between Manchester United and which club?', options: ['Manchester City', 'Everton', 'Liverpool', 'Leeds United'], answer: 2 },
+      { q: 'The "Old Firm" derby takes place between Celtic and which other Scottish club?', options: ['Hearts', 'Aberdeen', 'Rangers', 'Hibernian'], answer: 2 },
+      { q: 'Boca Juniors\u2019 fiercest rival in Argentine football is which club?', options: ['Independiente', 'River Plate', 'Racing Club', 'San Lorenzo'], answer: 1 },
+      { q: 'Which two Italian clubs contest the "Derby della Madonnina"?', options: ['AC Milan & Inter Milan', 'Juventus & Torino', 'Roma & Lazio', 'Napoli & Roma'], answer: 0 },
+      { q: 'The "Merseyside Derby" is contested between Liverpool and which other club?', options: ['Manchester United', 'Everton', 'Leeds United', 'Newcastle'], answer: 1 },
+      { q: 'Fenerbahçe\u2019s rivalry with which fellow Istanbul club is often called the "Intercontinental Derby," crossing Europe and Asia?', options: ['Galatasaray', 'Trabzonspor', 'Antalyaspor', 'Konyaspor'], answer: 0 },
+    ],
+  },
+  {
+    id: 'playmakers',
+    category: 'players',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Modern Icons & Playmakers',
+    desc: 'The stars defining the current era of the game.',
+    questions: [
+      { q: 'Which midfielder captained Real Madrid to five Champions League titles between 2014 and 2024?', options: ['Toni Kroos', 'Luka Modrić', 'Casemiro', 'Federico Valverde'], answer: 1 },
+      { q: 'Which playmaker is nicknamed "The Octopus" for his ball-control and vision?', options: ['Kevin De Bruyne', 'Bruno Fernandes', 'Martin Ødegaard', 'Jude Bellingham'], answer: 0 },
+      { q: 'Which Norwegian became Arsenal\u2019s captain in his mid-20s after joining from Real Madrid?', options: ['Erling Haaland', 'Martin Ødegaard', 'Alexander Sørloth', 'Kristian Thorstvedt'], answer: 1 },
+      { q: 'Jude Bellingham moved from Borussia Dortmund to which club in 2023?', options: ['Real Madrid', 'Barcelona', 'Manchester City', 'Bayern Munich'], answer: 0 },
+      { q: 'Which Brazilian forward became the most expensive transfer in football history when he joined PSG in 2017?', options: ['Vinícius Júnior', 'Neymar', 'Gabriel Jesus', 'Rodrygo'], answer: 1 },
+      { q: 'Which Belgian playmaker holds Manchester City\u2019s all-time assist record?', options: ['Kevin De Bruyne', 'Riyad Mahrez', 'David Silva', 'Ilkay Gündoğan'], answer: 0 },
+      { q: 'Which Spanish midfielder won the 2024 Ballon d\u2019Or, becoming the first primarily defensive player to win it in over a decade?', options: ['Pedri', 'Rodri', 'Fabián Ruiz', 'Dani Olmo'], answer: 1 },
+    ],
+  },
+  {
+    id: 'ronaldo',
+    category: 'players',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Cristiano Ronaldo',
+    desc: 'The basics on football\u2019s all-time record scorer.',
+    questions: [
+      { q: 'Which country is Cristiano Ronaldo from?', options: ['Spain', 'Brazil', 'Portugal', 'Italy'], answer: 2 },
+      { q: 'Ronaldo made his name as a winger at which English club before his first Real Madrid move?', options: ['Manchester United', 'Chelsea', 'Arsenal', 'Liverpool'], answer: 0 },
+      { q: 'What squad number is Ronaldo most associated with throughout his career?', options: ['9', '10', '7', '11'], answer: 2 },
+      { q: 'Ronaldo became the all-time top scorer at which international tournament in 2021?', options: ['Copa América', 'European Championship', 'World Cup', 'Nations League'], answer: 1 },
+      { q: 'After leaving Europe, which Saudi Arabian club did Ronaldo join in 2023?', options: ['Al Hilal', 'Al Ahli', 'Al Nassr', 'Al Ittihad'], answer: 2 },
+      { q: 'Ronaldo won the UEFA Champions League a record five times — four of them with which club?', options: ['Manchester United', 'Real Madrid', 'Juventus', 'Sporting CP'], answer: 1 },
+      { q: 'Ronaldo became men\u2019s international football\u2019s all-time leading goalscorer, breaking a record previously held by which Iranian striker?', options: ['Ali Daei', 'Sardar Azmoun', 'Karim Bagheri', 'Ali Karimi'], answer: 0 },
+    ],
+  },
+  {
+    id: 'messi',
+    category: 'players',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Lionel Messi',
+    desc: 'From La Masia to a World Cup at last.',
+    questions: [
+      { q: 'Messi moved from Rosario, Argentina to join the youth academy of which club as a teenager?', options: ['Real Madrid', 'Barcelona', 'Atlético Madrid', 'Sevilla'], answer: 1 },
+      { q: 'In 2021, Messi left Barcelona as a free agent to join which club?', options: ['Inter Miami', 'Paris Saint-Germain', 'Manchester City', 'Juventus'], answer: 1 },
+      { q: 'Messi finally won his first World Cup with Argentina in which year?', options: ['2014', '2018', '2022', '2026'], answer: 2 },
+      { q: 'Which MLS club did Messi join in 2023?', options: ['LA Galaxy', 'Inter Miami', 'Atlanta United', 'New York City FC'], answer: 1 },
+      { q: 'Messi\u2019s free-kick and dribbling style earned him a nickname referencing his hometown flea market. What is it?', options: ['La Pulga (The Flea)', 'El Toro (The Bull)', 'La Joya (The Jewel)', 'El Mago (The Magician)'], answer: 0 },
+      { q: 'How many Ballon d\u2019Or awards has Messi won, a record?', options: ['6', '7', '8', '9'], answer: 2 },
+      { q: 'Messi\u2019s 2021 Copa América win ended an Argentina title drought stretching back to which year?', options: ['1986', '1993', '2004', '2011'], answer: 1 },
+    ],
+  },
+  {
+    id: 'mbappe',
+    category: 'players',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Kylian Mbappé',
+    desc: 'The prodigy who became a World Cup champion at 19.',
+    questions: [
+      { q: 'Which club did Mbappé break out at before his move to Paris Saint-Germain?', options: ['Lyon', 'Monaco', 'Lille', 'Marseille'], answer: 1 },
+      { q: 'Mbappé scored a hat-trick in the final of the 2022 World Cup against which country?', options: ['Croatia', 'Morocco', 'Argentina', 'Brazil'], answer: 2 },
+      { q: 'How old was Mbappé when France won the 2018 World Cup?', options: ['17', '19', '21', '23'], answer: 1 },
+      { q: 'In 2024, Mbappé left PSG on a free transfer to join which club?', options: ['Liverpool', 'Real Madrid', 'Manchester City', 'Barcelona'], answer: 1 },
+      { q: 'What position does Mbappé primarily play?', options: ['Center-back', 'Goalkeeper', 'Forward', 'Defensive midfielder'], answer: 2 },
+      { q: 'Mbappé made his senior international debut for France in which year, going on to win the World Cup the following year?', options: ['2015', '2016', '2017', '2018'], answer: 2 },
+      { q: 'Mbappé\u2019s hat-trick in the 2022 World Cup Final made him only the second player ever to do so, matching a feat first achieved by which England legend in 1966?', options: ['Bobby Moore', 'Geoff Hurst', 'Bobby Charlton', 'Gary Lineker'], answer: 1 },
+    ],
+  },
+  {
+    id: 'worldcupfinals',
+    category: 'national',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'World Cup Finals & Deciders',
+    desc: 'Hard mode: the matches that settled it all.',
+    questions: [
+      { q: 'Which country lost the World Cup Final on penalties in both 1994 and 2006?', options: ['Netherlands', 'Italy', 'Brazil', 'France'], answer: 1 },
+      { q: 'The 2014 World Cup Final between Germany and Argentina was decided by a goal from which player?', options: ['Thomas Müller', 'Mario Götze', 'Miroslav Klose', 'Toni Kroos'], answer: 1 },
+      { q: 'Which country won the 1998 World Cup Final on home soil, beating Brazil 3–0?', options: ['France', 'Italy', 'England', 'Spain'], answer: 0 },
+      { q: 'In the 2006 Final, Zinedine Zidane was sent off for a headbutt on which Italian defender?', options: ['Fabio Cannavaro', 'Marco Materazzi', 'Gianluca Zambrotta', 'Andrea Barzagli'], answer: 1 },
+      { q: 'Which nation\u2019s only World Cup title came via a 1950 upset over Brazil known as the "Maracanazo"?', options: ['Paraguay', 'Chile', 'Uruguay', 'Peru'], answer: 2 },
+      { q: 'Which country won the first World Cup Final ever decided by a penalty shootout, in 1994?', options: ['Brazil', 'Italy', 'Argentina', 'Germany'], answer: 0 },
+      { q: 'The 1950 World Cup, won by Uruguay, did not have a single knockout final — the title was instead decided by which format?', options: ['A final round-robin group', 'A two-legged final', 'A penalty shootout', 'Total points across the whole tournament'], answer: 0 },
+    ],
+  },
+  {
+    id: 'eurochampionship',
+    category: 'national',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'European Championship History',
+    desc: 'The Euros, from 1960 to today.',
+    questions: [
+      { q: 'Which country has won the most UEFA European Championship titles?', options: ['Spain', 'Germany', 'France', 'Italy'], answer: 1 },
+      { q: 'Which country won Euro 2020 (played in 2021)?', options: ['England', 'Italy', 'Spain', 'Denmark'], answer: 1 },
+      { q: 'Denmark\u2019s surprise 1992 title came after they replaced which country, which withdrew from the tournament?', options: ['Soviet Union', 'East Germany', 'Yugoslavia', 'Czechoslovakia'], answer: 2 },
+      { q: 'Which country won Euro 2016, its first major title, on home soil against France in the group stage rematch of the final?', options: ['Belgium', 'Portugal', 'Wales', 'Iceland'], answer: 1 },
+      { q: 'Which country won Euro 2024?', options: ['England', 'Germany', 'Spain', 'Netherlands'], answer: 2 },
+      { q: 'Which country co-hosted Euro 2000 together with Belgium?', options: ['Netherlands', 'France', 'Germany', 'Portugal'], answer: 0 },
+      { q: 'Which player\u2019s chipped penalty in the Euro 1976 final gave its name to the now-famous "Panenka" technique?', options: ['Antonín Panenka', 'Zbigniew Boniek', 'Uli Hoeneß', 'Sepp Maier'], answer: 0 },
+    ],
+  },
+  {
+    id: 'worldcuprecords',
+    category: 'national',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'World Cup Records & Trivia',
+    desc: 'Hard mode: the numbers behind the tournament.',
+    questions: [
+      { q: 'Which player scored the fastest goal in World Cup history, in 11 seconds?', options: ['Hakan Şükür', 'Bryan Robson', 'Salvatore Schillaci', 'Gary Lineker'], answer: 0 },
+      { q: 'Who is the youngest player to ever score at a World Cup?', options: ['Kylian Mbappé', 'Pelé', 'Michael Owen', 'Diego Maradona'], answer: 1 },
+      { q: 'Which country holds the record for most World Cup titles won consecutively (back-to-back)?', options: ['Brazil', 'Italy', 'Uruguay', 'Argentina'], answer: 1 },
+      { q: 'What was the largest margin of victory in a World Cup match, set by Hungary over El Salvador in 1982?', options: ['9–0', '10–1', '8–1', '7–0'], answer: 1 },
+      { q: 'Which goalkeeper holds the record for most clean sheets in World Cup history?', options: ['Gianluigi Buffon', 'Manuel Neuer', 'Fabien Barthez', 'Peter Shilton'], answer: 0 },
+      { q: 'Miroslav Klose holds the World Cup all-time scoring record with how many career goals?', options: ['14', '15', '16', '17'], answer: 2 },
+      { q: 'Which Mexican goalkeeper became the first player ever to appear in five World Cups, from 1950 to 1966?', options: ['Antonio Carbajal', 'Jorge Campos', 'Guillermo Ochoa', 'Pat Jones'], answer: 0 },
+    ],
+  },
+  {
+    id: 'kvaratskhelia',
+    category: 'players',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Khvicha Kvaratskhelia',
+    desc: 'Hard mode: the Georgian winger\u2019s career so far.',
+    questions: [
+      { q: 'Khvicha Kvaratskhelia represents which country internationally?', options: ['Georgia', 'Ukraine', 'Armenia', 'Azerbaijan'], answer: 0 },
+      { q: 'In January 2025, Kvaratskhelia transferred from Napoli to which club?', options: ['Real Madrid', 'Paris Saint-Germain', 'Manchester City', 'Bayern Munich'], answer: 1 },
+      { q: 'Kvaratskhelia primarily plays which position?', options: ['Central defender', 'Goalkeeper', 'Left winger', 'Defensive midfielder'], answer: 2 },
+      { q: 'Kvaratskhelia\u2019s nickname "Kvaradona" compares his flair to which legendary player?', options: ['Pelé', 'Diego Maradona', 'Zinedine Zidane', 'Ronaldinho'], answer: 1 },
+      { q: 'Kvaratskhelia helped Napoli win their first Serie A title since which year?', options: ['1987', '1990', '2001', '2010'], answer: 1 },
+      { q: 'Kvaratskhelia made his senior international debut for Georgia in which year?', options: ['2017', '2018', '2019', '2020'], answer: 2 },
+      { q: 'Kvaratskhelia helped Georgia reach the knockout stage for the first time at which major tournament?', options: ['Euro 2020', 'Euro 2024', '2022 World Cup', '2026 World Cup'], answer: 1 },
+    ],
+  },
+  {
+    id: 'wirtz',
+    category: 'players',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Florian Wirtz',
+    desc: 'Hard mode: the German playmaker\u2019s career so far.',
+    questions: [
+      { q: 'Florian Wirtz represents which country internationally?', options: ['Germany', 'Netherlands', 'Belgium', 'Austria'], answer: 0 },
+      { q: 'In 2025, Wirtz transferred to Liverpool from which German club?', options: ['Bayern Munich', 'Bayer Leverkusen', 'Borussia Dortmund', 'RB Leipzig'], answer: 1 },
+      { q: 'Wirtz primarily plays which role?', options: ['Central defender', 'Goalkeeper', 'Attacking midfielder', 'Right-back'], answer: 2 },
+      { q: 'Wirtz helped Bayer Leverkusen complete an unbeaten domestic double in which season?', options: ['2021–22', '2022–23', '2023–24', '2024–25'], answer: 2 },
+      { q: 'Wirtz\u2019s move to Liverpool broke the transfer record for which league?', options: ['Serie A', 'La Liga', 'Bundesliga', 'Premier League'], answer: 3 },
+      { q: 'Wirtz became the youngest-ever goalscorer in Bundesliga history during his time at which club?', options: ['Bayern Munich', 'Bayer Leverkusen', '1. FC Köln', 'Borussia Mönchengladbach'], answer: 1 },
+      { q: 'Wirtz became the youngest-ever goalscorer in the history of which international tournament, scoring against Scotland at Euro 2024?', options: ['The World Cup', 'The UEFA European Championship', 'The Nations League', 'The Confederations Cup'], answer: 1 },
+    ],
+  },
+  {
+    id: 'ligue1',
+    category: 'leagues',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Ligue 1 & French Football',
+    desc: 'France\u2019s top flight, tested.',
+    questions: [
+      { q: 'Which club has won the most Ligue 1 titles?', options: ['Marseille', 'Saint-\u00c9tienne', 'Paris Saint-Germain', 'Lyon'], answer: 2 },
+      { q: 'What is Paris Saint-Germain\u2019s home stadium called?', options: ['Stade V\u00e9lodrome', 'Parc des Princes', 'Stade de France', 'Groupama Stadium'], answer: 1 },
+      { q: 'Which club is nicknamed "Les Verts" (The Greens)?', options: ['Lille', 'Saint-\u00c9tienne', 'Nantes', 'Monaco'], answer: 1 },
+      { q: 'Which Ligue 1 club represents a tiny principality that isn\u2019t actually part of France?', options: ['AS Monaco', 'OGC Nice', 'Toulouse', 'Montpellier'], answer: 0 },
+      { q: 'What is Marseille\u2019s home stadium called?', options: ['Parc des Princes', 'Stade V\u00e9lodrome', 'Stade Pierre-Mauroy', 'Groupama Stadium'], answer: 1 },
+      { q: 'Which club stunned PSG to win the 2020\u201321 Ligue 1 title?', options: ['Lille', 'Monaco', 'Lyon', 'Rennes'], answer: 0 },
+      { q: 'Olympique Lyonnais holds the Ligue 1 record for most consecutive titles \u2014 seven in a row from 2001\u201302 through which season?', options: ['2005\u201306', '2006\u201307', '2007\u201308', '2008\u201309'], answer: 2 },
+    ],
+  },
+  {
+    id: 'copaamerica',
+    category: 'national',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Copa Am\u00e9rica History',
+    desc: 'South America\u2019s championship, from 1916 on.',
+    questions: [
+      { q: 'Which country holds the record for the most Copa Am\u00e9rica titles?', options: ['Brazil', 'Uruguay', 'Argentina', 'Chile'], answer: 2 },
+      { q: 'The Copa Am\u00e9rica is the oldest international football tournament still played, first held in which year?', options: ['1904', '1916', '1930', '1950'], answer: 1 },
+      { q: 'The 2024 Copa Am\u00e9rica was hosted by which country?', options: ['Brazil', 'Argentina', 'United States', 'Colombia'], answer: 2 },
+      { q: 'The 2021 Copa Am\u00e9rica, relocated due to COVID-19, was hosted solely by which country?', options: ['Brazil', 'Colombia', 'Argentina', 'Chile'], answer: 0 },
+      { q: 'Which country won the inaugural 1916 tournament (then the South American Championship)?', options: ['Argentina', 'Brazil', 'Uruguay', 'Chile'], answer: 2 },
+      { q: 'Which country won the special Copa Am\u00e9rica Centenario in 2016, hosted in the United States for the tournament\u2019s 100th anniversary?', options: ['Argentina', 'Chile', 'Colombia', 'Mexico'], answer: 1 },
+      { q: 'Lionel Messi\u2019s two Copa Am\u00e9rica titles with Argentina came in which two years?', options: ['2015 and 2016', '2019 and 2021', '2021 and 2024', '2016 and 2019'], answer: 2 },
+    ],
+  },
+  {
+    id: 'manutd',
+    category: 'clubs',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Manchester United',
+    desc: 'The basics on one of football\u2019s biggest clubs.',
+    questions: [
+      { q: 'What color is Manchester United\u2019s home shirt?', options: ['Blue', 'Red', 'White', 'Green'], answer: 1 },
+      { q: 'What is Manchester United\u2019s home stadium called?', options: ['Anfield', 'Old Trafford', 'Etihad Stadium', 'Stamford Bridge'], answer: 1 },
+      { q: 'Manchester United won a historic treble (league, FA Cup, Champions League) in which year?', options: ['1996', '1999', '2003', '2008'], answer: 1 },
+      { q: 'Which legendary manager led United for over 26 years, retiring in 2013?', options: ['Sir Alex Ferguson', 'Sir Bobby Charlton', 'Matt Busby', 'David Moyes'], answer: 0 },
+      { q: 'What is Manchester United\u2019s popular nickname?', options: ['The Gunners', 'The Red Devils', 'The Toffees', 'The Reds'], answer: 1 },
+      { q: 'Manchester United and Manchester City contest which rivalry match?', options: ['The Manchester Derby', 'The North West Derby', 'The Roses Derby', 'The Cotton Derby'], answer: 0 },
+      { q: 'Which club did Manchester United beat with a stoppage-time comeback to win the 1999 Champions League final?', options: ['Bayern Munich', 'Valencia', 'Juventus', 'Inter Milan'], answer: 0 },
+    ],
+  },
+  {
+    id: 'realmadridclub',
+    category: 'clubs',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Real Madrid',
+    desc: 'The most decorated club in European football.',
+    questions: [
+      { q: 'Real Madrid plays home matches at which stadium?', options: ['Camp Nou', 'Santiago Bernab\u00e9u', 'Wanda Metropolitano', 'Mestalla'], answer: 1 },
+      { q: 'Real Madrid has won a record how many European Cup / Champions League titles?', options: ['11', '13', '15', '17'], answer: 2 },
+      { q: 'Real Madrid\u2019s fierce rivalry with Barcelona is known as which of these?', options: ['El Cl\u00e1sico', 'El Derbi', 'La Liga Derby', 'El Gran Derbi'], answer: 0 },
+      { q: 'Which Brazilian winger, a Real Madrid star since 2018, joined from Flamengo?', options: ['Rodrygo', 'Vin\u00edcius J\u00fanior', 'Endrick', 'Casemiro'], answer: 1 },
+      { q: 'Real Madrid\u2019s renowned youth academy and training system is commonly known as which of these?', options: ['La Fábrica', 'La Masia', 'La Cantera', 'El Vivero'], answer: 0 },
+      { q: 'Real Madrid became the first club to win the European Cup how many times in a row, from 1956 to 1960?', options: ['3', '4', '5', '6'], answer: 2 },
+      { q: 'Real Madrid\u2019s stunning knockout comebacks on their way to winning the 2021\u201322 Champions League came against Paris Saint-Germain and which two English clubs?', options: ['Chelsea and Manchester City', 'Liverpool and Arsenal', 'Manchester United and Chelsea', 'Arsenal and Manchester City'], answer: 0 },
+    ],
+  },
+  {
+    id: 'bayernclub',
+    category: 'clubs',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Bayern Munich',
+    desc: 'Hard mode: Germany\u2019s record champions.',
+    questions: [
+      { q: 'Bayern Munich plays home matches at which stadium?', options: ['Signal Iduna Park', 'Allianz Arena', 'Veltins-Arena', 'Volksparkstadion'], answer: 1 },
+      { q: 'Bayern Munich won a record 11 consecutive Bundesliga titles across which span of seasons?', options: ['2008\u201319', '2010\u201321', '2012\u201323', '2014\u201325'], answer: 2 },
+      { q: 'Bayern Munich completed a treble (Bundesliga, DFB-Pokal, Champions League) for the second time in club history in which year?', options: ['2013', '2017', '2020', '2023'], answer: 2 },
+      { q: 'Which prolific Polish striker was Bayern\u2019s all-time top scorer before leaving for Barcelona in 2022?', options: ['Robert Lewandowski', 'Mario G\u00f3mez', 'Miroslav Klose', 'Thomas M\u00fcller'], answer: 0 },
+      { q: 'Bayern Munich is often nicknamed which of these in German football, reflecting their dominant history?', options: ['Der Rekordmeister', 'Die Werkself', 'Der Kaiser', 'Die Adler'], answer: 0 },
+      { q: 'Lewandowski set the Bundesliga single-season scoring record with 41 goals in which season?', options: ['2018\u201319', '2019\u201320', '2020\u201321', '2021\u201322'], answer: 2 },
+      { q: 'Which club did Bayern defeat 8\u20132 in a stunning 2020 Champions League quarterfinal rout?', options: ['Real Madrid', 'Barcelona', 'Chelsea', 'Manchester City'], answer: 1 },
+    ],
+  },
+  {
+    id: 'athleticbilbao',
+    category: 'clubs',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Athletic Bilbao',
+    desc: 'The pride of the Basque Country.',
+    questions: [
+      { q: 'Athletic Bilbao is based in which region of Spain?', options: ['Catalonia', 'Basque Country', 'Andalusia', 'Galicia'], answer: 1 },
+      { q: 'Athletic Bilbao is famous for a long-standing policy of mostly signing players of which background?', options: ['Basque heritage', 'Former youth internationals', 'Free transfers only', 'Local Bilbao residents only'], answer: 0 },
+      { q: 'What is Athletic Bilbao\u2019s home stadium called?', options: ['Mestalla', 'San Mam\u00e9s', 'Riazor', 'El Sadar'], answer: 1 },
+      { q: 'Despite its selective signing policy, Athletic Bilbao has never been relegated from which Spanish division?', options: ['La Liga', 'Segunda Divisi\u00f3n', 'Copa del Rey', 'Segunda B'], answer: 0 },
+      { q: 'What colors are Athletic Bilbao\u2019s iconic home shirt stripes?', options: ['Blue and white', 'Red and white', 'Black and white', 'Green and white'], answer: 1 },
+      { q: 'Athletic Bilbao reached the final of which major European competition in 2011\u201312, losing to Atl\u00e9tico Madrid?', options: ['UEFA Champions League', 'UEFA Europa League', 'UEFA Super Cup', 'Copa del Rey'], answer: 1 },
+      { q: 'Athletic Bilbao\u2019s fierce regional rivalry, the "Basque Derby," is contested against which other club?', options: ['Real Sociedad', 'Eibar', 'Alav\u00e9s', 'Osasuna'], answer: 0 },
+    ],
+  },
+  {
+    id: 'rbleipzig',
+    category: 'clubs',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'RB Leipzig',
+    desc: 'German football\u2019s fastest rise to the top.',
+    questions: [
+      { q: 'RB Leipzig plays home matches at which stadium?', options: ['Red Bull Arena', 'Volkswagen Arena', 'Mercedes-Benz Arena', 'Commerzbank-Arena'], answer: 0 },
+      { q: 'In which year was RB Leipzig founded, making it one of Germany\u2019s youngest top-flight clubs?', options: ['2005', '2009', '2013', '2015'], answer: 1 },
+      { q: 'RB Leipzig reached the Bundesliga for the first time in which year?', options: ['2014', '2015', '2016', '2018'], answer: 2 },
+      { q: 'RB Leipzig reached the semifinal of the Champions League for the first time in which pandemic-affected season?', options: ['2018\u201319', '2019\u201320', '2020\u201321', '2021\u201322'], answer: 1 },
+      { q: 'Which energy drink company is closely associated with sponsoring RB Leipzig?', options: ['Monster', 'Red Bull', 'Rockstar', 'Gatorade'], answer: 1 },
+      { q: 'Due to German league rules against direct sponsor names, what does "RB" officially stand for in the club\u2019s name?', options: ['RasenBallsport', 'Rote Bullen', 'Regional Bundesliga', 'Rhein-Bundes'], answer: 0 },
+      { q: 'Naby Ke\u00efta left RB Leipzig to join which Premier League club in 2018?', options: ['Liverpool', 'Chelsea', 'Manchester City', 'Arsenal'], answer: 0 },
+    ],
+  },
+  {
+    id: 'sportingcp',
+    category: 'clubs',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Sporting CP',
+    desc: 'Hard mode: Lisbon\u2019s famed academy club.',
+    questions: [
+      { q: 'Sporting CP is based in which city?', options: ['Porto', 'Lisbon', 'Braga', 'Coimbra'], answer: 1 },
+      { q: 'Sporting CP\u2019s home stadium is known as which of these?', options: ['Est\u00e1dio da Luz', 'Est\u00e1dio Jos\u00e9 Alvalade', 'Est\u00e1dio do Drag\u00e3o', 'Est\u00e1dio Municipal de Braga'], answer: 1 },
+      { q: 'Which global superstar came through Sporting\u2019s youth academy before his big move to Manchester United in 2003?', options: ['Cristiano Ronaldo', 'Lu\u00eds Figo', 'Nani', 'Jo\u00e3o F\u00e9lix'], answer: 0 },
+      { q: 'Sporting CP ended a 19-year wait for the Portuguese league title in which season?', options: ['2018\u201319', '2019\u201320', '2020\u201321', '2021\u201322'], answer: 2 },
+      { q: 'Sporting\u2019s fierce Lisbon rivalry, the "Derby de Lisboa," is contested against which other club?', options: ['Benfica', 'Porto', 'Braga', 'Vit\u00f3ria de Guimar\u00e3es'], answer: 0 },
+      { q: 'Which manager led Sporting CP to the 2020\u201321 league title before later taking over at Manchester United?', options: ['Rúben Amorim', 'José Mourinho', 'Marco Silva', 'Paulo Fonseca'], answer: 0 },
+      { q: 'Sporting CP\u2019s famed youth academy, which produced Ronaldo and other stars, is officially known as which of these?', options: ['Academia Sporting', 'La F\u00e1brica', 'Cova da Piedade', 'CAR do Jamor'], answer: 0 },
+    ],
+  },
+  {
+    id: 'oldfirm',
+    category: 'leagues',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'The Old Firm',
+    desc: 'Glasgow\u2019s legendary rivalry, tested.',
+    questions: [
+      { q: 'The "Old Firm" derby is contested between Celtic and which other Glasgow club?', options: ['Rangers', 'Aberdeen', 'Hearts', 'Hibernian'], answer: 0 },
+      { q: 'What color are Celtic\u2019s home shirts?', options: ['Blue', 'Green and white hoops', 'Red', 'Black and white'], answer: 1 },
+      { q: 'What color are Rangers\u2019 home shirts?', options: ['Blue', 'Green', 'Red', 'Yellow'], answer: 0 },
+      { q: 'Celtic plays home matches at which stadium?', options: ['Ibrox', 'Celtic Park', 'Hampden Park', 'Pittodrie'], answer: 1 },
+      { q: 'Rangers plays home matches at which stadium?', options: ['Ibrox', 'Celtic Park', 'Hampden Park', 'Tynecastle'], answer: 0 },
+      { q: 'Celtic set a European record in 2016\u201317 by going unbeaten through an entire domestic league season, finishing with how many losses?', options: ['0', '1', '2', '3'], answer: 0 },
+      { q: 'Rangers went through Scottish football\u2019s lower divisions after a 2012 financial liquidation, returning to the top flight (the Scottish Premiership) in which year?', options: ['2014', '2015', '2016', '2017'], answer: 1 },
+    ],
+  },
+  {
+    id: 'mls',
+    category: 'leagues',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'MLS & American Soccer',
+    desc: 'Major League Soccer\u2019s stars and stadiums.',
+    questions: [
+      { q: 'Which club did Lionel Messi join in Major League Soccer in 2023?', options: ['LA Galaxy', 'Inter Miami', 'Atlanta United', 'Los Angeles FC'], answer: 1 },
+      { q: 'What trophy is awarded to the winner of the MLS playoffs?', options: ['The Supporters\u2019 Shield', 'The MLS Cup', 'The US Open Cup', 'The Leagues Cup'], answer: 1 },
+      { q: 'Which trophy is instead awarded to the club with the best regular-season record?', options: ['The Supporters\u2019 Shield', 'The MLS Cup', 'The US Open Cup', 'The Golden Boot'], answer: 0 },
+      { q: 'David Beckham signed for which MLS club in 2007, headlining the league\u2019s "Designated Player" rule?', options: ['New York Red Bulls', 'LA Galaxy', 'Chicago Fire', 'D.C. United'], answer: 1 },
+      { q: 'David Beckham later became a founding owner of which MLS expansion club?', options: ['Inter Miami', 'Austin FC', 'Nashville SC', 'Charlotte FC'], answer: 0 },
+      { q: 'MLS\u2019s unique salary structure that lets each club sign a limited number of high-salary stars outside the cap is called what?', options: ['The Franchise Tag', 'The Designated Player Rule', 'The Marquee Clause', 'The Allocation Rule'], answer: 1 },
+      { q: 'Unlike most world leagues, MLS has historically used which format to decide its champion instead of a single-table finish?', options: ['A promotion playoff', 'A single elimination playoff bracket', 'A two-legged final only', 'A group-stage finale'], answer: 1 },
+    ],
+  },
+  {
+    id: 'eredivisie',
+    category: 'leagues',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Eredivisie\u2019s Big Three',
+    desc: 'Dutch football\u2019s dominant clubs.',
+    questions: [
+      { q: 'Which three clubs are known as the Eredivisie\u2019s "Big Three," having won nearly every title in the league\u2019s history?', options: ['Ajax, PSV, Feyenoord', 'Ajax, Twente, Utrecht', 'PSV, AZ, Groningen', 'Feyenoord, Twente, Willem II'], answer: 0 },
+      { q: 'Ajax plays home matches at which stadium?', options: ['De Kuip', 'Philips Stadion', 'Johan Cruyff Arena', 'De Grolsch Veste'], answer: 2 },
+      { q: 'Feyenoord plays home matches at which stadium, nicknamed "De Kuip"?', options: ['Stadion Feijenoord', 'Philips Stadion', 'Amsterdam Arena', 'Cars Jeans Stadion'], answer: 0 },
+      { q: 'Which club is based in the city of Eindhoven and shares its name with an electronics company?', options: ['AZ Alkmaar', 'PSV Eindhoven', 'FC Utrecht', 'Willem II'], answer: 1 },
+      { q: 'Ajax\u2019s legendary youth academy, which produced Cruyff and many others, is known by what name?', options: ['De Toekomst', 'La Masia', 'Cova da Piedade', 'CAR do Jamor'], answer: 0 },
+      { q: 'Ajax won the treble (Eredivisie, KNVB Cup, European Cup) in which iconic season, led by Johan Cruyff?', options: ['1970\u201371', '1971\u201372', '1972\u201373', '1973\u201374'], answer: 1 },
+      { q: 'Which Dutch club broke the Big Three\u2019s stranglehold to win the Eredivisie title in the 2020\u201321 season?', options: ['FC Twente', 'AZ Alkmaar', 'Vitesse', 'FC Groningen'], answer: 1 },
+    ],
+  },
+  {
+    id: 'calciopoli',
+    category: 'leagues',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Calciopoli & Serie A Scandals',
+    desc: 'Hard mode: the match-fixing scandal that rocked Italian football.',
+    questions: [
+      { q: 'The 2006 Calciopoli scandal centered on allegations that clubs manipulated the selection of which officials?', options: ['Referees', 'VAR operators', 'League commissioners', 'Financial auditors'], answer: 0 },
+      { q: 'Which club was stripped of its 2005 and 2006 Serie A titles and relegated to Serie B as a result of Calciopoli?', options: ['AC Milan', 'Juventus', 'Fiorentina', 'Lazio'], answer: 1 },
+      { q: 'Which Juventus general manager was banned from football for life over his role in the scandal?', options: ['Luciano Moggi', 'Antonio Giraudo', 'Franco Carraro', 'Innocenzo Mazzini'], answer: 0 },
+      { q: 'Besides Juventus, which other club was also docked points and initially faced relegation for its role in the scandal?', options: ['Inter Milan', 'Fiorentina', 'Roma', 'Napoli'], answer: 1 },
+      { q: 'Which club, seen as uninvolved in the scandal, was retroactively awarded the 2005–06 Serie A title?', options: ['AC Milan', 'Inter Milan', 'Roma', 'Udinese'], answer: 1 },
+      { q: 'Juventus\u2019s relegation to Serie B after Calciopoli marked the first time the club had played in the second division since which decade?', options: ['1930s', '1950s', '1960s', 'Never before'], answer: 3 },
+      { q: 'Juventus won an immediate promotion back to Serie A after finishing which position in Serie B in 2006–07?', options: ['1st', '2nd', '3rd', '4th'], answer: 0 },
+    ],
+  },
+  {
+    id: 'totalfootball',
+    category: 'national',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Total Football & the Dutch',
+    desc: 'Hard mode: the philosophy that changed the national team.',
+    questions: [
+      { q: '"Total Football" is most closely associated with which national team of the 1970s?', options: ['West Germany', 'Netherlands', 'Brazil', 'Hungary'], answer: 1 },
+      { q: 'Which manager is most credited with developing Total Football, first at Ajax and then with the Dutch national team?', options: ['Rinus Michels', 'Johan Cruyff', 'Guus Hiddink', 'Louis van Gaal'], answer: 0 },
+      { q: 'Total Football\u2019s central idea is that any player can take over the role of any other player on the pitch, a concept known as what?', options: ['Zonal marking', 'Positional interchangeability', 'The offside trap', 'Total pressing'], answer: 1 },
+      { q: 'The Netherlands reached the 1974 World Cup Final playing Total Football but lost to which host nation?', options: ['Argentina', 'West Germany', 'Italy', 'Brazil'], answer: 1 },
+      { q: 'The Netherlands also lost the 1978 World Cup Final, this time to which host nation?', options: ['Argentina', 'Spain', 'Mexico', 'Uruguay'], answer: 0 },
+      { q: 'Which term describes the Dutch national team\u2019s enduring reputation for near-misses and internal conflict despite their talent, a phrase often used by Dutch media?', options: ['De Oranje Curse', 'Het Elftal Blues', 'De Nederlandse Vloek', 'Oranjegevoel'], answer: 0 },
+      { q: 'Total Football\u2019s influence is often cited as the philosophical root of which modern tactical style, associated with Pep Guardiola?', options: ['Catenaccio', 'Gegenpressing', 'Tiki-taka / positional play', 'Route one football'], answer: 2 },
+    ],
+  },
+  {
+    id: 'ajaxclub',
+    category: 'clubs',
+    difficulty: 'hard',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Ajax\u2019s European Threepeat',
+    desc: 'Hard mode: Amsterdam\u2019s 1971\u201373 European Cup run.',
+    questions: [
+      { q: 'Ajax won three consecutive European Cups from which years?', options: ['1969\u201371', '1970\u201372', '1971\u201373', '1972\u201374'], answer: 2 },
+      { q: 'Which Dutch legend captained Ajax during their European Cup threepeat?', options: ['Johan Cruyff', 'Johan Neeskens', 'Ruud Krol', 'Piet Keizer'], answer: 0 },
+      { q: 'Which manager led Ajax to their first European Cup title in the threepeat, in 1971?', options: ['Rinus Michels', 'Ştefan Kovács', 'Leo Beenhakker', 'Barry Hulshoff'], answer: 0 },
+      { q: 'After Michels left, which manager took over and led Ajax to their second and third European Cup titles?', options: ['Rinus Michels', 'Ştefan Kovács', 'Aad de Mos', 'Tomislav Ivić'], answer: 1 },
+      { q: 'Ajax\u2019s home stadium during this era, since replaced, was known as what?', options: ['De Meer Stadion', 'Johan Cruyff Arena', 'Olympisch Stadion', 'Sportpark De Toekomst'], answer: 0 },
+      { q: 'Which club did Ajax defeat in the 1973 European Cup Final to complete the threepeat?', options: ['Inter Milan', 'Juventus', 'Bayern Munich', 'Panathinaikos'], answer: 1 },
+      { q: 'After the 1973 final, Johan Cruyff left Ajax for which club, ending the Ajax dynasty\u2019s peak era?', options: ['Barcelona', 'Real Madrid', 'AC Milan', 'Feyenoord'], answer: 0 },
+    ],
+  },
+  {
+    id: 'napoliclub',
+    category: 'clubs',
+    difficulty: 'medium',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Napoli',
+    desc: 'Southern Italy\u2019s fiercely proud club.',
+    questions: [
+      { q: 'Napoli plays home matches at which stadium?', options: ['San Siro', 'Stadio Diego Armando Maradona', 'Stadio Olimpico', 'Allianz Stadium'], answer: 1 },
+      { q: 'Napoli\u2019s home stadium was renamed in 2020 to honor which player, who starred for the club in the 1980s?', options: ['Diego Maradona', 'Dries Mertens', 'Marek Hamšík', 'Edinson Cavani'], answer: 0 },
+      { q: 'Napoli won its first Serie A title in over 30 years during the 2022\u201323 season, ending a drought since which decade?', options: ['1980s', '1990s', '2000s', '2010s'], answer: 0 },
+      { q: 'Which Georgian winger was a key figure in Napoli\u2019s 2022\u201323 title-winning squad before his 2025 transfer?', options: ['Khvicha Kvaratskhelia', 'Victor Osimhen', 'Piotr Zieliński', 'Giovanni Di Lorenzo'], answer: 0 },
+      { q: 'Napoli\u2019s fierce rivalry with which club, rooted in a north-south divide, is one of Italian football\u2019s most intense?', options: ['Juventus', 'AC Milan', 'Roma', 'Inter Milan'], answer: 0 },
+      { q: 'Which Nigerian striker won the Serie A Capocannoniere (top scorer) award with Napoli in 2022–23?', options: ['Victor Osimhen', 'Dries Mertens', 'Lorenzo Insigne', 'Gonzalo Higuaín'], answer: 0 },
+      { q: 'Diego Maradona led Napoli to their first-ever Serie A title in which season?', options: ['1984–85', '1986–87', '1989–90', '1990–91'], answer: 1 },
+    ],
+  },
+  {
+    id: 'bellingham',
+    category: 'players',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Jude Bellingham',
+    desc: 'The English midfielder\u2019s rise to the top.',
+    questions: [
+      { q: 'Jude Bellingham represents which country internationally?', options: ['England', 'Wales', 'Ireland', 'Scotland'], answer: 0 },
+      { q: 'Bellingham made his senior club debut with which English club?', options: ['Manchester City', 'Birmingham City', 'Aston Villa', 'West Bromwich Albion'], answer: 1 },
+      { q: 'Bellingham moved from Birmingham City to which German club in 2020?', options: ['Bayern Munich', 'Borussia Dortmund', 'RB Leipzig', 'Bayer Leverkusen'], answer: 1 },
+      { q: 'In 2023, Bellingham transferred to which Spanish club?', options: ['Barcelona', 'Real Madrid', 'Atletico Madrid', 'Sevilla'], answer: 1 },
+      { q: 'What position does Bellingham primarily play?', options: ['Goalkeeper', 'Center-back', 'Midfielder', 'Right-back'], answer: 2 },
+      { q: 'Bellingham has a twin passion for another sport growing up — he has said he supported which combat sport star?', options: ['Boxing', 'Wrestling', 'MMA', 'Judo'], answer: 0 },
+      { q: 'Bellingham\u2019s brother, Jobe Bellingham, also plays professional football and joined which club in 2025?', options: ['Sunderland', 'Borussia Dortmund', 'Birmingham City', 'Leeds United'], answer: 1 },
+    ],
+  },
+  {
+    id: 'morocco2022',
+    category: 'national',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800',
+    imageCredit: 'Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)',
+    title: 'Morocco\u2019s 2022 World Cup Run',
+    desc: 'The historic run to the semifinals in Qatar.',
+    questions: [
+      { q: 'Morocco became the first team from which continent to reach a World Cup semifinal?', options: ['Asia', 'Africa', 'North America', 'Oceania'], answer: 1 },
+      { q: 'Morocco eliminated which reigning champion in the round of 16?', options: ['France', 'Spain', 'Portugal', 'Germany'], answer: 1 },
+      { q: 'Which country did Morocco beat in the quarterfinals to reach the semifinal?', options: ['Croatia', 'Belgium', 'Portugal', 'Switzerland'], answer: 2 },
+      { q: 'Which country eventually beat Morocco in the semifinal?', options: ['Argentina', 'France', 'Brazil', 'Croatia'], answer: 1 },
+      { q: 'Morocco finished the tournament in which overall position after losing the third-place match to Croatia?', options: ['3rd', '4th', '5th', '6th'], answer: 1 },
+      { q: 'Morocco\u2019s manager during their historic 2022 run was which of these?', options: ['Vahid Halilhodžić', 'Walid Regragui', 'Hervé Renard', 'Rachid Taoussi'], answer: 1 },
+      { q: 'Morocco\u2019s defense conceded only one goal in open play across the entire tournament, a feat highlighted by which goalkeeper\u2019s form?', options: ['Yassine Bounou', 'Munir Mohammadi', 'Ahmed Reda Tagnaouti', 'Anas Zniti'], answer: 0 },
+    ],
+  },
+  {
+    id: 'liverpoolclub',
+    category: 'clubs',
+    difficulty: 'easy',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800',
+    imageCredit: 'Wikimedia Commons (CC BY 2.0)',
+    title: 'Liverpool',
+    desc: 'The basics on one of England\u2019s most decorated clubs.',
+    questions: [
+      { q: 'What is Liverpool\u2019s home stadium called?', options: ['Old Trafford', 'Anfield', 'Etihad Stadium', 'Stamford Bridge'], answer: 1 },
+      { q: 'What color are Liverpool\u2019s home shirts?', options: ['Blue', 'Red', 'White', 'Black'], answer: 1 },
+      { q: 'What is Liverpool\u2019s popular nickname?', options: ['The Gunners', 'The Reds', 'The Toffees', 'The Hammers'], answer: 1 },
+      { q: 'What is the name of the famous anthem Liverpool fans sing before every home match?', options: ['You\u2019ll Never Walk Alone', 'Blue Moon', 'The Fields of Anfield Road', 'Glory Glory'], answer: 0 },
+      { q: 'Liverpool won the Premier League for the first time in the competition\u2019s current format in which season?', options: ['2018–19', '2019–20', '2020–21', '2021–22'], answer: 1 },
+      { q: 'Which German manager led Liverpool to Champions League and Premier League titles in 2019 and 2020?', options: ['Jürgen Klopp', 'Rafael Benítez', 'Brendan Rodgers', 'Kenny Dalglish'], answer: 0 },
+      { q: 'Liverpool and Everton share which city, making their derby one of the closest geographically in the world?', options: ['Manchester', 'Liverpool', 'Birmingham', 'Leeds'], answer: 1 },
+    ],
+  },
+];
+
+const AVATAR_COLORS = ['oklch(0.42 0.18 250)', 'oklch(0.55 0.15 250)', 'oklch(0.6 0.17 60)', 'oklch(0.6 0.16 25)', 'oklch(0.55 0.13 300)'];
+const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+const WORDLE_WORDS = [
+  { id: 'messi', word: 'MESSI', label: 'Player Edition #1', hint: 'Guess the five-letter player name.' },
+  { id: 'henry', word: 'HENRY', label: 'Player Edition #2', hint: 'Guess the five-letter player name.' },
+  { id: 'milan', word: 'MILAN', label: 'Club Edition #1', hint: 'Guess the five-letter club name.' },
+  { id: 'spurs', word: 'SPURS', label: 'Club Edition #2', hint: 'Guess the five-letter club name.' },
+];
+
+const TRANSFER_CLUBS = [
+  { id: 'manutd', name: 'Manchester United', shortName: 'Man United' },
+  { id: 'realmadrid', name: 'Real Madrid', shortName: 'Real Madrid' },
+  { id: 'juventus', name: 'Juventus', shortName: 'Juventus' },
+  { id: 'barcelona', name: 'Barcelona', shortName: 'Barcelona' },
+  { id: 'psg', name: 'Paris Saint-Germain', shortName: 'PSG' },
+  { id: 'acmilan', name: 'AC Milan', shortName: 'AC Milan' },
+  { id: 'chelsea', name: 'Chelsea', shortName: 'Chelsea' },
+  { id: 'liverpool', name: 'Liverpool', shortName: 'Liverpool' },
+  { id: 'bayern', name: 'Bayern Munich', shortName: 'Bayern' },
+  { id: 'inter', name: 'Inter Milan', shortName: 'Inter Milan' },
+  { id: 'arsenal', name: 'Arsenal', shortName: 'Arsenal' },
+  { id: 'atletico', name: 'Atletico Madrid', shortName: 'Atletico' },
+  { id: 'dortmund', name: 'Borussia Dortmund', shortName: 'Dortmund' },
+];
+// Each round names a real player and the three clubs (by id) they played for.
+const TRANSFER_LINKS = [
+  { clubs: ['manutd', 'realmadrid', 'juventus'], answers: ['RONALDO', 'CRISTIANORONALDO'], display: 'Cristiano Ronaldo' },
+  { clubs: ['psg', 'barcelona', 'acmilan'], answers: ['RONALDINHO'], display: 'Ronaldinho' },
+  { clubs: ['liverpool', 'chelsea', 'acmilan'], answers: ['TORRES', 'FERNANDOTORRES'], display: 'Fernando Torres' },
+  { clubs: ['juventus', 'bayern', 'inter'], answers: ['VIDAL', 'ARTUROVIDAL'], display: 'Arturo Vidal' },
+  { clubs: ['barcelona', 'arsenal', 'inter'], answers: ['SANCHEZ', 'ALEXISSANCHEZ'], display: 'Alexis Sanchez' },
+  { clubs: ['atletico', 'manutd', 'chelsea'], answers: ['FALCAO', 'RADAMELFALCAO'], display: 'Radamel Falcao' },
+  { clubs: ['dortmund', 'bayern', 'barcelona'], answers: ['LEWANDOWSKI', 'ROBERTLEWANDOWSKI'], display: 'Robert Lewandowski' },
+  { clubs: ['juventus', 'inter', 'barcelona'], answers: ['IBRAHIMOVIC', 'ZLATANIBRAHIMOVIC'], display: 'Zlatan Ibrahimovic' },
+  { clubs: ['psg', 'realmadrid', 'chelsea'], answers: ['MAKELELE', 'CLAUDEMAKELELE'], display: 'Claude Makelele' },
+];
+const TRANSFER_POINTS_PER_CHAIN = 10;
+function normalizeAnswer(s) {
+  return (s || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase().replace(/[^A-Z]/g, '');
+}
+function evalWordleGuess(guess, answer) {
+  const g = guess.split(''), a = answer.split('');
+  const result = Array(5).fill('absent');
+  const used = Array(5).fill(false);
+  for (let i = 0; i < 5; i++) {
+    if (g[i] === a[i]) { result[i] = 'correct'; used[i] = true; }
+  }
+  for (let i = 0; i < 5; i++) {
+    if (result[i] === 'correct') continue;
+    const idx = a.findIndex((ch, j) => ch === g[i] && !used[j]);
+    if (idx > -1) { result[i] = 'present'; used[idx] = true; }
+  }
+  return result;
+}
+function loadWordleResults() {
+  try { return JSON.parse(localStorage.getItem('soccerQuizWordleResults') || '{}'); } catch (e) { return {}; }
+}
+function saveWordleResults(r) {
+  try { localStorage.setItem('soccerQuizWordleResults', JSON.stringify(r)); } catch (e) {}
+}
+
+function loadLeaderboard() {
+  try {
+    const raw = localStorage.getItem('soccerQuizLeaderboard');
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+function saveLeaderboard(entries) {
+  try { localStorage.setItem('soccerQuizLeaderboard', JSON.stringify(entries)); } catch (e) {}
+}
+function initials(name) {
+  const n = (name || '').trim();
+  if (!n) return '?';
+  const parts = n.split(/\s+/);
+  return (parts[0]?.[0] || '?').toUpperCase() + (parts[1]?.[0] || '').toUpperCase();
+}
+function computeSeriesText(rows) {
+  let w = 0, l = 0, t = 0;
+  rows.forEach(r => { if (r.result === 'W') w++; else if (r.result === 'L') l++; else t++; });
+  return t ? `Series: ${w}-${l}-${t}` : `Series: ${w}-${l}`;
+}
+function loadAttempts() {
+  try {
+    const raw = localStorage.getItem('soccerQuizAttempts');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+function saveAttempts(attempts) {
+  try { localStorage.setItem('soccerQuizAttempts', JSON.stringify(attempts)); } catch (e) {}
+}
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+function daysBetween(a, b) {
+  return Math.round((new Date(b) - new Date(a)) / 86400000);
+}
+function genMatchId() {
+  return Math.random().toString(36).slice(2, 8);
+}
+function encodeMatch(match) {
+  return btoa(encodeURIComponent(JSON.stringify(match)));
+}
+function decodeMatch(str) {
+  try { return JSON.parse(decodeURIComponent(atob(str))); } catch (e) { return null; }
+}
+function buildMatchShareUrl(match) {
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.searchParams.set('match', encodeMatch(match));
+  return url.toString();
+}
+function saveActiveMatch(match) {
+  try { localStorage.setItem('soccerQuizActiveMatch', JSON.stringify(match)); } catch (e) {}
+}
+
+const SAVEABLE_VIEWS = ['home', 'quizzes', 'leaderboard', 'account'];
+function loadLastView() {
+  try {
+    const v = localStorage.getItem('soccerQuizLastView');
+    return SAVEABLE_VIEWS.indexOf(v) !== -1 ? v : 'home';
+  } catch (e) { return 'home'; }
+}
+
+class Component extends DCLogic {
+  state = {
+    isMobile: (() => { try { return window.innerWidth <= 767; } catch (e) { return false; } })(),
+    mobileMenuOpen: false,
+    view: loadLastView(),
+    activeQuizId: null,
+    qIndex: 0,
+    selectedIndex: null,
+    score: 0,
+    nameInput: (() => { try { return localStorage.getItem('soccerQuizPlayerName') || ''; } catch (e) { return ''; } })(),
+    savedName: (() => { try { return localStorage.getItem('soccerQuizPlayerName') || ''; } catch (e) { return ''; } })(),
+    saved: false,
+    leaderboard: loadLeaderboard(),
+    activeCategory: 'all',
+    activeDifficulty: 'all',
+    attempts: loadAttempts(),
+    streak: (() => { try { return parseInt(localStorage.getItem('soccerQuizStreak') || '0', 10); } catch (e) { return 0; } })(),
+    lastPlayedDate: (() => { try { return localStorage.getItem('soccerQuizLastPlayed') || null; } catch (e) { return null; } })(),
+    justRecorded: null,
+    emailInput: (() => { try { return localStorage.getItem('soccerQuizPlayerEmail') || ''; } catch (e) { return ''; } })(),
+    photoDataUrl: (() => { try { return localStorage.getItem('soccerQuizPlayerPhoto') || null; } catch (e) { return null; } })(),
+    settingsSaved: false,
+    showEmailGate: false,
+    pendingQuizId: null,
+    subscribeEmail: '',
+    subscribeChecked: false,
+    subscribeDone: false,
+    match: null,
+    matchIdentity: null,
+    matchActive: false,
+    matchPickingRematch: false,
+    matchSetupQuizId: QUIZZES[0].id,
+    matchNameDraft: (() => { try { return localStorage.getItem('soccerQuizPlayerName') || ''; } catch (e) { return ''; } })(),
+    matchLinkCopied: false,
+    pageFade: false,
+    transferStep: 0,
+    transferInput: '',
+    transferStatus: 'playing',
+    transferScore: 0,
+    transferPoints: (() => { try { return parseInt(localStorage.getItem('soccerQuizTransferPoints') || '0', 10) || 0; } catch (e) { return 0; } })(),
+    wordleGameId: null,
+    wordleGuesses: [],
+    wordleCurrentGuess: '',
+    wordleStatus: 'playing',
+    wordleMessage: '',
+    wordleResults: loadWordleResults(),
+  };
+
+  componentDidMount() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get('match');
+      if (raw) {
+        const match = decodeMatch(raw);
+        if (match) {
+          let identity = null;
+          try { identity = localStorage.getItem('soccerQuizMatchIdentity_' + match.id); } catch (e) {}
+          saveActiveMatch(match);
+          this.setState({ view: 'match', match, matchIdentity: identity || null, matchPickingRematch: false, matchLinkCopied: false });
+          const url = new URL(window.location.href);
+          url.searchParams.delete('match');
+          window.history.replaceState({}, '', url.toString());
+        }
+      }
+    } catch (e) {}
+    window.addEventListener('keydown', this.handleWordleKeydown);
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleWordleKeydown);
+    window.removeEventListener('resize', this.handleResize);
+  }
+
+  handleResize = () => {
+    const m = window.innerWidth <= 767;
+    if (m !== this.state.isMobile) this.setState({ isMobile: m, mobileMenuOpen: false });
+  };
+
+  toggleMobileMenu = () => this.setState({ mobileMenuOpen: !this.state.mobileMenuOpen });
+
+  handleWordleKeydown = (e) => {
+    if (this.state.view !== 'wordle' || !this.state.wordleGameId || this.state.wordleStatus !== 'playing') return;
+    // Ignore here if the native mobile input is focused — it handles its own typing.
+    if (this._wordleInput && document.activeElement === this._wordleInput) return;
+    const key = e.key;
+    if (key === 'Enter') { this.wordleSubmitGuess(); return; }
+    if (key === 'Backspace') { this.wordleBackspace(); return; }
+    if (/^[a-zA-Z]$/.test(key)) { this.wordleKeyPress(key.toUpperCase()); }
+  };
+
+  wordleInputRef = (el) => {
+    this._wordleInput = el;
+    if (el && this.state.view === 'wordle' && this.state.wordleGameId && this.state.wordleStatus === 'playing') {
+      setTimeout(() => { if (this._wordleInput) this._wordleInput.focus(); }, 50);
+    }
+  };
+
+  focusWordleInput = () => {
+    if (this._wordleInput) this._wordleInput.focus();
+  };
+
+  handleWordleNativeChange = (e) => {
+    if (this.state.wordleStatus !== 'playing') return;
+    const sanitized = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
+    this.setState({ wordleCurrentGuess: sanitized, wordleMessage: '' });
+  };
+
+  handleWordleNativeKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); this.wordleSubmitGuess(); }
+  };
+
+  startWordlePicker = () => this.setState({ view: 'wordle', wordleGameId: null, wordleGuesses: [], wordleCurrentGuess: '', wordleStatus: 'playing', wordleMessage: '' });
+
+  startWordleGame = (id) => {
+    const prior = this.state.wordleResults[id];
+    if (prior) {
+      this.setState({ view: 'wordle', wordleGameId: id, wordleGuesses: prior.guesses, wordleCurrentGuess: '', wordleStatus: prior.status, wordleMessage: prior.status === 'won' ? 'You already solved this one.' : 'You already used all your guesses.' });
+      return;
+    }
+    this.setState({ view: 'wordle', wordleGameId: id, wordleGuesses: [], wordleCurrentGuess: '', wordleStatus: 'playing', wordleMessage: '' });
+  };
+
+  wordleKeyPress = (letter) => {
+    if (this.state.wordleStatus !== 'playing') return;
+    if (this.state.wordleCurrentGuess.length >= 5) return;
+    this.setState({ wordleCurrentGuess: this.state.wordleCurrentGuess + letter, wordleMessage: '' });
+  };
+
+  wordleBackspace = () => {
+    if (this.state.wordleStatus !== 'playing') return;
+    this.setState({ wordleCurrentGuess: this.state.wordleCurrentGuess.slice(0, -1) });
+  };
+
+  wordleSubmitGuess = () => {
+    if (this.state.wordleStatus !== 'playing') return;
+    const guess = this.state.wordleCurrentGuess;
+    if (guess.length < 5) {
+      this.setState({ wordleMessage: 'Not enough letters' });
+      return;
+    }
+    const game = WORDLE_WORDS.find(w => w.id === this.state.wordleGameId);
+    const result = evalWordleGuess(guess, game.word);
+    const guesses = [...this.state.wordleGuesses, { word: guess, result }];
+    let status = 'playing', message = '';
+    const PRAISE = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
+    if (guess === game.word) {
+      status = 'won';
+      message = PRAISE[guesses.length - 1] || 'Solved!';
+    } else if (guesses.length >= 6) {
+      status = 'lost';
+      message = 'Out of guesses — the word was ' + game.word;
+    }
+    if (status !== 'playing') {
+      const results = { ...this.state.wordleResults, [game.id]: { status, guesses } };
+      saveWordleResults(results);
+      this.setState({ wordleResults: results });
+    }
+    this.setState({ wordleGuesses: guesses, wordleCurrentGuess: '', wordleStatus: status, wordleMessage: message });
+  };
+
+  leaveWordle = () => this.setState({ view: 'home', wordleGameId: null, wordleGuesses: [], wordleCurrentGuess: '', wordleStatus: 'playing', wordleMessage: '' });
+
+  startTransferChain = () => this.setState({ view: 'transferchain', transferStep: 0, transferInput: '', transferStatus: 'playing', transferScore: 0 });
+  leaveTransferChain = () => this.setState({ view: 'home' });
+  updateTransferInput = (e) => this.setState({ transferInput: e.target.value });
+  submitTransferAnswer = () => {
+    if (this.state.transferStatus !== 'playing') return;
+    const link = TRANSFER_LINKS[this.state.transferStep];
+    const guess = normalizeAnswer(this.state.transferInput);
+    if (!guess) return;
+    const nameParts = link.display.split(' ').map(normalizeAnswer).filter(Boolean);
+    const acceptable = new Set(link.answers.map(normalizeAnswer));
+    nameParts.forEach(p => acceptable.add(p));
+    acceptable.add(nameParts.join(''));
+    const correct = acceptable.has(guess);
+    this.setState({
+      transferStatus: correct ? 'correct' : 'wrong',
+      transferScore: correct ? this.state.transferScore + 1 : this.state.transferScore,
+    });
+  };
+  handleTransferKeydown = (e) => { if (e.key === 'Enter') this.submitTransferAnswer(); };
+  nextTransferLink = () => {
+    const next = this.state.transferStep + 1;
+    if (next >= TRANSFER_LINKS.length) {
+      this.recordTransferCompletion();
+      this.setState({ transferStep: next, transferStatus: 'finished' });
+    } else {
+      this.setState({ transferStep: next, transferInput: '', transferStatus: 'playing' });
+    }
+  };
+
+  recordTransferCompletion() {
+    const name = (this.state.nameInput || '').trim() || 'Guest';
+    const entries = loadLeaderboard();
+    const idx = entries.findIndex(e => e.name === name);
+    if (idx >= 0) {
+      entries[idx] = {
+        ...entries[idx],
+        points: entries[idx].points + TRANSFER_POINTS_PER_CHAIN,
+        transferChainsCompleted: (entries[idx].transferChainsCompleted || 0) + 1,
+      };
+    } else {
+      entries.push({ name, points: TRANSFER_POINTS_PER_CHAIN, quizzesCompleted: 0, perfectRuns: 0, bestStreak: 0, transferChainsCompleted: 1 });
+    }
+    saveLeaderboard(entries);
+    const transferPoints = this.state.transferPoints + TRANSFER_POINTS_PER_CHAIN;
+    try { localStorage.setItem('soccerQuizTransferPoints', String(transferPoints)); } catch (e) {}
+    this.setState({ leaderboard: entries, transferPoints });
+  }
+
+  componentDidUpdate() {
+    if (this._lastView !== this.state.view) {
+      this._lastView = this.state.view;
+      window.scrollTo(0, 0);
+      if (SAVEABLE_VIEWS.indexOf(this.state.view) !== -1) {
+        try { localStorage.setItem('soccerQuizLastView', this.state.view); } catch (e) {}
+      }
+      const el = this._contentEl;
+      if (el) {
+        el.style.transition = 'none';
+        el.style.opacity = '0.85';
+        // force reflow so the next transition actually animates
+        void el.offsetHeight;
+        el.style.transition = 'opacity 0.15s ease';
+        el.style.opacity = '1';
+      }
+    }
+  }
+
+  contentRef = (el) => { this._contentEl = el; };
+
+  startMatchSetup = () => this.setState({ view: 'match', match: null, matchPickingRematch: false, matchLinkCopied: false, matchNameDraft: this.state.nameInput || this.state.matchNameDraft || '', matchSetupQuizId: this.state.matchSetupQuizId || QUIZZES[0].id });
+  updateMatchNameDraft = (e) => this.setState({ matchNameDraft: e.target.value });
+  pickMatchQuiz = (id) => this.setState({ matchSetupQuizId: id });
+
+  createMatchRoom = () => {
+    const name = (this.state.matchNameDraft || '').trim();
+    if (!name) return;
+    const quizId = this.state.matchSetupQuizId;
+    const id = genMatchId();
+    const match = { id, rounds: [{ quizId, entries: [] }] };
+    try { localStorage.setItem('soccerQuizMatchIdentity_' + id, name); } catch (e) {}
+    saveActiveMatch(match);
+    this.setState({ match, matchIdentity: name, matchActive: true, matchLinkCopied: false, view: 'playing', activeQuizId: quizId, qIndex: 0, selectedIndex: null, score: 0 });
+  };
+
+  acceptMatchChallenge = () => {
+    const name = (this.state.matchNameDraft || '').trim();
+    if (!name) return;
+    const match = this.state.match;
+    try { localStorage.setItem('soccerQuizMatchIdentity_' + match.id, name); } catch (e) {}
+    const round = match.rounds[match.rounds.length - 1];
+    this.setState({ matchIdentity: name, matchActive: true, view: 'playing', activeQuizId: round.quizId, qIndex: 0, selectedIndex: null, score: 0 });
+  };
+
+  playMyTurn = () => {
+    const match = this.state.match;
+    const round = match.rounds[match.rounds.length - 1];
+    this.setState({ matchActive: true, view: 'playing', activeQuizId: round.quizId, qIndex: 0, selectedIndex: null, score: 0 });
+  };
+
+  finishMatchRound() {
+    const quiz = QUIZZES.find(q => q.id === this.state.activeQuizId);
+    const match = JSON.parse(JSON.stringify(this.state.match));
+    const round = match.rounds[match.rounds.length - 1];
+    round.entries.push({ name: this.state.matchIdentity, score: this.state.score, total: quiz.questions.length });
+    saveActiveMatch(match);
+    this.setState({ match, matchActive: false, matchLinkCopied: false, view: 'match', matchPickingRematch: false });
+  }
+
+  startRematchPick = () => this.setState({ matchPickingRematch: true, matchSetupQuizId: this.state.matchSetupQuizId || QUIZZES[0].id });
+
+  createNextRound = () => {
+    const quizId = this.state.matchSetupQuizId;
+    const match = JSON.parse(JSON.stringify(this.state.match));
+    match.rounds.push({ quizId, entries: [] });
+    saveActiveMatch(match);
+    this.setState({ match, matchPickingRematch: false, matchActive: true, view: 'playing', activeQuizId: quizId, qIndex: 0, selectedIndex: null, score: 0 });
+  };
+
+  copyMatchLink = () => {
+    const url = buildMatchShareUrl(this.state.match);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => this.setState({ matchLinkCopied: true })).catch(() => this.setState({ matchLinkCopied: true }));
+    } else {
+      this.setState({ matchLinkCopied: true });
+    }
+  };
+
+  leaveMatch = () => this.setState({ view: 'home', match: null, matchActive: false, matchIdentity: null, matchPickingRematch: false, matchLinkCopied: false });
+
+  goHomePage = () => this.setState({ view: 'home', mobileMenuOpen: false });
+  goQuizzes = () => this.setState({ view: 'quizzes', saved: false, mobileMenuOpen: false });
+  goLeaderboard = () => this.setState({ view: 'leaderboard', mobileMenuOpen: false });
+  goAccount = () => this.setState({ view: 'account', mobileMenuOpen: false });
+  createAccount = () => {
+    const name = (this.state.nameInput || '').trim();
+    if (!name) return;
+    try { localStorage.setItem('soccerQuizPlayerName', name); } catch (e) {}
+    this.setState({ savedName: name });
+  };
+  updateEmailInput = (e) => this.setState({ emailInput: e.target.value, settingsSaved: false });
+
+  updatePhoto = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      try { localStorage.setItem('soccerQuizPlayerPhoto', dataUrl); } catch (err) {}
+      this.setState({ photoDataUrl: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  removePhoto = () => {
+    try { localStorage.removeItem('soccerQuizPlayerPhoto'); } catch (e) {}
+    this.setState({ photoDataUrl: null });
+  };
+
+  saveAccountSettings = () => {
+    const name = (this.state.nameInput || '').trim();
+    const email = (this.state.emailInput || '').trim();
+    if (!name) return;
+    try {
+      localStorage.setItem('soccerQuizPlayerName', name);
+      localStorage.setItem('soccerQuizPlayerEmail', email);
+    } catch (e) {}
+    this.setState({ settingsSaved: true, savedName: name });
+  };
+
+  setCategory = (id) => this.setState({ activeCategory: id });
+  setDifficulty = (id) => this.setState({ activeDifficulty: id });
+
+  startQuiz(quizId) {
+    if (this.state.attempts[quizId]) return;
+    const hasEmail = !!(this.state.emailInput || '').trim();
+    const attemptsCount = Object.keys(this.state.attempts).length;
+    if (attemptsCount >= 5 && !hasEmail) {
+      this.setState({ showEmailGate: true, pendingQuizId: quizId });
+      return;
+    }
+    this.setState({ view: 'playing', activeQuizId: quizId, qIndex: 0, selectedIndex: null, score: 0, saved: false, justRecorded: null });
+  }
+
+  closeEmailGate = () => this.setState({ showEmailGate: false, pendingQuizId: null });
+
+  updateSubscribeEmail = (e) => this.setState({ subscribeEmail: e.target.value });
+  toggleSubscribeChecked = () => this.setState({ subscribeChecked: !this.state.subscribeChecked });
+  submitSubscribe = () => {
+    const email = (this.state.subscribeEmail || '').trim();
+    if (!email || !this.state.subscribeChecked) return;
+    try {
+      const list = JSON.parse(localStorage.getItem('soccerQuizSubscribers') || '[]');
+      list.push({ email, date: todayStr() });
+      localStorage.setItem('soccerQuizSubscribers', JSON.stringify(list));
+    } catch (e) {}
+    this.setState({ subscribeDone: true });
+  };
+
+  submitEmailGate = () => {
+    const email = (this.state.emailInput || '').trim();
+    if (!email) return;
+    try { localStorage.setItem('soccerQuizPlayerEmail', email); } catch (e) {}
+    const quizId = this.state.pendingQuizId;
+    this.setState({
+      showEmailGate: false,
+      pendingQuizId: null,
+      view: 'playing',
+      activeQuizId: quizId,
+      qIndex: 0,
+      selectedIndex: null,
+      score: 0,
+      saved: false,
+      justRecorded: null,
+    });
+  };
+
+  selectAnswer(idx) {
+    if (this.state.selectedIndex !== null) return;
+    const quiz = QUIZZES.find(q => q.id === this.state.activeQuizId);
+    const question = quiz.questions[this.state.qIndex];
+    const correct = idx === question.answer;
+    this.setState({ selectedIndex: idx, score: correct ? this.state.score + 1 : this.state.score });
+  }
+
+  nextQuestion = () => {
+    const quiz = QUIZZES.find(q => q.id === this.state.activeQuizId);
+    if (this.state.qIndex + 1 < quiz.questions.length) {
+      this.setState({ qIndex: this.state.qIndex + 1, selectedIndex: null });
+      return;
+    }
+    if (this.state.matchActive) {
+      this.finishMatchRound();
+      return;
+    }
+    const name = (this.state.nameInput || '').trim();
+    if (name) {
+      this.finishQuiz(name);
+    } else {
+      this.setState({ view: 'result' });
+    }
+  };
+
+  updateNameInput = (e) => this.setState({ nameInput: e.target.value });
+
+  saveScore = () => {
+    const name = (this.state.nameInput || '').trim();
+    if (!name) return;
+    this.finishQuiz(name);
+  };
+
+  finishQuiz(name) {
+    try { localStorage.setItem('soccerQuizPlayerName', name); } catch (e) {}
+    this.setState({ savedName: name });
+    const quiz = QUIZZES.find(q => q.id === this.state.activeQuizId);
+    const total = quiz.questions.length;
+    const score = this.state.score;
+    const passed = score >= PASS_THRESHOLD;
+    const points = passed ? (POINTS_BY_DIFFICULTY[quiz.difficulty] || 0) : 0;
+    const isPerfect = score === total;
+
+    // record attempt (locks the quiz — no retakes)
+    const attempts = { ...this.state.attempts };
+    attempts[quiz.id] = { score, total, passed, points, date: todayStr() };
+    saveAttempts(attempts);
+
+    // update streak — counts once per calendar day, any completion
+    const today = todayStr();
+    let streak = this.state.streak;
+    const last = this.state.lastPlayedDate;
+    if (last === today) {
+      // already played today, streak unchanged
+    } else if (last && daysBetween(last, today) === 1) {
+      streak = streak + 1;
+    } else {
+      streak = 1;
+    }
+    try {
+      localStorage.setItem('soccerQuizStreak', String(streak));
+      localStorage.setItem('soccerQuizLastPlayed', today);
+    } catch (e) {}
+
+    // update leaderboard
+    const entries = [...this.state.leaderboard];
+    const existingIdx = entries.findIndex(e => e.name.toLowerCase() === name.toLowerCase());
+    if (existingIdx >= 0) {
+      const e = entries[existingIdx];
+      entries[existingIdx] = {
+        ...e,
+        points: e.points + points,
+        quizzesCompleted: e.quizzesCompleted + 1,
+        perfectRuns: e.perfectRuns + (isPerfect ? 1 : 0),
+        bestStreak: Math.max(e.bestStreak || 0, streak),
+      };
+    } else {
+      entries.push({ name, points, quizzesCompleted: 1, perfectRuns: isPerfect ? 1 : 0, bestStreak: streak });
+    }
+    saveLeaderboard(entries);
+
+    this.setState({
+      view: 'result',
+      saved: true,
+      leaderboard: entries,
+      attempts,
+      streak,
+      lastPlayedDate: today,
+      justRecorded: { passed, points },
+    });
+  }
+
+  renderVals() {
+    const { view, activeQuizId, qIndex, selectedIndex, score, nameInput, saved, leaderboard, activeCategory, activeDifficulty, attempts, streak, justRecorded, emailInput, settingsSaved, showEmailGate } = this.state;
+
+    const DIFFICULTY_LABEL = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+
+    const featuredIds = (() => {
+      const base = [
+        this.props.featuredQuiz1 ?? 'worldcup',
+        this.props.featuredQuiz2 ?? 'legends',
+      ];
+      const used = new Set();
+      const pickReplacement = () => {
+        for (let i = QUIZZES.length - 1; i >= 0; i--) {
+          const cand = QUIZZES[i];
+          if (!attempts[cand.id] && !used.has(cand.id)) return cand.id;
+        }
+        return null;
+      };
+      return base.map(id => {
+        if (!attempts[id] && !used.has(id)) { used.add(id); return id; }
+        const rep = pickReplacement();
+        const finalId = rep || id;
+        used.add(finalId);
+        return finalId;
+      });
+    })();
+    const featuredQuizzes = featuredIds.map(id => {
+      const q = QUIZZES.find(quiz => quiz.id === id) || QUIZZES[0];
+      const dropped = window.QUIZ_IMAGE_DATA && window.QUIZ_IMAGE_DATA['quiz-image-' + q.id];
+      const attempt = attempts[q.id];
+      return {
+        id: q.id,
+        title: q.title,
+        desc: q.desc,
+        imageSrc: dropped || q.image,
+        imageCreditText: dropped ? '' : (q.imageCredit || ''),
+        difficultyLabel: DIFFICULTY_LABEL[q.difficulty] + ' · ' + POINTS_BY_DIFFICULTY[q.difficulty] + ' pts',
+        onStart: () => this.startQuiz(q.id),
+        isAttempted: !!attempt,
+        isNotAttempted: !attempt,
+        statusText: attempt ? (attempt.passed ? 'Passed · ' + attempt.score + '/' + attempt.total : 'Failed · ' + attempt.score + '/' + attempt.total) : '',
+        statusColor: attempt ? (attempt.passed ? 'oklch(0.5 0.14 145)' : 'oklch(0.55 0.17 25)') : '',
+      };
+    });
+
+    const quizHash = (id) => {
+      let h = 0;
+      for (let i = 0; i < id.length; i++) { h = (h * 31 + id.charCodeAt(i)) >>> 0; }
+      return h;
+    };
+    const quizList = QUIZZES
+      .filter(q => activeCategory === 'all' || q.category === activeCategory)
+      .filter(q => activeDifficulty === 'all' || q.difficulty === activeDifficulty)
+      .slice()
+      .sort((a, b) => {
+        const aAttempt = attempts[a.id] ? 1 : 0;
+        const bAttempt = attempts[b.id] ? 1 : 0;
+        if (aAttempt !== bAttempt) return aAttempt - bAttempt;
+        return quizHash(a.id) - quizHash(b.id);
+      })
+      .map(q => {
+        const attempt = attempts[q.id];
+        const dropped = window.QUIZ_IMAGE_DATA && window.QUIZ_IMAGE_DATA['quiz-image-' + q.id];
+        return {
+          id: q.id,
+          title: q.title,
+          desc: q.desc,
+          count: q.questions.length,
+          image: q.image,
+          imageCredit: q.imageCredit,
+          imageSrc: dropped || q.image,
+          imageCreditText: dropped ? '' : (q.imageCredit || ''),
+          difficultyLabel: DIFFICULTY_LABEL[q.difficulty] + ' · ' + POINTS_BY_DIFFICULTY[q.difficulty] + ' pts',
+          onStart: () => this.startQuiz(q.id),
+          isAttempted: !!attempt,
+          isNotAttempted: !attempt,
+          statusText: attempt ? (attempt.passed ? 'Passed · ' + attempt.score + '/' + attempt.total : 'Failed · ' + attempt.score + '/' + attempt.total) : '',
+          statusColor: attempt ? (attempt.passed ? 'oklch(0.5 0.14 145)' : 'oklch(0.55 0.17 25)') : '',
+        };
+      });
+
+    const styleStr = (o) => Object.entries(o).map(([k, v]) => `${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}:${v}`).join(';');
+
+    const navBase = { fontFamily: "'Oswald',sans-serif", fontSize: '15px', fontWeight: 600, letterSpacing: '0.3px', lineHeight: 1, cursor: 'pointer' };
+    const activeNav = { ...navBase, color: 'white' };
+    const inactiveNav = { ...navBase, color: 'rgba(255,255,255,0.6)' };
+
+    // RESPONSIVE (mobile)
+    const isMobile = this.state.isMobile;
+    const isDesktopNav = !isMobile;
+    const isMobileNav = isMobile;
+    const showMobileDrawer = isMobile && this.state.mobileMenuOpen;
+    const toggleMobileMenu = this.toggleMobileMenu;
+
+    const navStyle = styleStr(isMobile
+      ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'oklch(0.42 0.18 250)', position: 'relative' }
+      : { display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '24px 48px', background: 'oklch(0.42 0.18 250)' });
+    const navRightGroupStyle = styleStr({ display: 'flex', alignItems: 'center', gap: '16px', justifySelf: isMobile ? 'auto' : 'end' });
+    const hamburgerBtnStyle = styleStr({ width: '40px', height: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px', cursor: 'pointer', flexShrink: 0 });
+    const hamburgerBarStyle = styleStr({ width: '20px', height: '2px', background: 'white', borderRadius: '2px' });
+    const mobileDrawerStyle = styleStr({ position: 'absolute', top: '100%', left: 0, right: 0, background: 'oklch(0.38 0.16 250)', display: 'flex', flexDirection: 'column', padding: '4px 20px 12px', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', zIndex: 50 });
+    const mobileDrawerItemStyle = styleStr({ fontFamily: "'Oswald',sans-serif", fontSize: '17px', fontWeight: 600, color: 'white', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer' });
+
+    const heroSectionStyle = styleStr({ maxWidth: '720px', margin: '0 auto', padding: isMobile ? '32px 20px 24px' : '56px 48px 56px', textAlign: 'center' });
+    const heroTitleStyle = styleStr({ fontFamily: "'Oswald',sans-serif", fontWeight: 700, fontSize: isMobile ? '36px' : '64px', letterSpacing: '0.5px', margin: '0 0 16px', lineHeight: 1.1, color: 'oklch(0.42 0.18 250)' });
+    const heroTitleReturningStyle = styleStr({ fontFamily: "'Oswald',sans-serif", fontWeight: 700, fontSize: isMobile ? '30px' : '56px', letterSpacing: '0.5px', margin: '0 0 16px', lineHeight: 1.15, color: 'oklch(0.42 0.18 250)' });
+    const heroSubStyle = styleStr({ fontSize: isMobile ? '16px' : '19px', color: 'oklch(0.45 0.01 250)', margin: isMobile ? '0 0 28px' : '0 0 40px', lineHeight: 1.5 });
+
+    const modeCardsWrapStyle = styleStr({ maxWidth: '1080px', margin: '0 auto', padding: isMobile ? '0 20px 56px' : '0 48px 80px' });
+    const modeCardsGridStyle = styleStr({ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: '20px', textAlign: 'left' });
+
+    const featuredWrapStyle = styleStr({ maxWidth: '1000px', margin: '0 auto', padding: isMobile ? '0 20px 64px' : '0 48px 100px' });
+    const featuredGridStyle = styleStr({ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: isMobile ? '20px' : '24px', marginBottom: '28px' });
+    const featuredSplitStyle = styleStr({ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '48px' : '64px', alignItems: 'start' });
+    const modeCardImageWrapStyle = styleStr({ width: '100%', height: '120px', marginBottom: '4px' });
+
+    const quizzesMainStyle = styleStr({ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', maxWidth: '1160px', margin: '0 auto', width: '100%', position: 'relative' });
+    const quizzesStatsStyle = styleStr(isMobile
+      ? { display: 'inline-flex', gap: '10px', background: 'oklch(0.97 0.01 250)', border: '1px solid oklch(0.9 0.01 250)', borderRadius: '999px', padding: '10px 20px', margin: '20px 20px 0' }
+      : { position: 'absolute', top: '28px', right: '48px', display: 'flex', gap: '10px', background: 'oklch(0.97 0.01 250)', border: '1px solid oklch(0.9 0.01 250)', borderRadius: '999px', padding: '10px 20px' });
+    const quizzesAsideStyle = styleStr(isMobile
+      ? { width: 'auto', padding: '20px 20px 0' }
+      : { width: '170px', flexShrink: 0, padding: '260px 0 120px 48px' });
+    const quizzesContentStyle = styleStr(isMobile
+      ? { flex: 1, minWidth: 0, padding: '24px 20px 80px', maxWidth: '960px' }
+      : { flex: 1, minWidth: 0, padding: '80px 48px 120px', maxWidth: '960px' });
+    const quizzesH1Style = styleStr({ fontFamily: "'Oswald',sans-serif", fontWeight: 700, fontSize: isMobile ? '32px' : '56px', letterSpacing: '0.5px', margin: '0 0 16px', lineHeight: 1.1, color: 'oklch(0.42 0.18 250)' });
+    const quizGridStyle = styleStr({ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: isMobile ? '20px' : '28px' });
+
+    const playMainStyle = styleStr({ flex: 1, maxWidth: '720px', margin: '0 auto', padding: isMobile ? '32px 20px 80px' : '72px 48px 120px', width: '100%' });
+    const questionTextStyle = styleStr({ fontFamily: "'Oswald',sans-serif", fontWeight: 600, fontSize: isMobile ? '23px' : '32px', lineHeight: 1.3, margin: '0 0 32px' });
+
+    const categoryBase = { padding: '8px 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.2px' };
+    const categoryActive = { ...categoryBase, background: 'oklch(0.42 0.18 250)', color: 'white' };
+    const categoryInactive = { ...categoryBase, background: 'oklch(0.95 0.03 250)', color: 'oklch(0.42 0.18 250)' };
+    const categories = CATEGORIES.map(c => ({
+      id: c.id,
+      label: c.label,
+      style: styleStr(activeCategory === c.id ? categoryActive : categoryInactive),
+      onClick: () => this.setCategory(c.id),
+    }));
+
+    const DIFFICULTIES = [
+      { id: 'all', label: 'All Levels' },
+      { id: 'easy', label: 'Easy · 25 pts' },
+      { id: 'medium', label: 'Medium · 50 pts' },
+      { id: 'hard', label: 'Hard · 75 pts' },
+    ];
+    const diffBase = { display: 'block', padding: '6px 10px', borderRadius: '3px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', textAlign: 'left' };
+    const diffActive = { ...diffBase, background: 'oklch(0.95 0.03 250)', color: 'oklch(0.42 0.18 250)', fontWeight: 700 };
+    const diffInactive = { ...diffBase, background: 'transparent', color: 'oklch(0.65 0.01 250)' };
+    const difficulties = DIFFICULTIES.map(d => ({
+      id: d.id,
+      label: d.label,
+      style: styleStr(activeDifficulty === d.id ? diffActive : diffInactive),
+      onClick: () => this.setDifficulty(d.id),
+    }));
+
+    const isHomeView = view === 'home';
+    const isQuizzesView = view === 'quizzes';
+    const isPlayingView = view === 'playing';
+    const isResultView = view === 'result';
+    const isLeaderboardView = view === 'leaderboard';
+    const isAccountView = view === 'account';
+    const isMatchView = view === 'match';
+
+    const { match, matchIdentity, matchPickingRematch, matchSetupQuizId, matchNameDraft, matchLinkCopied } = this.state;
+    let round = null, roundNumber = 0;
+    if (match) {
+      round = match.rounds[match.rounds.length - 1];
+      roundNumber = match.rounds.length;
+    }
+    const roundHasTwo = !!(round && round.entries.length === 2);
+    const roundHasOne = !!(round && round.entries.length === 1);
+    const iPlayedThisRound = roundHasOne && round.entries[0].name === matchIdentity;
+
+    const isMatchSetupView = isMatchView && !match;
+    const isMatchRematchPickView = isMatchView && !!match && matchPickingRematch;
+    const isMatchResultView = isMatchView && !!match && !matchPickingRematch && roundHasTwo;
+    const isMatchWaitingView = isMatchView && !!match && !matchPickingRematch && roundHasOne && iPlayedThisRound;
+    const isMatchTurnView = isMatchView && !!match && !matchPickingRematch && roundHasOne && !iPlayedThisRound;
+
+    const matchNeedsIdentity = !matchIdentity;
+    const matchTurnReady = !!matchIdentity;
+    const matchChallengerName = round && round.entries[0] ? round.entries[0].name : '';
+    const roundQuiz = round ? QUIZZES.find(q => q.id === round.quizId) : null;
+    const matchTurnQuizTitle = roundQuiz ? roundQuiz.title : '';
+    const matchWaitingQuizTitle = roundQuiz ? roundQuiz.title : '';
+    const matchMyRoundScore = roundHasOne ? round.entries[0].score : 0;
+    const matchMyRoundTotal = roundHasOne ? round.entries[0].total : 0;
+    const matchShareLink = match ? buildMatchShareUrl(match) : '';
+
+    let matchResultData = { roundNumber: 0, quizTitle: '', winnerText: '', meName: '', meInitials: '?', meScore: 0, meTotal: 0, oppName: '', oppInitials: '?', oppScore: 0, oppTotal: 0, mePct: 50, oppPct: 50, seriesText: '' };
+    let matchHistoryRows = [];
+    if (isMatchResultView) {
+      const meEntry = round.entries.find(e => e.name === matchIdentity) || round.entries[0];
+      const oppEntry = round.entries.find(e => e !== meEntry) || round.entries[1];
+      const totalCorrect = (meEntry.score + oppEntry.score) || 1;
+      const barMe = Math.round((meEntry.score / totalCorrect) * 100);
+      const barOpp = 100 - barMe;
+      let winnerText;
+      if (meEntry.score > oppEntry.score) winnerText = 'You win this round!';
+      else if (oppEntry.score > meEntry.score) winnerText = oppEntry.name + ' wins this round';
+      else winnerText = "It's a tie!";
+      matchHistoryRows = match.rounds.filter(r => r.entries.length === 2).map(r => {
+        const q2 = QUIZZES.find(q => q.id === r.quizId);
+        const me2 = r.entries.find(e => e.name === matchIdentity) || r.entries[0];
+        const opp2 = r.entries.find(e => e !== me2) || r.entries[1];
+        const result = me2.score > opp2.score ? 'W' : me2.score < opp2.score ? 'L' : 'T';
+        return { title: q2.title, myScore: me2.score, oppScore: opp2.score, result };
+      });
+      matchResultData = {
+        roundNumber, quizTitle: roundQuiz.title, winnerText,
+        meName: matchIdentity || 'You', meInitials: initials(matchIdentity), meScore: meEntry.score, meTotal: meEntry.total,
+        oppName: oppEntry.name, oppInitials: initials(oppEntry.name), oppScore: oppEntry.score, oppTotal: oppEntry.total,
+        mePct: barMe, oppPct: barOpp,
+        seriesText: computeSeriesText(matchHistoryRows),
+      };
+    }
+
+    // TRANSFER CHAIN
+    const isTransferChainView = view === 'transferchain';
+    const transferStep = this.state.transferStep;
+    const transferStatus = this.state.transferStatus;
+    const transferIsFinished = isTransferChainView && transferStatus === 'finished';
+    const transferNotFinished = isTransferChainView && !transferIsFinished;
+    const transferIsPlaying = isTransferChainView && transferStatus === 'playing';
+    const transferShowFeedback = isTransferChainView && (transferStatus === 'correct' || transferStatus === 'wrong');
+    const transferLink = TRANSFER_LINKS[Math.min(transferStep, TRANSFER_LINKS.length - 1)];
+    const transferRoundClubIds = transferLink ? transferLink.clubs : [];
+    const transferClubStrip = TRANSFER_CLUBS.map((c) => {
+      const inCurrentRound = transferNotFinished && transferRoundClubIds.includes(c.id);
+      return {
+        slotId: 'transfer-club-' + c.id,
+        shortName: c.shortName,
+        ringColor: inCurrentRound ? 'oklch(0.42 0.18 250)' : 'oklch(0.9 0.01 250)',
+      };
+    });
+    const transferRoundClubs = transferRoundClubIds.map(id => {
+      const c = TRANSFER_CLUBS.find(cl => cl.id === id);
+      return { slotId: 'transfer-club-' + id, name: c ? c.shortName : '' };
+    });
+    const transferProgressText = transferLink ? ('Round ' + (transferStep + 1) + ' of ' + TRANSFER_LINKS.length + '.') : '';
+    const transferFeedbackText = transferStatus === 'correct' ? 'Correct!' : 'Not quite.';
+    const transferFeedbackColor = transferStatus === 'correct' ? 'oklch(0.5 0.14 145)' : 'oklch(0.55 0.17 25)';
+    const transferAnswerReveal = transferLink ? transferLink.display : '';
+    const transferNextLabel = transferStep + 1 >= TRANSFER_LINKS.length ? 'See Final Score' : 'Next Round';
+    const transferFinalMessage = this.state.transferScore === TRANSFER_LINKS.length
+      ? 'Perfect chain — you know your transfers.'
+      : this.state.transferScore >= TRANSFER_LINKS.length * 0.6
+      ? 'Solid work tracing the chain.'
+      : 'A tough chain — give it another run.';
+    const transferPointsAwardedText = '+' + TRANSFER_POINTS_PER_CHAIN + ' points earned for completing the chain';
+
+    // WORDLE
+    const isWordleView = view === 'wordle';
+    const wordleGameId = this.state.wordleGameId;
+    const wordleGame = WORDLE_WORDS.find(w => w.id === wordleGameId);
+    const isWordlePickerView = isWordleView && !wordleGameId;
+    const isWordlePlayView = isWordleView && !!wordleGameId;
+    const wordleResultsMap = this.state.wordleResults;
+
+    const wordleChoices = WORDLE_WORDS.map(w => {
+      const r = wordleResultsMap[w.id];
+      let statusText = 'Not attempted';
+      if (r) statusText = r.status === 'won' ? 'Solved in ' + r.guesses.length + '/6' : 'Not solved — word was ' + w.word;
+      return { id: w.id, label: w.label, hint: w.hint, statusText, onClick: () => this.startWordleGame(w.id) };
+    });
+
+    const wordleLabel = wordleGame ? wordleGame.label : '';
+    const wordleHint = wordleGame ? wordleGame.hint : '';
+    const wordleGuessesArr = this.state.wordleGuesses;
+    const wordleCurrentGuess = this.state.wordleCurrentGuess;
+    const wordleStatus = this.state.wordleStatus;
+    const wordleGuessCount = Math.min(wordleGuessesArr.length + (wordleStatus === 'playing' ? 1 : 0), 6);
+    const wordleFinished = wordleStatus !== 'playing';
+
+    const wordleColorMap = { correct: 'oklch(0.62 0.15 145)', present: 'oklch(0.75 0.14 85)', absent: 'oklch(0.5 0.01 250)' };
+    const wordleCellBase = { width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '700', fontFamily: "'Oswald',sans-serif", borderRadius: '4px', textTransform: 'uppercase' };
+
+    const wordleRows = [];
+    for (let i = 0; i < 6; i++) {
+      let cells;
+      if (i < wordleGuessesArr.length) {
+        const g = wordleGuessesArr[i];
+        cells = g.word.split('').map((ch, idx) => ({
+          letter: ch,
+          style: styleStr({ ...wordleCellBase, background: wordleColorMap[g.result[idx]], color: 'white', border: '2px solid ' + wordleColorMap[g.result[idx]] }),
+        }));
+      } else if (i === wordleGuessesArr.length && wordleStatus === 'playing') {
+        const chars = wordleCurrentGuess.split('');
+        cells = Array.from({ length: 5 }).map((_, idx) => ({
+          letter: chars[idx] || '',
+          style: styleStr({ ...wordleCellBase, background: 'white', color: 'oklch(0.2 0.01 250)', border: chars[idx] ? '2px solid oklch(0.5 0.01 250)' : '2px solid oklch(0.88 0.01 250)' }),
+        }));
+      } else {
+        cells = Array.from({ length: 5 }).map(() => ({
+          letter: '',
+          style: styleStr({ ...wordleCellBase, background: 'white', color: 'oklch(0.2 0.01 250)', border: '2px solid oklch(0.9 0.01 250)' }),
+        }));
+      }
+      wordleRows.push({ cells });
+    }
+
+    const wordleMessage = this.state.wordleMessage;
+    const wordleHasMessage = !!wordleMessage;
+    const wordleMessageColor = wordleStatus === 'won' ? 'oklch(0.5 0.14 145)' : (wordleStatus === 'lost' ? 'oklch(0.55 0.17 25)' : 'oklch(0.45 0.01 250)');
+
+    const wordleLetterStatus = {};
+    wordleGuessesArr.forEach(g => {
+      g.word.split('').forEach((ch, idx) => {
+        const s = g.result[idx];
+        const rank = { correct: 3, present: 2, absent: 1 };
+        if (!wordleLetterStatus[ch] || rank[s] > rank[wordleLetterStatus[ch]]) wordleLetterStatus[ch] = s;
+      });
+    });
+    const WORDLE_KEY_ROWS = [['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'], ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'], ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']];
+    const wordleKeyBase = { minWidth: '34px', height: '46px', padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', fontFamily: "'Inter',sans-serif", userSelect: 'none' };
+    const wordleKeyboardRows = WORDLE_KEY_ROWS.map(row => ({
+      keys: row.map(k => {
+        let bg = 'oklch(0.88 0.01 250)', color = 'oklch(0.22 0.01 250)';
+        if (k.length === 1 && wordleLetterStatus[k]) {
+          bg = wordleColorMap[wordleLetterStatus[k]]; color = 'white';
+        }
+        const isWide = k === 'ENTER' || k === '⌫';
+        return {
+          label: k,
+          onClick: k === 'ENTER' ? this.wordleSubmitGuess : (k === '⌫' ? this.wordleBackspace : () => this.wordleKeyPress(k)),
+          style: styleStr({ ...wordleKeyBase, background: bg, color, minWidth: isWide ? '54px' : '34px', fontSize: isWide ? '11px' : '13px' }),
+        };
+      }),
+    }));
+
+    const nextRoundNumber = match ? match.rounds.length + 1 : 1;
+    const matchQuizChoices = QUIZZES.map(q => {
+      const selected = matchSetupQuizId === q.id;
+      return {
+        id: q.id,
+        title: q.title,
+        difficultyLabel: DIFFICULTY_LABEL[q.difficulty] + ' · ' + POINTS_BY_DIFFICULTY[q.difficulty] + ' pts',
+        onClick: () => this.pickMatchQuiz(q.id),
+        style: styleStr({
+          border: selected ? '2px solid oklch(0.42 0.18 250)' : '1px solid oklch(0.9 0.01 250)',
+          background: selected ? 'oklch(0.97 0.035 250)' : 'white',
+          borderRadius: '4px',
+          padding: '14px 16px',
+          cursor: 'pointer',
+        }),
+      };
+    });
+
+    const activeQuiz = QUIZZES.find(q => q.id === activeQuizId);
+
+    let quizTitle = '', questionNumber = 0, totalQuestions = 0, questionText = '', progressPct = '0%', quizImage = '';
+    let optionsView = [];
+    let hasAnswered = false, nextButtonLabel = 'Next Question';
+
+    if (activeQuiz) {
+      quizTitle = activeQuiz.title;
+      quizImage = activeQuiz.image;
+      totalQuestions = activeQuiz.questions.length;
+      questionNumber = qIndex + 1;
+      progressPct = Math.round(((qIndex + (selectedIndex !== null ? 1 : 0)) / totalQuestions) * 100) + '%';
+      const question = activeQuiz.questions[qIndex];
+      questionText = question ? question.q : '';
+      hasAnswered = selectedIndex !== null;
+      nextButtonLabel = qIndex + 1 < totalQuestions ? 'Next Question' : 'See Results';
+
+      if (question) {
+        optionsView = question.options.map((text, idx) => {
+          let borderColor = 'oklch(0.9 0.01 250)';
+          let bgColor = 'white';
+          let labelColor = 'transparent';
+          let label = '';
+          if (selectedIndex !== null) {
+            if (idx === question.answer) {
+              borderColor = 'oklch(0.55 0.15 250)';
+              bgColor = 'oklch(0.97 0.03 250)';
+              labelColor = 'oklch(0.5 0.14 250)';
+              label = 'CORRECT';
+            } else if (idx === selectedIndex) {
+              borderColor = 'oklch(0.6 0.17 25)';
+              bgColor = 'oklch(0.97 0.03 25)';
+              labelColor = 'oklch(0.55 0.17 25)';
+              label = 'YOUR PICK';
+            }
+          }
+          return {
+            text,
+            onSelect: () => this.selectAnswer(idx),
+            borderColor, bgColor, labelColor, label,
+            cursor: selectedIndex !== null ? 'default' : 'pointer',
+          };
+        });
+      }
+    }
+
+    const isPerfect = activeQuiz ? score === activeQuiz.questions.length : false;
+    const passed = score >= PASS_THRESHOLD;
+    const resultMessage = isPerfect
+      ? 'Flawless. You know your football.'
+      : passed ? 'You passed — solid performance.' : 'Not quite — you needed ' + PASS_THRESHOLD + ' correct to pass. No retakes on this one.';
+    const pointsEarnedText = justRecorded ? (justRecorded.passed ? '+' + justRecorded.points + ' points earned' : '+0 points — quiz not passed') : '';
+
+    const showSaveForm = !saved;
+    const showSavedConfirm = saved;
+
+    const sortedByStreak = [...leaderboard].filter(e => (e.bestStreak || 0) > 0).sort((a, b) => (b.bestStreak || 0) - (a.bestStreak || 0));
+    const streakRows = sortedByStreak.map((entry, idx) => ({
+      rank: idx + 1,
+      name: entry.name,
+      initials: initials(entry.name),
+      avatarColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+      streakText: entry.bestStreak + (entry.bestStreak === 1 ? ' day' : ' days'),
+    }));
+
+    const sortedBoard = [...leaderboard].sort((a, b) => b.points - a.points);
+    const MEDAL_COLORS = { 1: 'oklch(0.72 0.16 85)', 2: 'oklch(0.72 0.01 250)', 3: 'oklch(0.58 0.12 50)' };
+    const myPhoto = this.state.photoDataUrl;
+    const leaderboardRows = sortedBoard.map((entry, idx) => {
+      const badgeText = entry.perfectRuns > 0 ? 'PERFECT' : (entry.quizzesCompleted >= 3 ? 'REGULAR' : '');
+      const medalColor = MEDAL_COLORS[idx + 1] || null;
+      const hasPhoto = !!(myPhoto && entry.name === this.state.savedName);
+      return {
+        rank: idx + 1,
+        name: entry.name,
+        initials: initials(entry.name),
+        avatarColor: medalColor || AVATAR_COLORS[idx % AVATAR_COLORS.length],
+        hasPhoto,
+        showInitials: !hasPhoto,
+        photoUrl: hasPhoto ? myPhoto : '',
+        photoSrcSafe: hasPhoto ? myPhoto : TRANSPARENT_PIXEL,
+        photoDisplay: hasPhoto ? 'block' : 'none',
+        subline: entry.quizzesCompleted + (entry.quizzesCompleted === 1 ? ' quiz played' : ' quizzes played'),
+        points: entry.points,
+        hasBadge: !!badgeText,
+        badgeText,
+        isMedal: !!medalColor,
+        medalColor: medalColor || 'oklch(0.6 0.01 250)',
+        ringStyle: medalColor ? ('0 0 0 3px ' + medalColor) : 'none',
+        rankStyle: styleStr({ fontFamily: "'Oswald',sans-serif", fontWeight: 700, fontSize: medalColor ? '19px' : '18px', color: medalColor || 'oklch(0.6 0.01 250)' }),
+      };
+    });
+    const homeLeaderboardTop = leaderboardRows.slice(0, 5);
+    const hasHomeLeaderboardEntries = homeLeaderboardTop.length > 0;
+
+    const hasAccountName = !!this.state.savedName;
+    const accountRows = QUIZZES.filter(q => attempts[q.id]).map(q => {
+      const attempt = attempts[q.id];
+      return {
+        id: q.id,
+        title: q.title,
+        difficultyLabel: DIFFICULTY_LABEL[q.difficulty],
+        statusText: attempt ? (attempt.passed ? 'Passed' : 'Failed') : 'Not played',
+        statusColor: attempt ? (attempt.passed ? 'oklch(0.5 0.14 145)' : 'oklch(0.55 0.17 25)') : 'oklch(0.6 0.01 250)',
+        scoreText: attempt ? attempt.score + '/' + attempt.total : '—',
+        pointsText: attempt ? (attempt.passed ? '+' + attempt.points : '0') : '—',
+      };
+    });
+    const totalAccountPoints = accountRows.reduce((sum, r) => sum + (attempts[r.id] && attempts[r.id].passed ? attempts[r.id].points : 0), 0) + this.state.transferPoints;
+
+    const transferLeaders = leaderboard
+      .filter(e => (e.transferChainsCompleted || 0) > 0)
+      .slice()
+      .sort((a, b) => (b.transferChainsCompleted || 0) - (a.transferChainsCompleted || 0));
+    const hasTransferLeaderEntries = transferLeaders.length > 0;
+    const hasNoTransferLeaderEntries = !hasTransferLeaderEntries;
+    const transferLeaderRows = transferLeaders.map((entry, idx) => ({
+      rank: idx + 1,
+      name: entry.name,
+      initials: initials(entry.name),
+      avatarColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+      chainsText: entry.transferChainsCompleted + (entry.transferChainsCompleted === 1 ? ' chain' : ' chains'),
+    }));
+    const quizzesPassedCount = Object.values(attempts).filter(a => a.passed).length;
+
+    return {
+      navHomeStyle: styleStr(isHomeView ? activeNav : inactiveNav),
+      navQuizzesStyle: styleStr((isQuizzesView || isPlayingView || isResultView || isMatchView || isWordleView || isTransferChainView) ? activeNav : inactiveNav),
+      navLeaderboardStyle: styleStr(isLeaderboardView ? activeNav : inactiveNav),
+      isDesktopNav, isMobileNav, showMobileDrawer, toggleMobileMenu,
+      navStyle, navRightGroupStyle, hamburgerBtnStyle, hamburgerBarStyle, mobileDrawerStyle, mobileDrawerItemStyle,
+      heroSectionStyle, heroTitleStyle, heroTitleReturningStyle, heroSubStyle,
+      modeCardsWrapStyle, modeCardsGridStyle, featuredWrapStyle, featuredGridStyle, featuredSplitStyle, modeCardImageWrapStyle,
+      homeLeaderboardTop, hasHomeLeaderboardEntries, hasNoHomeLeaderboardEntries: !hasHomeLeaderboardEntries,
+      quizzesMainStyle, quizzesStatsStyle, quizzesAsideStyle, quizzesContentStyle, quizzesH1Style, quizGridStyle,
+      playMainStyle, questionTextStyle,
+      navAccountStyle: styleStr(isAccountView ? activeNav : inactiveNav),
+      contentRef: this.contentRef,
+      goHomePage: this.goHomePage,
+      goQuizzes: this.goQuizzes,
+      goLeaderboard: this.goLeaderboard,
+      goAccount: this.goAccount,
+      isHomeView, isQuizzesView, isPlayingView, isResultView, isLeaderboardView, isAccountView,
+      quizList,
+      quizTitle, questionNumber, totalQuestions, questionText, progressPct, quizImage,
+      optionsView, hasAnswered, nextButtonLabel,
+      nextQuestion: this.nextQuestion,
+      score, isPerfect, resultMessage, pointsEarnedText, passThreshold: PASS_THRESHOLD,
+      showSaveForm, showSavedConfirm,
+      nameInput, updateNameInput: this.updateNameInput, saveScore: this.saveScore,
+      hasLeaderboardEntries: leaderboardRows.length > 0,
+      hasNoLeaderboardEntries: leaderboardRows.length === 0,
+      leaderboardRows,
+      categories,
+      difficulties,
+      hasAccountName,
+      hasNoAccountName: !hasAccountName,
+      createAccount: this.createAccount,
+      emailInput, updateEmailInput: this.updateEmailInput, saveAccountSettings: this.saveAccountSettings, settingsSaved,
+      accountName: this.state.savedName,
+      avatarInitials: hasAccountName ? initials(this.state.savedName) : '?',
+      avatarBg: hasAccountName ? 'white' : 'transparent',
+      avatarColor: hasAccountName ? 'oklch(0.42 0.18 250)' : 'white',
+      hasPhoto: !!this.state.photoDataUrl,
+      photoDataUrl: this.state.photoDataUrl,
+      photoSrcSafe: this.state.photoDataUrl || TRANSPARENT_PIXEL,
+      photoDisplay: this.state.photoDataUrl ? 'block' : 'none',
+      showInitialsAvatar: !this.state.photoDataUrl && hasAccountName,
+      showBlankAvatar: !this.state.photoDataUrl && !hasAccountName,
+      settingsAvatarBg: hasAccountName ? 'oklch(0.42 0.18 250)' : 'oklch(0.85 0.01 250)',
+      settingsAvatarColor: 'white',
+      updatePhoto: this.updatePhoto,
+      removePhoto: this.removePhoto,
+      accountStreak: streak,
+      totalAccountPoints,
+      quizzesPassedCount,
+      accountRows,
+      featuredQuizzes,
+      showEmailGate,
+      closeEmailGate: this.closeEmailGate,
+      submitEmailGate: this.submitEmailGate,
+      subscribeEmail: this.state.subscribeEmail,
+      updateSubscribeEmail: this.updateSubscribeEmail,
+      subscribeChecked: this.state.subscribeChecked,
+      toggleSubscribeChecked: this.toggleSubscribeChecked,
+      subscribeDone: this.state.subscribeDone,
+      subscribeNotDone: !this.state.subscribeDone,
+      submitSubscribe: this.submitSubscribe,
+      checkboxFill: this.state.subscribeChecked ? 'oklch(0.5 0.19 258)' : 'transparent',
+      isMatchView, isMatchSetupView, isMatchRematchPickView, isMatchTurnView, isMatchWaitingView, isMatchResultView,
+      matchActive: this.state.matchActive,
+      matchQuizChoices, nextRoundNumber,
+      matchNameDraft, updateMatchNameDraft: this.updateMatchNameDraft,
+      startMatchSetup: this.startMatchSetup, createMatchRoom: this.createMatchRoom,
+      acceptMatchChallenge: this.acceptMatchChallenge, playMyTurn: this.playMyTurn,
+      matchNeedsIdentity, matchTurnReady, matchChallengerName, matchTurnQuizTitle,
+      matchMyRoundScore, matchMyRoundTotal, matchWaitingQuizTitle, matchShareLink,
+      copyMatchLink: this.copyMatchLink, matchLinkCopied,
+      matchResultData, matchHistoryRows,
+      startRematchPick: this.startRematchPick, createNextRound: this.createNextRound,
+      leaveMatch: this.leaveMatch,
+      isTransferChainView, transferIsFinished, transferNotFinished, transferIsPlaying, transferShowFeedback,
+      transferClubStrip, transferRoundClubs, transferProgressText,
+      transferInput: this.state.transferInput, updateTransferInput: this.updateTransferInput,
+      handleTransferKeydown: this.handleTransferKeydown, submitTransferAnswer: this.submitTransferAnswer,
+      transferFeedbackText, transferFeedbackColor, transferAnswerReveal, transferNextLabel,
+      nextTransferLink: this.nextTransferLink,
+      transferScore: this.state.transferScore, transferLinkCount: TRANSFER_LINKS.length, transferFinalMessage,
+      transferPointsAwardedText,
+      startTransferChain: this.startTransferChain, leaveTransferChain: this.leaveTransferChain,
+      hasTransferLeaderEntries, hasNoTransferLeaderEntries, transferLeaderRows,
+      isWordleView, isWordlePickerView, isWordlePlayView, wordleChoices,
+      startWordlePicker: this.startWordlePicker, leaveWordle: this.leaveWordle,
+      wordleInputRef: this.wordleInputRef, focusWordleInput: this.focusWordleInput,
+      handleWordleNativeChange: this.handleWordleNativeChange, handleWordleNativeKeyDown: this.handleWordleNativeKeyDown,
+      wordleLabel, wordleHint, wordleGuessCount, wordleRows,
+      wordleHasMessage, wordleMessage, wordleMessageColor,
+      wordleKeyboardRows, wordleFinished,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,842 @@
+module.exports = {
+  "CATEGORIES": [
+    {
+      "id": "all",
+      "label": "All Quizzes"
+    },
+    {
+      "id": "players",
+      "label": "Players"
+    },
+    {
+      "id": "leagues",
+      "label": "Leagues"
+    },
+    {
+      "id": "national",
+      "label": "National"
+    }
+  ],
+  "PASS_THRESHOLD": 3,
+  "POINTS_BY_DIFFICULTY": {
+    "easy": 25,
+    "medium": 50,
+    "hard": 75
+  },
+  "QUIZZES": [
+    {
+      "id": "worldcup",
+      "category": "national",
+      "difficulty": "easy",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "World Cup History",
+      "desc": "From 1930 to today, test your World Cup trivia.",
+      "questions": [
+        {
+          "q": "Which country has won the most FIFA World Cup titles?",
+          "options": [
+            "Germany",
+            "Argentina",
+            "Brazil",
+            "Italy"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Where was the very first World Cup held, in 1930?",
+          "options": [
+            "Brazil",
+            "France",
+            "Uruguay",
+            "Italy"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which country hosted the 2022 World Cup?",
+          "options": [
+            "Qatar",
+            "Russia",
+            "UAE",
+            "Japan"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which country won the 2018 World Cup?",
+          "options": [
+            "Croatia",
+            "France",
+            "Belgium",
+            "England"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Who holds the record for most career World Cup goals?",
+          "options": [
+            "Pelé",
+            "Ronaldo Nazário",
+            "Miroslav Klose",
+            "Lionel Messi"
+          ],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "id": "legends",
+      "category": "players",
+      "difficulty": "easy",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "Legendary Players",
+      "desc": "Icons of the sport, past and present.",
+      "questions": [
+        {
+          "q": "Known as \"The King of Football,\" this Brazilian legend won three World Cups.",
+          "options": [
+            "Ronaldinho",
+            "Pelé",
+            "Zico",
+            "Romário"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Who captained Argentina to victory at the 2022 World Cup?",
+          "options": [
+            "Sergio Agüero",
+            "Ángel Di María",
+            "Lionel Messi",
+            "Diego Maradona"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Who is the all-time leading scorer in UEFA Champions League history?",
+          "options": [
+            "Cristiano Ronaldo",
+            "Lionel Messi",
+            "Robert Lewandowski",
+            "Karim Benzema"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which Dutch player is credited with inventing the \"Cruyff Turn\"?",
+          "options": [
+            "Marco van Basten",
+            "Johan Cruyff",
+            "Dennis Bergkamp",
+            "Ruud Gullit"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which England striker scored a hat-trick in the 1966 World Cup Final?",
+          "options": [
+            "Bobby Charlton",
+            "Gary Lineker",
+            "Geoff Hurst",
+            "Jimmy Greaves"
+          ],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "id": "ballondor",
+      "category": "players",
+      "difficulty": "hard",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "Ballon d’Or Legends",
+      "desc": "Hard mode: the winners, the records, the snubs.",
+      "questions": [
+        {
+          "q": "Who won the very first Ballon d’Or in 1956?",
+          "options": [
+            "Alfredo Di Stéfano",
+            "Stanley Matthews",
+            "Raymond Kopa",
+            "Ferenc Puskás"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which player has won the most Ballon d’Or awards outright?",
+          "options": [
+            "Cristiano Ronaldo",
+            "Michel Platini",
+            "Lionel Messi",
+            "Johan Cruyff"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Who won the 2018 Ballon d’Or, the same year France won the World Cup?",
+          "options": [
+            "Kylian Mbappé",
+            "Antoine Griezmann",
+            "Luka Modrić",
+            "N’Golo Kanté"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "George Weah, the 1995 winner, is from which country?",
+          "options": [
+            "Ivory Coast",
+            "Liberia",
+            "Ghana",
+            "Senegal"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Who was the first goalkeeper ever to win the Ballon d’Or?",
+          "options": [
+            "Gianluigi Buffon",
+            "Lev Yashin",
+            "Iker Casillas",
+            "Peter Schmeichel"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "clubfootball",
+      "category": "leagues",
+      "difficulty": "hard",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800",
+      "imageCredit": "Wikimedia Commons (CC BY 2.0)",
+      "title": "Champions League & Club Football",
+      "desc": "Hard mode: European club football history.",
+      "questions": [
+        {
+          "q": "Which club has won the most European Cup / Champions League titles?",
+          "options": [
+            "AC Milan",
+            "Real Madrid",
+            "Bayern Munich",
+            "Liverpool"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which English club completed the continental treble (league, domestic cup, Champions League) in 1998–99?",
+          "options": [
+            "Arsenal",
+            "Chelsea",
+            "Manchester United",
+            "Liverpool"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which club did Pep Guardiola manage to a treble in 2022–23?",
+          "options": [
+            "Manchester City",
+            "Barcelona",
+            "Bayern Munich",
+            "Manchester United"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which Italian club is nicknamed \"La Vecchia Signora\" (The Old Lady)?",
+          "options": [
+            "Inter Milan",
+            "AC Milan",
+            "Juventus",
+            "Roma"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which club won the first ever UEFA Champions League (rebranded from the European Cup) in 1992–93?",
+          "options": [
+            "Marseille",
+            "AC Milan",
+            "Barcelona",
+            "Porto"
+          ],
+          "answer": 0
+        }
+      ]
+    },
+    {
+      "id": "nationalrecords",
+      "category": "national",
+      "difficulty": "medium",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "National Team Records",
+      "desc": "Hard mode: international football history.",
+      "questions": [
+        {
+          "q": "Which country won the first-ever UEFA European Championship, in 1960?",
+          "options": [
+            "Soviet Union",
+            "Yugoslavia",
+            "West Germany",
+            "Spain"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which country won three consecutive major tournaments — Euro 2008, World Cup 2010, and Euro 2012?",
+          "options": [
+            "Germany",
+            "Italy",
+            "Spain",
+            "Netherlands"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which nation hosted and won the very first World Cup, in 1930?",
+          "options": [
+            "Argentina",
+            "Uruguay",
+            "Brazil",
+            "Italy"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which African nation was the first to reach a World Cup quarterfinal, in 1990?",
+          "options": [
+            "Nigeria",
+            "Senegal",
+            "Cameroon",
+            "Morocco"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which country won the first-ever Africa Cup of Nations, in 1957?",
+          "options": [
+            "Sudan",
+            "Egypt",
+            "Ethiopia",
+            "South Africa"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "serieabundesliga",
+      "category": "leagues",
+      "difficulty": "medium",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800",
+      "imageCredit": "Wikimedia Commons (CC BY 2.0)",
+      "title": "Serie A & Bundesliga Trivia",
+      "desc": "Germany and Italy’s top flights, tested.",
+      "questions": [
+        {
+          "q": "Which club has won the most Bundesliga titles?",
+          "options": [
+            "Borussia Dortmund",
+            "Bayern Munich",
+            "Schalke 04",
+            "Werder Bremen"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which club is nicknamed \"I Nerazzurri\"?",
+          "options": [
+            "AC Milan",
+            "Juventus",
+            "Inter Milan",
+            "Napoli"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which club plays home games at Signal Iduna Park in Dortmund?",
+          "options": [
+            "Bayer Leverkusen",
+            "Borussia Dortmund",
+            "RB Leipzig",
+            "Hertha BSC"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which club won Serie A in 2022–23, its first title since 1990?",
+          "options": [
+            "Roma",
+            "Lazio",
+            "Napoli",
+            "Fiorentina"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "How many teams compete in a single Bundesliga season?",
+          "options": [
+            "16",
+            "18",
+            "20",
+            "22"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "womensworldcup",
+      "category": "national",
+      "difficulty": "easy",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "Women’s World Cup",
+      "desc": "The history of the women’s game on the biggest stage.",
+      "questions": [
+        {
+          "q": "Which country has won the most FIFA Women’s World Cup titles?",
+          "options": [
+            "Germany",
+            "United States",
+            "Norway",
+            "Brazil"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "The 2023 Women’s World Cup was jointly hosted by Australia and which other country?",
+          "options": [
+            "New Zealand",
+            "Japan",
+            "Canada",
+            "South Korea"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which country won the very first Women’s World Cup, in 1991?",
+          "options": [
+            "Norway",
+            "China",
+            "United States",
+            "Germany"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which country won the 2023 Women’s World Cup Final?",
+          "options": [
+            "England",
+            "Spain",
+            "Sweden",
+            "Australia"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Megan Rapinoe, a two-time Women’s World Cup winner, played for which country?",
+          "options": [
+            "Canada",
+            "United States",
+            "England",
+            "France"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "goldenboot",
+      "category": "players",
+      "difficulty": "hard",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "Golden Boot Winners",
+      "desc": "Hard mode: the tournament’s top scorers.",
+      "questions": [
+        {
+          "q": "Who won the Golden Boot (top scorer) at the 2022 World Cup?",
+          "options": [
+            "Lionel Messi",
+            "Kylian Mbappé",
+            "Olivier Giroud",
+            "Julián Álvarez"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Who won the Golden Boot at the 2018 World Cup?",
+          "options": [
+            "Harry Kane",
+            "Antoine Griezmann",
+            "Romelu Lukaku",
+            "Cristiano Ronaldo"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which player has won the European Golden Shoe the most times?",
+          "options": [
+            "Cristiano Ronaldo",
+            "Robert Lewandowski",
+            "Lionel Messi",
+            "Luis Suárez"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Who was the top scorer of the 2014 World Cup, winning the Golden Boot?",
+          "options": [
+            "James Rodríguez",
+            "Thomas Müller",
+            "Lionel Messi",
+            "Neymar"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Who won the Golden Boot at the 1998 World Cup, held in France?",
+          "options": [
+            "Ronaldo Nazário",
+            "Davor Šuker",
+            "Zinedine Zidane",
+            "Michael Owen"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "laligarecords",
+      "category": "leagues",
+      "difficulty": "hard",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800",
+      "imageCredit": "Wikimedia Commons (CC BY 2.0)",
+      "title": "La Liga & Premier League Records",
+      "desc": "Hard mode: records from Spain and England’s top flights.",
+      "questions": [
+        {
+          "q": "Which player holds the record for most goals in a single Premier League season (38-game era)?",
+          "options": [
+            "Mohamed Salah",
+            "Erling Haaland",
+            "Alan Shearer",
+            "Thierry Henry"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which club has won the most Premier League titles since its 1992 formation?",
+          "options": [
+            "Chelsea",
+            "Arsenal",
+            "Manchester United",
+            "Manchester City"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Which club has won the most La Liga titles all-time?",
+          "options": [
+            "Atlético Madrid",
+            "Barcelona",
+            "Real Madrid",
+            "Valencia"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Who is La Liga’s all-time top scorer?",
+          "options": [
+            "Cristiano Ronaldo",
+            "Lionel Messi",
+            "Karim Benzema",
+            "Raúl"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which club famously won the Premier League title as 5000-1 outsiders in 2015–16?",
+          "options": [
+            "Leicester City",
+            "West Ham",
+            "Everton",
+            "Southampton"
+          ],
+          "answer": 0
+        }
+      ]
+    },
+    {
+      "id": "rivalries",
+      "category": "leagues",
+      "difficulty": "medium",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800",
+      "imageCredit": "Wikimedia Commons (CC BY 2.0)",
+      "title": "Legendary Rivalries",
+      "desc": "The fiercest derbies in club football.",
+      "questions": [
+        {
+          "q": "\"El Clásico\" is the rivalry between Real Madrid and which other club?",
+          "options": [
+            "Atlético Madrid",
+            "Barcelona",
+            "Sevilla",
+            "Valencia"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "The \"North West Derby\" in English football is contested between Manchester United and which club?",
+          "options": [
+            "Manchester City",
+            "Everton",
+            "Liverpool",
+            "Leeds United"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "The \"Old Firm\" derby takes place between Celtic and which other Scottish club?",
+          "options": [
+            "Hearts",
+            "Aberdeen",
+            "Rangers",
+            "Hibernian"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "Boca Juniors’ fiercest rival in Argentine football is which club?",
+          "options": [
+            "Independiente",
+            "River Plate",
+            "Racing Club",
+            "San Lorenzo"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which two Italian clubs contest the \"Derby della Madonnina\"?",
+          "options": [
+            "AC Milan & Inter Milan",
+            "Juventus & Torino",
+            "Roma & Lazio",
+            "Napoli & Roma"
+          ],
+          "answer": 0
+        }
+      ]
+    },
+    {
+      "id": "playmakers",
+      "category": "players",
+      "difficulty": "medium",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Alfredo_Di_St%C3%A9fano%27s_Super_Ballon_d%27Or_trophy,_Real_Madrid_Museum,_Madrid,_Spain_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "Modern Icons & Playmakers",
+      "desc": "The stars defining the current era of the game.",
+      "questions": [
+        {
+          "q": "Which midfielder captained Real Madrid to five Champions League titles between 2014 and 2024?",
+          "options": [
+            "Toni Kroos",
+            "Luka Modrić",
+            "Casemiro",
+            "Federico Valverde"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which playmaker is nicknamed \"The Octopus\" for his ball-control and vision?",
+          "options": [
+            "Kevin De Bruyne",
+            "Bruno Fernandes",
+            "Martin Ødegaard",
+            "Jude Bellingham"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which Norwegian became Arsenal’s captain in his mid-20s after joining from Real Madrid?",
+          "options": [
+            "Erling Haaland",
+            "Martin Ødegaard",
+            "Alexander Sørloth",
+            "Kristian Thorstvedt"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Jude Bellingham moved from Borussia Dortmund to which club in 2023?",
+          "options": [
+            "Real Madrid",
+            "Barcelona",
+            "Manchester City",
+            "Bayern Munich"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "Which Brazilian forward became the most expensive transfer in football history when he joined PSG in 2017?",
+          "options": [
+            "Vinícius Júnior",
+            "Neymar",
+            "Gabriel Jesus",
+            "Rodrygo"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "worldcupfinals",
+      "category": "national",
+      "difficulty": "hard",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=800",
+      "imageCredit": "Ank Kumar, Wikimedia Commons (CC BY-SA 4.0)",
+      "title": "World Cup Finals & Deciders",
+      "desc": "Hard mode: the matches that settled it all.",
+      "questions": [
+        {
+          "q": "Which country lost the World Cup Final on penalties in both 1994 and 2006?",
+          "options": [
+            "Netherlands",
+            "Italy",
+            "Brazil",
+            "France"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "The 2014 World Cup Final between Germany and Argentina was decided by a goal from which player?",
+          "options": [
+            "Thomas Müller",
+            "Mario Götze",
+            "Miroslav Klose",
+            "Toni Kroos"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which country won the 1998 World Cup Final on home soil, beating Brazil 3–0?",
+          "options": [
+            "France",
+            "Italy",
+            "England",
+            "Spain"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "In the 2006 Final, Zinedine Zidane was sent off for a headbutt on which Italian defender?",
+          "options": [
+            "Fabio Cannavaro",
+            "Marco Materazzi",
+            "Gianluca Zambrotta",
+            "Andrea Barzagli"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which nation’s only World Cup title came via a 1950 upset over Brazil known as the \"Maracanazo\"?",
+          "options": [
+            "Paraguay",
+            "Chile",
+            "Uruguay",
+            "Peru"
+          ],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "id": "premierleaguebasics",
+      "category": "leagues",
+      "difficulty": "easy",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Champions_League_Trophy_(52736201132).jpg?width=800",
+      "imageCredit": "Wikimedia Commons (CC BY 2.0)",
+      "title": "Premier League Basics",
+      "desc": "The fundamentals of England’s top flight.",
+      "questions": [
+        {
+          "q": "How many clubs compete in the Premier League each season?",
+          "options": [
+            "18",
+            "20",
+            "22",
+            "24"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "What happens to the bottom three Premier League clubs at the end of the season?",
+          "options": [
+            "They get a bye",
+            "They are relegated",
+            "They face a playoff",
+            "Nothing"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Which club has played in every Premier League season since it began in 1992?",
+          "options": [
+            "Everton",
+            "Arsenal",
+            "Chelsea",
+            "Manchester United"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "How many points are awarded for a win in the Premier League?",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "What trophy do Premier League champions lift at the end of the season?",
+          "options": [
+            "The FA Cup",
+            "The Premier League Trophy",
+            "The Community Shield",
+            "The League Cup"
+          ],
+          "answer": 1
+        }
+      ]
+    }
+  ],
+  "AVATAR_COLORS": [
+    "oklch(0.42 0.18 250)",
+    "oklch(0.55 0.15 250)",
+    "oklch(0.6 0.17 60)",
+    "oklch(0.6 0.16 25)",
+    "oklch(0.55 0.13 300)"
+  ],
+  "WORDLE_WORDS": [
+    {
+      "id": "messi",
+      "word": "MESSI",
+      "label": "Player Edition",
+      "hint": "A five-letter icon of the modern game."
+    },
+    {
+      "id": "pitch",
+      "word": "PITCH",
+      "label": "Terminology Edition",
+      "hint": "Where 22 players battle for 90 minutes."
+    }
+  ]
+};
