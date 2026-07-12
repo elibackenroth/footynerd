@@ -9,6 +9,9 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
   'serieabundesliga', 'womensworldcup', 'goldenboot', 'laligarecords',
   'rivalries', 'playmakers', 'worldcupfinals', 'premierleaguebasics',
   'ronaldo', 'messi', 'mbappe',
+  'eurochampionship', 'worldcuprecords', 'kvaratskhelia', 'wirtz', 'ligue1',
+  'copaamerica', 'manutd', 'realmadridclub', 'bayernclub', 'athleticbilbao',
+  'rbleipzig', 'sportingcp',
 ]);
 
 export default function QuizImage({ quizId, fallback, alt, style }: { quizId: string; fallback: string | null; alt: string; style?: CSSProperties }) {
