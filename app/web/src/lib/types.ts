@@ -94,14 +94,5 @@ export interface PointsLeaderboardRow {
   points: number;
   quizzes_completed: number;
   perfect_runs: number;
-}
-
-export interface StreakLeaderboardRow {
-  name: string;
-  best_streak: number;
-}
-
-export interface TransferLeaderboardRow {
-  name: string;
-  chains_completed: number;
+  avatar_url: string | null;
 }

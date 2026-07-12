@@ -1,4 +1,4 @@
-import { colors, fonts, CATEGORIES, DIFFICULTIES, DIFFICULTY_LABEL } from '../lib/tokens';
+import { colors, fonts, CATEGORIES, DIFFICULTIES, DIFFICULTY_LABEL, quizHash } from '../lib/tokens';
 import type { Quiz, QuizAttempt } from '../lib/types';
 import QuizImage from '../components/QuizImage';
 
@@ -12,6 +12,7 @@ export default function Quizzes({
   startQuiz,
   quizzesPassedCount,
   totalPoints,
+  isMobile,
 }: {
   quizzes: Quiz[];
   attempts: Record<string, QuizAttempt>;
@@ -22,16 +23,28 @@ export default function Quizzes({
   startQuiz: (id: string) => void;
   quizzesPassedCount: number;
   totalPoints: number;
+  isMobile: boolean;
 }) {
   const filtered = quizzes
     .filter((q) => activeCategory === 'all' || q.category === activeCategory)
     .filter((q) => activeDifficulty === 'all' || q.difficulty === activeDifficulty)
     .slice()
-    .sort((a, b) => (attempts[a.id] ? 1 : 0) - (attempts[b.id] ? 1 : 0));
+    .sort((a, b) => {
+      const aAttempt = attempts[a.id] ? 1 : 0;
+      const bAttempt = attempts[b.id] ? 1 : 0;
+      if (aAttempt !== bAttempt) return aAttempt - bAttempt;
+      return quizHash(a.id) - quizHash(b.id);
+    });
 
   return (
-    <main style={{ flex: 1, display: 'flex', maxWidth: 1160, margin: '0 auto', width: '100%', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 28, right: 48, display: 'flex', gap: 10, background: 'oklch(0.97 0.01 250)', border: '1px solid oklch(0.9 0.01 250)', borderRadius: 999, padding: '10px 20px' }}>
+    <main style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', maxWidth: 1160, margin: '0 auto', width: '100%', position: 'relative' }}>
+      <div
+        style={
+          isMobile
+            ? { display: 'inline-flex', gap: 10, background: 'oklch(0.97 0.01 250)', border: '1px solid oklch(0.9 0.01 250)', borderRadius: 999, padding: '10px 20px', margin: '20px 20px 0' }
+            : { position: 'absolute', top: 28, right: 48, display: 'flex', gap: 10, background: 'oklch(0.97 0.01 250)', border: '1px solid oklch(0.9 0.01 250)', borderRadius: 999, padding: '10px 20px' }
+        }
+      >
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 18, color: colors.primary, lineHeight: 1 }}>{quizzesPassedCount}</div>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.4, textTransform: 'uppercase', color: colors.textMuted }}>Passed</div>
@@ -43,7 +56,7 @@ export default function Quizzes({
         </div>
       </div>
 
-      <aside style={{ width: 170, flexShrink: 0, padding: '260px 0 120px 48px' }}>
+      <aside style={isMobile ? { width: 'auto', padding: '20px 20px 0' } : { width: 170, flexShrink: 0, padding: '260px 0 120px 48px' }}>
         <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textFaint, marginBottom: 10 }}>Difficulty</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {DIFFICULTIES.map((d) => {
@@ -65,8 +78,8 @@ export default function Quizzes({
         </div>
       </aside>
 
-      <div style={{ flex: 1, minWidth: 0, padding: '80px 48px 120px', maxWidth: 960 }}>
-        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 56, letterSpacing: 0.5, margin: '0 0 16px', lineHeight: 1.05, color: colors.primary }}>
+      <div style={isMobile ? { flex: 1, minWidth: 0, padding: '24px 20px 80px', maxWidth: 960 } : { flex: 1, minWidth: 0, padding: '80px 48px 120px', maxWidth: 960 }}>
+        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: isMobile ? 32 : 56, letterSpacing: 0.5, margin: '0 0 16px', lineHeight: 1.1, color: colors.primary }}>
           Test your Ball knowledge.
         </h1>
         <p style={{ fontSize: 18, color: colors.textSecondary, margin: '0 0 40px', maxWidth: 520 }}>
@@ -92,7 +105,7 @@ export default function Quizzes({
           })}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: isMobile ? 20 : 28 }}>
           {filtered.map((quiz) => {
             const attempt = attempts[quiz.id];
             return (

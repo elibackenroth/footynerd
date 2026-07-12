@@ -6,7 +6,7 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const PASS_THRESHOLD = 3;
+const PASS_THRESHOLD = 4;
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);

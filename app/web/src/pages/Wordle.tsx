@@ -93,22 +93,19 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
 
   return (
     <main style={{ flex: 1, maxWidth: 640, margin: '0 auto', padding: '72px 48px 120px', width: '100%' }}>
-      <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 8 }}>← Back to Home</div>
-      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: colors.wordleAccent, marginBottom: 20 }}>Football Wordle</div>
-
       {!activeId ? (
         <>
-          <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 38, margin: '0 0 12px', color: colors.primary }}>Choose a Puzzle</h1>
-          <p style={{ fontSize: 15, color: colors.textSecondary, margin: '0 0 32px' }}>Two five-letter football words. Six guesses each.</p>
+          <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 38, margin: '0 0 12px', color: colors.primary }}>Choose a Wordle</h1>
+          <p style={{ fontSize: 15, color: colors.textSecondary, margin: '0 0 32px' }}>Four five-letter football words. Six guesses each. Updates twice a week.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', gap: 16 }}>
             {puzzles.map((w) => {
               const prior = myAttempts[w.id];
               const statusText = prior ? (prior.status === 'won' ? `Solved in ${prior.guesses.length}/6` : `Not solved — try again`) : 'Not attempted';
               return (
-                <div key={w.id} onClick={() => startPuzzle(w.id)} style={{ border: '1px solid oklch(0.88 0.06 95)', background: 'oklch(0.98 0.02 95)', borderRadius: 6, padding: 22, cursor: 'pointer' }}>
+                <div key={w.id} onClick={() => startPuzzle(w.id)} style={{ border: `1px solid ${colors.panelBorder}`, background: colors.panelBg, borderRadius: 6, padding: 22, cursor: 'pointer' }}>
                   <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{w.label}</div>
                   <div style={{ fontSize: 13, color: colors.textMuted, marginBottom: 10 }}>{w.hint}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.wordleAccent, letterSpacing: 0.3 }}>{statusText}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.primary, letterSpacing: 0.3 }}>{statusText}</div>
                 </div>
               );
             })}

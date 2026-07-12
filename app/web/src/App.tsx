@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import type { ViewName } from './lib/viewTypes';
-import type { Quiz, QuizAttempt, QuizQuestionPublic, PointsLeaderboardRow, StreakLeaderboardRow, TransferLeaderboardRow } from './lib/types';
+import type { Quiz, QuizAttempt, QuizQuestionPublic, PointsLeaderboardRow } from './lib/types';
 import type { MatchFull } from './lib/api';
 import {
   fetchQuizzes,
@@ -11,8 +11,6 @@ import {
   completeQuiz,
   updateProfile,
   fetchPointsLeaderboard,
-  fetchStreakLeaderboard,
-  fetchTransferLeaderboard,
   createMatch,
   createNextRound,
   submitMatchEntry,
@@ -38,10 +36,23 @@ function incrementGuestPlayCount() { localStorage.setItem(GUEST_PLAYS_KEY, Strin
 
 function matchIdentityKey(matchId: string) { return 'footynerd_match_identity_' + matchId; }
 
+const LAST_VIEW_KEY = 'footynerd_last_view';
+const SAVEABLE_VIEWS: ViewName[] = ['home', 'quizzes', 'leaderboard', 'account'];
+function loadLastView(): ViewName {
+  try {
+    const v = localStorage.getItem(LAST_VIEW_KEY) as ViewName | null;
+    return v && SAVEABLE_VIEWS.includes(v) ? v : 'home';
+  } catch {
+    return 'home';
+  }
+}
+
 export default function App() {
   const { user, profile, refreshProfile, signUp, signIn, signOut } = useAuth();
 
-  const [view, setView] = useState<ViewName>('home');
+  const [isMobile, setIsMobile] = useState(() => { try { return window.innerWidth <= 767; } catch { return false; } });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [view, setView] = useState<ViewName>(loadLastView());
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [attempts, setAttempts] = useState<Record<string, QuizAttempt>>({});
   const [activeCategory, setActiveCategory] = useState('all');
@@ -65,8 +76,6 @@ export default function App() {
 
   // leaderboard
   const [pointsRows, setPointsRows] = useState<PointsLeaderboardRow[]>([]);
-  const [streakRows, setStreakRows] = useState<StreakLeaderboardRow[]>([]);
-  const [transferRows, setTransferRows] = useState<TransferLeaderboardRow[]>([]);
 
   // match room
   const [match, setMatch] = useState<MatchFull | null>(null);
@@ -110,12 +119,30 @@ export default function App() {
   }, [user]);
 
   useEffect(() => {
-    if (view === 'leaderboard') {
+    if (view === 'leaderboard' || view === 'home') {
       fetchPointsLeaderboard().then(setPointsRows);
-      fetchStreakLeaderboard().then(setStreakRows);
-      fetchTransferLeaderboard().then(setTransferRows);
     }
   }, [view]);
+
+  // remember which tab the user was last on (mirrors the design's behavior)
+  useEffect(() => {
+    if (SAVEABLE_VIEWS.includes(view)) {
+      try { localStorage.setItem(LAST_VIEW_KEY, view); } catch { /* ignore */ }
+    }
+  }, [view]);
+
+  // track viewport size for the mobile nav/layout
+  useEffect(() => {
+    function handleResize() {
+      const m = window.innerWidth <= 767;
+      setIsMobile((prev) => {
+        if (prev !== m) setMobileMenuOpen(false);
+        return m;
+      });
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // poll for opponent activity while sitting on the match view
   useEffect(() => {
@@ -136,9 +163,9 @@ export default function App() {
       const el = contentRef.current;
       if (el) {
         el.style.transition = 'none';
-        el.style.opacity = '0.4';
+        el.style.opacity = '0.85';
         void el.offsetHeight;
-        el.style.transition = 'opacity 1s ease';
+        el.style.transition = 'opacity 0.15s ease';
         el.style.opacity = '1';
       }
     }
@@ -197,7 +224,11 @@ export default function App() {
     const res = await completeQuiz(activeQuizId, answers);
     setResultData(res);
     if (!user) incrementGuestPlayCount();
-    else { await refreshAttempts(); await refreshProfile(); }
+    else {
+      await refreshAttempts();
+      await refreshProfile();
+      fetchPointsLeaderboard().then(setPointsRows);
+    }
     setView('result');
   }
 
@@ -227,6 +258,7 @@ export default function App() {
     setResultData(res);
     await refreshAttempts();
     await refreshProfile();
+    fetchPointsLeaderboard().then(setPointsRows);
     return res.persisted ? null : 'Check your email to confirm your account, then come back and sign in to save this result.';
   }
 
@@ -334,12 +366,18 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Nav view={view} go={go} />
+      <Nav view={view} go={go} isMobile={isMobile} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)} />
 
-      <div ref={contentRef} style={{ transition: 'opacity 1s ease', opacity: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div ref={contentRef} style={{ transition: 'opacity 0.15s ease', opacity: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
         {view === 'home' && (
           <Home
             quizzes={quizzes}
+            attempts={attempts}
+            hasAccountName={!!user}
+            quizzesPassedCount={quizzesPassedCount}
+            totalAccountPoints={totalPoints}
+            pointsRows={pointsRows}
+            isMobile={isMobile}
             go={go}
             startQuiz={startQuiz}
             startMatchSetup={startMatchSetup}
@@ -359,6 +397,7 @@ export default function App() {
             startQuiz={startQuiz}
             quizzesPassedCount={quizzesPassedCount}
             totalPoints={totalPoints}
+            isMobile={isMobile}
           />
         )}
 
@@ -370,6 +409,7 @@ export default function App() {
             selectedIndex={selectedIndex}
             correctIndex={correctIndex}
             matchActive={matchActive}
+            isMobile={isMobile}
             onSelect={selectAnswer}
             onNext={nextQuestion}
           />
@@ -405,7 +445,7 @@ export default function App() {
         )}
 
         {view === 'leaderboard' && (
-          <Leaderboard pointsRows={pointsRows} streakRows={streakRows} transferRows={transferRows} />
+          <Leaderboard pointsRows={pointsRows} />
         )}
 
         {view === 'match' && (

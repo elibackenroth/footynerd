@@ -10,8 +10,6 @@ import type {
   Profile,
   MatchEntry,
   PointsLeaderboardRow,
-  StreakLeaderboardRow,
-  TransferLeaderboardRow,
 } from './types';
 
 // ---------- quizzes ----------
@@ -96,18 +94,6 @@ export async function fetchPointsLeaderboard(): Promise<PointsLeaderboardRow[]> 
   const { data, error } = await supabase.rpc('get_points_leaderboard');
   if (error) throw error;
   return data as PointsLeaderboardRow[];
-}
-
-export async function fetchStreakLeaderboard(): Promise<StreakLeaderboardRow[]> {
-  const { data, error } = await supabase.rpc('get_streak_leaderboard');
-  if (error) throw error;
-  return data as StreakLeaderboardRow[];
-}
-
-export async function fetchTransferLeaderboard(): Promise<TransferLeaderboardRow[]> {
-  const { data, error } = await supabase.rpc('get_transfer_leaderboard');
-  if (error) throw error;
-  return data as TransferLeaderboardRow[];
 }
 
 // ---------- wordle ----------

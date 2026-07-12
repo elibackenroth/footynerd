@@ -8,6 +8,7 @@ export default function QuizPlay({
   selectedIndex,
   correctIndex,
   matchActive,
+  isMobile,
   onSelect,
   onNext,
 }: {
@@ -17,6 +18,7 @@ export default function QuizPlay({
   selectedIndex: number | null;
   correctIndex: number | null;
   matchActive: boolean;
+  isMobile: boolean;
   onSelect: (idx: number) => void;
   onNext: () => void;
 }) {
@@ -27,7 +29,7 @@ export default function QuizPlay({
   const nextButtonLabel = qIndex + 1 < total ? 'Next Question' : 'See Results';
 
   return (
-    <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: '72px 48px 120px', width: '100%' }}>
+    <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: isMobile ? '32px 20px 80px' : '72px 48px 120px', width: '100%' }}>
       {matchActive && (
         <div style={{ display: 'inline-block', marginBottom: 14, padding: '4px 10px', borderRadius: 999, background: colors.badgeBg, color: 'oklch(0.4 0.14 250)', fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
           MATCH ROOM
@@ -41,7 +43,7 @@ export default function QuizPlay({
         <div style={{ height: '100%', background: colors.primaryLight, borderRadius: 2, width: progressPct, transition: 'width 0.25s' }} />
       </div>
 
-      <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 32, lineHeight: 1.25, margin: '0 0 40px' }}>{question.question}</h2>
+      <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: isMobile ? 23 : 32, lineHeight: 1.3, margin: '0 0 32px' }}>{question.question}</h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {question.options.map((text, idx) => {

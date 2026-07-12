@@ -37,6 +37,7 @@ export const CATEGORIES = [
   { id: 'players', label: 'Players' },
   { id: 'leagues', label: 'Leagues' },
   { id: 'national', label: 'National' },
+  { id: 'clubs', label: 'Clubs' },
 ];
 
 export const DIFFICULTIES = [
@@ -48,7 +49,13 @@ export const DIFFICULTIES = [
 
 export const DIFFICULTY_LABEL: Record<string, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
-export const PASS_THRESHOLD = 3;
+export const PASS_THRESHOLD = 4;
+
+export function quizHash(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return h;
+}
 
 export function initials(name: string | null | undefined) {
   const n = (name || '').trim();
