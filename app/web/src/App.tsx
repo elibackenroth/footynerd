@@ -202,10 +202,10 @@ export default function App() {
 
   async function selectAnswer(idx: number) {
     if (selectedIndex !== null || !activeQuizId) return;
-    const res = await checkQuizAnswer(activeQuizId, qIndex, idx);
     setSelectedIndex(idx);
-    setCorrectIndex(res.correctIndex);
     setAnswers((prev) => { const next = [...prev]; next[qIndex] = idx; return next; });
+    const res = await checkQuizAnswer(activeQuizId, qIndex, idx);
+    setCorrectIndex(res.correctIndex);
   }
 
   async function finishMatchRound() {

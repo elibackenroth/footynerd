@@ -52,7 +52,12 @@ export default function QuizPlay({
           let labelColor = 'transparent';
           let label = '';
           if (hasAnswered) {
-            if (idx === correctIndex) {
+            if (correctIndex === null) {
+              if (idx === selectedIndex) {
+                borderColor = colors.primaryLight;
+                bgColor = 'oklch(0.97 0.03 250)';
+              }
+            } else if (idx === correctIndex) {
               borderColor = colors.primaryLight;
               bgColor = 'oklch(0.97 0.03 250)';
               labelColor = 'oklch(0.5 0.14 250)';
