@@ -12,6 +12,8 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
   'eurochampionship', 'worldcuprecords', 'kvaratskhelia', 'wirtz', 'ligue1',
   'copaamerica', 'manutd', 'realmadridclub', 'bayernclub', 'athleticbilbao',
   'rbleipzig', 'sportingcp',
+  'oldfirm', 'mls', 'eredivisie', 'calciopoli', 'totalfootball', 'ajaxclub',
+  'napoliclub', 'bellingham', 'morocco2022', 'liverpoolclub',
 ]);
 
 export default function QuizImage({ quizId, fallback, alt, style }: { quizId: string; fallback: string | null; alt: string; style?: CSSProperties }) {

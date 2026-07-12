@@ -71,6 +71,7 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
     if (!activeId || status !== 'playing') return;
     function onKeydown(e: KeyboardEvent) {
       if (e.key === 'Enter') { submitGuess(); return; }
+      if (submitting) return;
       if (e.key === 'Backspace') { setCurrentGuess((g) => g.slice(0, -1)); return; }
       if (/^[a-zA-Z]$/.test(e.key)) {
         setCurrentGuess((g) => (g.length < 5 ? g + e.key.toUpperCase() : g));
@@ -127,7 +128,8 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
                 cells = g.word.split('').map((ch, idx) => ({ letter: ch, bg: WORDLE_COLOR[g.result[idx]], border: WORDLE_COLOR[g.result[idx]], color: 'white' }));
               } else if (i === guesses.length && status === 'playing') {
                 const chars = currentGuess.split('');
-                cells = Array.from({ length: 5 }).map((_, idx) => ({ letter: chars[idx] || '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: chars[idx] ? 'oklch(0.5 0.01 250)' : 'oklch(0.88 0.01 250)' }));
+                const pending = submitting && chars.length === 5;
+                cells = Array.from({ length: 5 }).map((_, idx) => ({ letter: chars[idx] || '', bg: pending ? 'oklch(0.93 0.01 250)' : 'white', color: 'oklch(0.2 0.01 250)', border: chars[idx] ? 'oklch(0.5 0.01 250)' : 'oklch(0.88 0.01 250)' }));
               } else {
                 cells = Array.from({ length: 5 }).map(() => ({ letter: '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: 'oklch(0.9 0.01 250)' }));
               }
@@ -162,10 +164,11 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
                       onClick={() => {
                         if (status !== 'playing') return;
                         if (k === 'ENTER') submitGuess();
+                        else if (submitting) return;
                         else if (k === '⌫') setCurrentGuess((g) => g.slice(0, -1));
                         else setCurrentGuess((g) => (g.length < 5 ? g + k : g));
                       }}
-                      style={{ minWidth: isWide ? 54 : 34, height: 46, padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: isWide ? 11 : 13, fontWeight: 700, cursor: 'pointer', fontFamily: fonts.body, userSelect: 'none', background: bg, color }}
+                      style={{ minWidth: isWide ? 54 : 34, height: 46, padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: isWide ? 11 : 13, fontWeight: 700, cursor: submitting ? 'default' : 'pointer', fontFamily: fonts.body, userSelect: 'none', background: bg, color, opacity: submitting && k !== 'ENTER' ? 0.5 : 1 }}
                     >
                       {k}
                     </div>
