@@ -36,23 +36,12 @@ function incrementGuestPlayCount() { localStorage.setItem(GUEST_PLAYS_KEY, Strin
 
 function matchIdentityKey(matchId: string) { return 'footynerd_match_identity_' + matchId; }
 
-const LAST_VIEW_KEY = 'footynerd_last_view';
-const SAVEABLE_VIEWS: ViewName[] = ['home', 'quizzes', 'leaderboard', 'account'];
-function loadLastView(): ViewName {
-  try {
-    const v = localStorage.getItem(LAST_VIEW_KEY) as ViewName | null;
-    return v && SAVEABLE_VIEWS.includes(v) ? v : 'home';
-  } catch {
-    return 'home';
-  }
-}
-
 export default function App() {
   const { user, profile, refreshProfile, signUp, signIn, signOut } = useAuth();
 
   const [isMobile, setIsMobile] = useState(() => { try { return window.innerWidth <= 767; } catch { return false; } });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [view, setView] = useState<ViewName>(loadLastView());
+  const [view, setView] = useState<ViewName>('home');
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [attempts, setAttempts] = useState<Record<string, QuizAttempt>>({});
   const [activeCategory, setActiveCategory] = useState('all');
@@ -121,13 +110,6 @@ export default function App() {
   useEffect(() => {
     if (view === 'leaderboard' || view === 'home') {
       fetchPointsLeaderboard().then(setPointsRows);
-    }
-  }, [view]);
-
-  // remember which tab the user was last on (mirrors the design's behavior)
-  useEffect(() => {
-    if (SAVEABLE_VIEWS.includes(view)) {
-      try { localStorage.setItem(LAST_VIEW_KEY, view); } catch { /* ignore */ }
     }
   }, [view]);
 
