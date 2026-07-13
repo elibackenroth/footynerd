@@ -10,6 +10,9 @@ import type {
   Profile,
   MatchEntry,
   PointsLeaderboardRow,
+  FootygridPlayer,
+  FootygridGrid,
+  FootygridAttempt,
 } from './types';
 
 // ---------- quizzes ----------
@@ -132,6 +135,38 @@ export async function completeTransferChain(score: number) {
   const { data, error } = await supabase.functions.invoke('complete-transfer-chain', { body: { score } });
   if (error) throw error;
   return data as { persisted: boolean; transferPoints?: number };
+}
+
+// ---------- footygrid ----------
+
+export async function fetchFootygridPlayers(): Promise<FootygridPlayer[]> {
+  const { data, error } = await supabase.from('footygrid_players').select('*');
+  if (error) throw error;
+  return data as FootygridPlayer[];
+}
+
+export async function fetchFootygridGrids(): Promise<FootygridGrid[]> {
+  const { data, error } = await supabase.from('footygrid_grids').select('*').order('id', { ascending: true });
+  if (error) throw error;
+  return data as FootygridGrid[];
+}
+
+export async function fetchMyFootygridAttempts(userId: string): Promise<Record<string, FootygridAttempt>> {
+  const { data, error } = await supabase.from('footygrid_attempts').select('*').eq('user_id', userId);
+  if (error) throw error;
+  const map: Record<string, FootygridAttempt> = {};
+  (data as any[]).forEach((a) => {
+    map[a.grid_id] = { grid_id: a.grid_id, answers: a.answers, lives: a.lives, status: a.status };
+  });
+  return map;
+}
+
+export async function saveFootygridAttempt(userId: string, attempt: FootygridAttempt) {
+  const { error } = await supabase.from('footygrid_attempts').upsert(
+    { user_id: userId, grid_id: attempt.grid_id, answers: attempt.answers, lives: attempt.lives, status: attempt.status },
+    { onConflict: 'user_id,grid_id' }
+  );
+  if (error) throw error;
 }
 
 // ---------- match room ----------

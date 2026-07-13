@@ -28,6 +28,7 @@ import Leaderboard from './pages/Leaderboard';
 import MatchRoom from './pages/MatchRoom';
 import Wordle from './pages/Wordle';
 import TransferChain from './pages/TransferChain';
+import FootyGrid from './pages/FootyGrid';
 
 const GUEST_PLAYS_KEY = 'footynerd_guest_plays';
 function getGuestPlayCount() { return parseInt(localStorage.getItem(GUEST_PLAYS_KEY) || '0', 10); }
@@ -381,6 +382,7 @@ export default function App() {
             startMatchSetup={startMatchSetup}
             startWordlePicker={() => go('wordle')}
             startTransferChain={() => go('transferchain')}
+            startFootygrid={() => go('footygrid')}
           />
         )}
 
@@ -467,8 +469,9 @@ export default function App() {
           />
         )}
 
-        {view === 'wordle' && <Wordle go={go} user={user} />}
+        {view === 'wordle' && <Wordle go={go} user={user} isMobile={isMobile} />}
         {view === 'transferchain' && <TransferChain go={go} />}
+        {view === 'footygrid' && <FootyGrid go={go} user={user} isMobile={isMobile} />}
       </div>
 
       {showEmailGate && <EmailGateModal onContinue={submitEmailGate} onClose={closeEmailGate} />}

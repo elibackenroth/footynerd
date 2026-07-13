@@ -7,4 +7,5 @@ export type ViewName =
   | 'leaderboard'
   | 'match'
   | 'wordle'
-  | 'transferchain';
+  | 'transferchain'
+  | 'footygrid';

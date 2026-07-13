@@ -19,6 +19,7 @@ export default function Home({
   startMatchSetup,
   startWordlePicker,
   startTransferChain,
+  startFootygrid,
 }: {
   quizzes: Quiz[];
   attempts: Record<string, QuizAttempt>;
@@ -32,6 +33,7 @@ export default function Home({
   startMatchSetup: () => void;
   startWordlePicker: () => void;
   startTransferChain: () => void;
+  startFootygrid: () => void;
 }) {
   const featuredIds = (() => {
     const used = new Set<string>();
@@ -94,7 +96,7 @@ export default function Home({
       </div>
 
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: isMobile ? '0 20px 56px' : '0 48px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 20, textAlign: 'left' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))', gap: 20, textAlign: 'left' }}>
           <ModeCard
             image="/mode-images/matchroom.webp"
             eyebrow="Friend vs Friend"
@@ -107,7 +109,7 @@ export default function Home({
             image="/mode-images/wordle.webp"
             eyebrow="Word Game"
             title="Football Wordle"
-            desc="Guess the five-letter football word in six tries. Four puzzles to try."
+            desc="A new word every day — stadiums, players, rules & terms. Click to jump right in."
             buttonLabel="Play Wordle"
             onClick={startWordlePicker}
           />
@@ -118,6 +120,14 @@ export default function Home({
             desc="9 rounds. Name the player who played for all three clubs shown."
             buttonLabel="Play Transfer Chain"
             onClick={startTransferChain}
+          />
+          <ModeCard
+            image="/mode-images/footygrid.png"
+            eyebrow="Grid Game"
+            title="FootyGrid"
+            desc="9 cells, 9 guesses. Name a player who fits both the row and column."
+            buttonLabel="Play FootyGrid"
+            onClick={startFootygrid}
           />
         </div>
       </div>

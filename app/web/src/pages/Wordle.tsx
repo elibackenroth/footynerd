@@ -7,16 +7,21 @@ import type { User } from '@supabase/supabase-js';
 
 const WORDLE_COLOR: Record<string, string> = { correct: 'oklch(0.62 0.15 145)', present: 'oklch(0.75 0.14 85)', absent: 'oklch(0.5 0.01 250)' };
 const KEY_ROWS = [['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'], ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'], ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']];
-const PRAISE = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
+const PRAISE = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!', 'Nice one!', 'Got it!'];
+
+function maxGuessesFor(wordLength: number) {
+  return Math.max(6, wordLength + 1);
+}
 
 function evalGuess(guess: string, answer: string): ('correct' | 'present' | 'absent')[] {
+  const len = answer.length;
   const g = guess.split(''), a = answer.split('');
-  const result: ('correct' | 'present' | 'absent')[] = Array(5).fill('absent');
-  const used = Array(5).fill(false);
-  for (let i = 0; i < 5; i++) {
+  const result: ('correct' | 'present' | 'absent')[] = Array(len).fill('absent');
+  const used = Array(len).fill(false);
+  for (let i = 0; i < len; i++) {
     if (g[i] === a[i]) { result[i] = 'correct'; used[i] = true; }
   }
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < len; i++) {
     if (result[i] === 'correct') continue;
     const idx = a.findIndex((ch, j) => ch === g[i] && !used[j]);
     if (idx > -1) { result[i] = 'present'; used[idx] = true; }
@@ -24,7 +29,7 @@ function evalGuess(guess: string, answer: string): ('correct' | 'present' | 'abs
   return result;
 }
 
-export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: User | null }) {
+export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => void; user: User | null; isMobile: boolean }) {
   const [puzzles, setPuzzles] = useState<WordlePuzzlePublic[]>([]);
   const [myAttempts, setMyAttempts] = useState<Record<string, { guesses: WordleGuess[]; status: string }>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -56,21 +61,25 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
     setMessage('');
   }
 
+  const activePuzzle = puzzles.find((p) => p.id === activeId);
+  const wordLength = activePuzzle ? activePuzzle.word.length : 5;
+  const maxGuesses = maxGuessesFor(wordLength);
+
   const submitGuess = useCallback(async () => {
     if (status !== 'playing' || !activeId || submitting) return;
-    if (currentGuess.length < 5) { setMessage('Not enough letters'); return; }
     const answer = puzzles.find((p) => p.id === activeId)?.word;
     if (!answer) return;
+    if (currentGuess.length < answer.length) { setMessage('Not enough letters'); return; }
     const guessWord = currentGuess;
     const priorGuesses = guesses;
     const newGuesses = [...priorGuesses, { word: guessWord, result: evalGuess(guessWord, answer) }];
-    const newStatus: 'playing' | 'won' | 'lost' = guessWord === answer ? 'won' : newGuesses.length >= 6 ? 'lost' : 'playing';
+    const newStatus: 'playing' | 'won' | 'lost' = guessWord === answer ? 'won' : newGuesses.length >= maxGuessesFor(answer.length) ? 'lost' : 'playing';
 
     setGuesses(newGuesses);
     setStatus(newStatus);
     setCurrentGuess('');
-    if (newStatus === 'won') setMessage(PRAISE[newGuesses.length - 1] || 'Solved!');
-    else if (newStatus === 'lost') setMessage('Out of guesses.');
+    if (newStatus === 'won') setMessage(PRAISE[Math.min(newGuesses.length - 1, PRAISE.length - 1)]);
+    else if (newStatus === 'lost') setMessage('Out of guesses — the word was ' + answer);
     else setMessage('');
 
     setSubmitting(true);
@@ -91,14 +100,14 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
       if (submitting) return;
       if (e.key === 'Backspace') { setCurrentGuess((g) => g.slice(0, -1)); return; }
       if (/^[a-zA-Z]$/.test(e.key)) {
-        setCurrentGuess((g) => (g.length < 5 ? g + e.key.toUpperCase() : g));
+        setCurrentGuess((g) => (g.length < wordLength ? g + e.key.toUpperCase() : g));
       }
     }
     window.addEventListener('keydown', onKeydown);
     return () => window.removeEventListener('keydown', onKeydown);
-  }, [activeId, status, submitGuess]);
+  }, [activeId, status, submitGuess, wordLength]);
 
-  const activePuzzle = puzzles.find((p) => p.id === activeId);
+  const tileSize = Math.max(28, Math.min(52, Math.floor(((isMobile ? 300 : 500) - 8 * (wordLength - 1)) / wordLength)));
 
   const letterStatus: Record<string, string> = {};
   guesses.forEach((g) => {
@@ -109,61 +118,76 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
     });
   });
 
+  const isPlayView = !!activePuzzle && status === 'playing';
+  const isResultView = !!activePuzzle && status !== 'playing';
+
+  const renderBoard = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24 }}>
+      {Array.from({ length: maxGuesses }).map((_, i) => {
+        let cells: { letter: string; bg: string; border: string; color: string }[];
+        if (i < guesses.length) {
+          const g = guesses[i];
+          cells = g.word.split('').map((ch, idx) => ({ letter: ch, bg: WORDLE_COLOR[g.result[idx]], border: WORDLE_COLOR[g.result[idx]], color: 'white' }));
+        } else if (i === guesses.length && status === 'playing') {
+          const chars = currentGuess.split('');
+          cells = Array.from({ length: wordLength }).map((_, idx) => ({ letter: chars[idx] || '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: chars[idx] ? 'oklch(0.5 0.01 250)' : 'oklch(0.88 0.01 250)' }));
+        } else {
+          cells = Array.from({ length: wordLength }).map(() => ({ letter: '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: 'oklch(0.9 0.01 250)' }));
+        }
+        return (
+          <div key={i} style={{ display: 'flex', gap: 8 }}>
+            {cells.map((c, idx) => (
+              <div key={idx} style={{ width: tileSize, height: tileSize, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(tileSize * 0.46), fontWeight: 700, fontFamily: fonts.heading, borderRadius: 4, textTransform: 'uppercase', background: c.bg, color: c.color, border: `2px solid ${c.border}` }}>
+                {c.letter}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <main style={{ flex: 1, maxWidth: 640, margin: '0 auto', padding: '72px 48px 120px', width: '100%' }}>
-      {!activeId ? (
+    <main style={{ flex: 1, maxWidth: 640, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '72px 48px 120px', width: '100%' }}>
+      <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 16 }}>← Back to Home</div>
+      <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 6px', color: colors.primary }}>Football Wordle</h1>
+
+      {!activePuzzle && (
         <>
-          <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 38, margin: '0 0 12px', color: colors.primary }}>Choose a Wordle</h1>
-          <p style={{ fontSize: 15, color: colors.textSecondary, margin: '0 0 32px' }}>Four five-letter football words. Six guesses each. Updates twice a week.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', gap: 16 }}>
-            {puzzles.map((w) => {
+          <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 24px' }}>A new word every day. Pick a day to play.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {puzzles.slice().reverse().map((w) => {
               const prior = myAttempts[w.id];
-              const statusText = prior ? (prior.status === 'won' ? `Solved in ${prior.guesses.length}/6` : `Not solved — try again`) : 'Not attempted';
+              const wMaxGuesses = maxGuessesFor(w.word.length);
+              const statusText = !prior ? 'Not started' : (prior.status === 'won' ? `Solved in ${prior.guesses.length}/${wMaxGuesses}` : 'Not solved');
               return (
-                <div key={w.id} onClick={() => startPuzzle(w.id)} style={{ border: `1px solid ${colors.panelBorder}`, background: colors.panelBg, borderRadius: 6, padding: 22, cursor: 'pointer' }}>
-                  <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{w.label}</div>
-                  <div style={{ fontSize: 13, color: colors.textMuted, marginBottom: 10 }}>{w.hint}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.primary, letterSpacing: 0.3 }}>{statusText}</div>
+                <div key={w.id} onClick={() => startPuzzle(w.id)} style={{ border: `1px solid ${colors.panelBorder}`, background: colors.panelBg, borderRadius: 8, padding: '18px 20px', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: colors.textBody }}>{w.date}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: colors.primary }}>{statusText}</div>
+                  </div>
+                  <div style={{ fontSize: 13, color: colors.textMuted }}>{w.category} · {w.word.length} letters</div>
                 </div>
               );
             })}
           </div>
         </>
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 28, margin: 0, color: colors.primary }}>{activePuzzle?.label}</h1>
-            <div style={{ fontSize: 13, color: colors.textMuted }}>Guess {Math.min(guesses.length + (status === 'playing' ? 1 : 0), 6)} of 6</div>
-          </div>
-          <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 28px' }}>{activePuzzle?.hint}</p>
+      )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24 }}>
-            {Array.from({ length: 6 }).map((_, i) => {
-              let cells: { letter: string; bg: string; border: string; color: string }[];
-              if (i < guesses.length) {
-                const g = guesses[i];
-                cells = g.word.split('').map((ch, idx) => ({ letter: ch, bg: WORDLE_COLOR[g.result[idx]], border: WORDLE_COLOR[g.result[idx]], color: 'white' }));
-              } else if (i === guesses.length && status === 'playing') {
-                const chars = currentGuess.split('');
-                cells = Array.from({ length: 5 }).map((_, idx) => ({ letter: chars[idx] || '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: chars[idx] ? 'oklch(0.5 0.01 250)' : 'oklch(0.88 0.01 250)' }));
-              } else {
-                cells = Array.from({ length: 5 }).map(() => ({ letter: '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: 'oklch(0.9 0.01 250)' }));
-              }
-              return (
-                <div key={i} style={{ display: 'flex', gap: 8 }}>
-                  {cells.map((c, idx) => (
-                    <div key={idx} style={{ width: 52, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, fontFamily: fonts.heading, borderRadius: 4, textTransform: 'uppercase', background: c.bg, color: c.color, border: `2px solid ${c.border}` }}>
-                      {c.letter}
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
+      {isPlayView && (
+        <>
+          <div onClick={() => setActiveId(null)} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.primary, marginBottom: 12 }}>← Choose a different day</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: colors.primary }}>{activePuzzle.date} — {activePuzzle.category}</div>
+            <div style={{ fontSize: 13, color: colors.textMuted }}>Guess {Math.min(guesses.length + 1, maxGuesses)} of {maxGuesses}</div>
           </div>
+          <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 28px' }}>{activePuzzle.hint}</p>
+
+          {renderBoard()}
 
           <div style={{ minHeight: 24, textAlign: 'center', marginBottom: 16 }}>
             {message && (
-              <div style={{ fontSize: 14, fontWeight: 700, color: status === 'won' ? colors.success : status === 'lost' ? colors.danger : colors.textSecondary }}>{message}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: colors.textSecondary }}>{message}</div>
             )}
           </div>
 
@@ -182,7 +206,7 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
                         if (k === 'ENTER') submitGuess();
                         else if (submitting) return;
                         else if (k === '⌫') setCurrentGuess((g) => g.slice(0, -1));
-                        else setCurrentGuess((g) => (g.length < 5 ? g + k : g));
+                        else setCurrentGuess((g) => (g.length < wordLength ? g + k : g));
                       }}
                       style={{ minWidth: isWide ? 54 : 34, height: 46, padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: isWide ? 11 : 13, fontWeight: 700, cursor: submitting ? 'default' : 'pointer', fontFamily: fonts.body, userSelect: 'none', background: bg, color, opacity: submitting && k !== 'ENTER' ? 0.5 : 1 }}
                     >
@@ -193,14 +217,18 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
               </div>
             ))}
           </div>
-
-          {status !== 'playing' && (
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-              <button onClick={() => setActiveId(null)} style={{ background: colors.wordleAccent, color: 'white', border: 'none', padding: '14px 28px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>Play the Other Wordle</button>
-              <div onClick={() => go('home')} style={{ alignSelf: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Done</div>
-            </div>
-          )}
         </>
+      )}
+
+      {isResultView && (
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          {renderBoard()}
+          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 24, color: status === 'won' ? colors.success : colors.danger }}>{message}</div>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+            <div onClick={() => setActiveId(null)} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary, textDecoration: 'underline' }}>Choose Another Day</div>
+            <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
+          </div>
+        </div>
       )}
     </main>
   );

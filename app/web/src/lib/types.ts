@@ -31,7 +31,8 @@ export interface QuizAttempt {
 
 export interface WordlePuzzlePublic {
   id: string;
-  label: string;
+  date: string;
+  category: string;
   hint: string;
   word: string;
 }
@@ -99,4 +100,39 @@ export interface PointsLeaderboardRow {
   quizzes_completed: number;
   perfect_runs: number;
   avatar_url: string | null;
+}
+
+export interface FootygridPlayer {
+  id: string;
+  name: string;
+  position: string;
+}
+
+export interface FootygridHeader {
+  key: string;
+  label: string;
+  isClub?: boolean;
+  isFlag?: boolean;
+  slotId?: string;
+}
+
+export interface FootygridGrid {
+  id: string;
+  date: string;
+  rows: FootygridHeader[];
+  cols: FootygridHeader[];
+  answers: Record<string, string[]>;
+}
+
+export interface FootygridAnswerEntry {
+  id: string;
+  name: string;
+  position: string;
+}
+
+export interface FootygridAttempt {
+  grid_id: string;
+  answers: Record<string, FootygridAnswerEntry>;
+  lives: number;
+  status: 'playing' | 'won' | 'over';
 }
