@@ -57,7 +57,7 @@ export default function Home({
   })();
   const featured = featuredIds.map((id) => quizzes.find((q) => q.id === id)).filter(Boolean) as Quiz[];
 
-  const homeLeaderboardTop = pointsRows.slice(0, 5);
+  const homeLeaderboardTop = pointsRows.slice(0, 10);
 
   return (
     <main style={{ flex: 1, width: '100%' }}>
