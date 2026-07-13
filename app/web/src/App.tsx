@@ -7,7 +7,6 @@ import {
   fetchQuizzes,
   fetchQuizQuestions,
   fetchMyAttempts,
-  checkQuizAnswer,
   completeQuiz,
   updateProfile,
   fetchPointsLeaderboard,
@@ -200,12 +199,11 @@ export default function App() {
     await loadQuizPlay(quizId, { matchActive: false });
   }
 
-  async function selectAnswer(idx: number) {
+  function selectAnswer(idx: number) {
     if (selectedIndex !== null || !activeQuizId) return;
     setSelectedIndex(idx);
+    setCorrectIndex(questions[qIndex].correct_index);
     setAnswers((prev) => { const next = [...prev]; next[qIndex] = idx; return next; });
-    const res = await checkQuizAnswer(activeQuizId, qIndex, idx);
-    setCorrectIndex(res.correctIndex);
   }
 
   async function finishMatchRound() {

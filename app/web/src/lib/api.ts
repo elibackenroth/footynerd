@@ -38,14 +38,6 @@ export async function fetchMyAttempts(userId: string): Promise<Record<string, Qu
   return map;
 }
 
-export async function checkQuizAnswer(quizId: string, questionIndex: number, selectedIndex: number) {
-  const { data, error } = await supabase.functions.invoke('check-quiz-answer', {
-    body: { quizId, questionIndex, selectedIndex },
-  });
-  if (error) throw error;
-  return data as { correct: boolean; correctIndex: number };
-}
-
 export async function completeQuiz(quizId: string, answers: number[]) {
   const { data, error } = await supabase.functions.invoke('complete-quiz', {
     body: { quizId, answers },
@@ -134,12 +126,6 @@ export async function fetchTransferLinks(): Promise<TransferLinkPublic[]> {
   const { data, error } = await supabase.from('transfer_links_public').select('*').order('position', { ascending: true });
   if (error) throw error;
   return data as TransferLinkPublic[];
-}
-
-export async function checkTransferAnswer(position: number, guess: string) {
-  const { data, error } = await supabase.functions.invoke('transfer-check', { body: { position, guess } });
-  if (error) throw error;
-  return data as { correct: boolean; display: string };
 }
 
 export async function completeTransferChain(score: number) {

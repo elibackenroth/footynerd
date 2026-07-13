@@ -9,6 +9,21 @@ const WORDLE_COLOR: Record<string, string> = { correct: 'oklch(0.62 0.15 145)', 
 const KEY_ROWS = [['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'], ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'], ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']];
 const PRAISE = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
 
+function evalGuess(guess: string, answer: string): ('correct' | 'present' | 'absent')[] {
+  const g = guess.split(''), a = answer.split('');
+  const result: ('correct' | 'present' | 'absent')[] = Array(5).fill('absent');
+  const used = Array(5).fill(false);
+  for (let i = 0; i < 5; i++) {
+    if (g[i] === a[i]) { result[i] = 'correct'; used[i] = true; }
+  }
+  for (let i = 0; i < 5; i++) {
+    if (result[i] === 'correct') continue;
+    const idx = a.findIndex((ch, j) => ch === g[i] && !used[j]);
+    if (idx > -1) { result[i] = 'present'; used[idx] = true; }
+  }
+  return result;
+}
+
 export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: User | null }) {
   const [puzzles, setPuzzles] = useState<WordlePuzzlePublic[]>([]);
   const [myAttempts, setMyAttempts] = useState<Record<string, { guesses: WordleGuess[]; status: string }>>({});
@@ -44,28 +59,30 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
   const submitGuess = useCallback(async () => {
     if (status !== 'playing' || !activeId || submitting) return;
     if (currentGuess.length < 5) { setMessage('Not enough letters'); return; }
+    const answer = puzzles.find((p) => p.id === activeId)?.word;
+    if (!answer) return;
+    const guessWord = currentGuess;
+    const priorGuesses = guesses;
+    const newGuesses = [...priorGuesses, { word: guessWord, result: evalGuess(guessWord, answer) }];
+    const newStatus: 'playing' | 'won' | 'lost' = guessWord === answer ? 'won' : newGuesses.length >= 6 ? 'lost' : 'playing';
+
+    setGuesses(newGuesses);
+    setStatus(newStatus);
+    setCurrentGuess('');
+    if (newStatus === 'won') setMessage(PRAISE[newGuesses.length - 1] || 'Solved!');
+    else if (newStatus === 'lost') setMessage('Out of guesses.');
+    else setMessage('');
+
     setSubmitting(true);
     try {
-      const res = await submitWordleGuess(activeId, currentGuess, guesses);
-      if (res.locked) {
-        setGuesses(res.guesses);
-        setStatus(res.status as any);
-        setMessage(res.status === 'won' ? 'You already solved this one.' : 'You already used all your guesses.');
-      } else {
-        setGuesses(res.guesses);
-        setStatus(res.status as any);
-        setCurrentGuess('');
-        if (res.status === 'won') setMessage(PRAISE[res.guesses.length - 1] || 'Solved!');
-        else if (res.status === 'lost') setMessage('Out of guesses.');
-        else setMessage('');
-      }
-      if (user && res.status !== 'playing') {
+      await submitWordleGuess(activeId, guessWord, priorGuesses);
+      if (user && newStatus !== 'playing') {
         fetchMyWordleAttempts(user.id).then(setMyAttempts);
       }
     } finally {
       setSubmitting(false);
     }
-  }, [activeId, currentGuess, guesses, status, submitting, user]);
+  }, [activeId, currentGuess, guesses, status, submitting, user, puzzles]);
 
   useEffect(() => {
     if (!activeId || status !== 'playing') return;
@@ -128,8 +145,7 @@ export default function Wordle({ go, user }: { go: (v: ViewName) => void; user: 
                 cells = g.word.split('').map((ch, idx) => ({ letter: ch, bg: WORDLE_COLOR[g.result[idx]], border: WORDLE_COLOR[g.result[idx]], color: 'white' }));
               } else if (i === guesses.length && status === 'playing') {
                 const chars = currentGuess.split('');
-                const pending = submitting && chars.length === 5;
-                cells = Array.from({ length: 5 }).map((_, idx) => ({ letter: chars[idx] || '', bg: pending ? 'oklch(0.93 0.01 250)' : 'white', color: 'oklch(0.2 0.01 250)', border: chars[idx] ? 'oklch(0.5 0.01 250)' : 'oklch(0.88 0.01 250)' }));
+                cells = Array.from({ length: 5 }).map((_, idx) => ({ letter: chars[idx] || '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: chars[idx] ? 'oklch(0.5 0.01 250)' : 'oklch(0.88 0.01 250)' }));
               } else {
                 cells = Array.from({ length: 5 }).map(() => ({ letter: '', bg: 'white', color: 'oklch(0.2 0.01 250)', border: 'oklch(0.9 0.01 250)' }));
               }

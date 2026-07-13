@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
-import { fetchTransferClubs, fetchTransferLinks, checkTransferAnswer, completeTransferChain } from '../lib/api';
+import { fetchTransferClubs, fetchTransferLinks, completeTransferChain } from '../lib/api';
 import type { TransferClub, TransferLinkPublic } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
+
+function normalizeAnswer(s: string) {
+  return (s || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase().replace(/[^A-Z]/g, '');
+}
 
 function ClubBadge({ club, size, ring }: { club: TransferClub | undefined; size: number; ring?: string }) {
   const [broken, setBroken] = useState(false);
@@ -39,7 +45,6 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
   const [score, setScore] = useState(0);
   const [answerReveal, setAnswerReveal] = useState('');
   const [pointsAwardedText, setPointsAwardedText] = useState('');
-  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     fetchTransferClubs().then(setClubs);
@@ -50,17 +55,13 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
   const currentLink = links[Math.min(step, links.length - 1)];
   const notFinished = status !== 'finished';
 
-  async function submit() {
-    if (status !== 'playing' || !input.trim() || !currentLink || checking) return;
-    setChecking(true);
-    try {
-      const res = await checkTransferAnswer(currentLink.position, input);
-      setAnswerReveal(res.display);
-      setStatus(res.correct ? 'correct' : 'wrong');
-      if (res.correct) setScore((s) => s + 1);
-    } finally {
-      setChecking(false);
-    }
+  function submit() {
+    if (status !== 'playing' || !input.trim() || !currentLink) return;
+    const normalizedGuess = normalizeAnswer(input);
+    const correct = currentLink.answers.some((a) => normalizeAnswer(a) === normalizedGuess);
+    setAnswerReveal(currentLink.display);
+    setStatus(correct ? 'correct' : 'wrong');
+    if (correct) setScore((s) => s + 1);
   }
 
   async function next() {
@@ -134,10 +135,9 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
                   placeholder="Player surname"
-                  disabled={checking}
-                  style={{ width: '100%', padding: '14px 16px', border: '1px solid oklch(0.85 0.01 250)', borderRadius: 4, fontSize: 15, fontFamily: fonts.body, textAlign: 'center', marginBottom: 16, opacity: checking ? 0.6 : 1 }}
+                  style={{ width: '100%', padding: '14px 16px', border: '1px solid oklch(0.85 0.01 250)', borderRadius: 4, fontSize: 15, fontFamily: fonts.body, textAlign: 'center', marginBottom: 16 }}
                 />
-                <button onClick={submit} disabled={checking} style={{ width: '100%', background: colors.primary, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: checking ? 'default' : 'pointer', fontFamily: fonts.body, opacity: checking ? 0.7 : 1 }}>{checking ? 'Checking...' : 'Submit'}</button>
+                <button onClick={submit} style={{ width: '100%', background: colors.primary, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>Submit</button>
               </>
             ) : (
               <>

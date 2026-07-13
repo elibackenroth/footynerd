@@ -15,6 +15,7 @@ export interface QuizQuestionPublic {
   position: number;
   question: string;
   options: string[];
+  correct_index: number;
 }
 
 export interface QuizAttempt {
@@ -32,6 +33,7 @@ export interface WordlePuzzlePublic {
   id: string;
   label: string;
   hint: string;
+  word: string;
 }
 
 export interface WordleGuess {
@@ -58,6 +60,8 @@ export interface TransferLinkPublic {
   id: number;
   position: number;
   club_ids: string[];
+  answers: string[];
+  display: string;
 }
 
 export interface Profile {
