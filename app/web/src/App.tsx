@@ -452,7 +452,7 @@ export default function App() {
         )}
 
         {view === 'wordle' && <Wordle go={go} user={user} isMobile={isMobile} />}
-        {view === 'transferchain' && <TransferChain go={go} />}
+        {view === 'transferchain' && <TransferChain go={go} isMobile={isMobile} />}
         {view === 'footygrid' && <FootyGrid go={go} user={user} isMobile={isMobile} />}
       </div>
 

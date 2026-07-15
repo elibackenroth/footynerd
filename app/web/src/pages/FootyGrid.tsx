@@ -79,12 +79,6 @@ export default function FootyGrid({ go, user, isMobile }: { go: (v: ViewName) =>
     setSearchInput('');
   }
 
-  function backToPicker() {
-    setSelectedId(null);
-    setModalCell(null);
-    setSearchInput('');
-  }
-
   function giveUp() {
     if (!selectedId) return;
     persist(selectedId, { ...progress, status: 'over' });
@@ -127,115 +121,114 @@ export default function FootyGrid({ go, user, isMobile }: { go: (v: ViewName) =>
   const cellMinHeight = isMobile ? 66 : 78;
 
   return (
-    <main style={{ flex: 1, width: '100%', background: 'white', padding: isMobile ? '32px 16px 80px' : '48px 20px 100px' }}>
+    <main style={{ flex: 1, maxWidth: 920, margin: '0 auto', width: '100%', background: 'white', padding: isMobile ? '32px 16px 80px' : '48px 20px 100px' }}>
       <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 16 }}>← Back to Home</div>
-      <div style={{ maxWidth: 640, margin: '0 auto' }}>
-        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: isMobile ? 26 : 32, margin: '0 0 6px', color: colors.primary }}>FootyGrid</h1>
+      <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: isMobile ? 26 : 32, margin: '0 0 24px', color: colors.primary }}>FootyGrid</h1>
 
-        {!selectedGrid && (
-          <>
-            <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 24px' }}>A new grid every day. Pick a grid to play.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {grids.slice().reverse().map((g) => {
-                const prog = myAttempts[g.id];
-                const solved = prog ? Object.keys(prog.answers).length : 0;
-                const statusText = !prog ? 'Not started' : (prog.status === 'won' ? `Solved ${solved}/9` : (prog.status === 'over' ? `Out of lives — ${solved}/9` : `${solved}/9 in progress`));
-                return (
-                  <div key={g.id} onClick={() => selectGrid(g.id)} style={{ border: `1px solid ${colors.panelBorder}`, background: colors.panelBg, borderRadius: 8, padding: '18px 20px', cursor: 'pointer' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
-                      <div style={{ fontWeight: 700, fontSize: 16, color: colors.textBody }}>{g.date}</div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: colors.primary }}>{statusText}</div>
+      <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 340, maxWidth: 480 }}>
+          {showGrid && selectedGrid && (
+            <>
+              <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 20px' }}>
+                Name a player who fits both the row and the column. Lives left: {progress.lives} / {MAX_LIVES}. Solved: {solvedCount} / 9.
+              </p>
+
+              <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                {Array.from({ length: MAX_LIVES }).map((_, i) => (
+                  <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: i < progress.lives ? colors.primary : 'oklch(0.88 0.01 250)' }} />
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 24, flexWrap: 'wrap' }}>
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: i < solvedCount ? colors.primary : 'oklch(0.88 0.01 250)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {i < solvedCount && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5}><path d="M20 6L9 17l-5-5" /></svg>}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: `${isMobile ? 56 : 88}px repeat(3, 1fr)`, gap: 6 }}>
+                <div />
+                {selectedGrid.cols.map((col) => (
+                  <div key={col.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', fontSize: 11, fontWeight: 700, color: colors.primary, background: 'oklch(0.95 0.03 250)', borderRadius: 6, padding: '8px 4px', minHeight: cellMinHeight }}>
+                    <HeaderBadge header={col} size={headerSize} />
+                    <div>{col.label}</div>
+                  </div>
+                ))}
+                {selectedGrid.rows.map((row) => (
+                  <Fragment key={row.key}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', fontSize: 11, fontWeight: 700, color: colors.primary, background: 'oklch(0.95 0.03 250)', borderRadius: 6, padding: '8px 4px', minHeight: cellMinHeight }}>
+                      <HeaderBadge header={row} size={headerSize} />
+                      <div>{row.label}</div>
                     </div>
-                    <div style={{ fontSize: 13, color: colors.textMuted }}>{g.rows.map((r) => r.label).join(' · ')}</div>
-                    <div style={{ fontSize: 13, color: colors.textMuted }}>{g.cols.map((c) => c.label).join(' · ')}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
+                    {selectedGrid.cols.map((col) => {
+                      const key = row.key + '|' + col.key;
+                      const filled = progress.answers[key];
+                      return (
+                        <div
+                          key={key}
+                          onClick={() => openCell(row.key, col.key)}
+                          style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                            minHeight: cellMinHeight, borderRadius: 6, cursor: 'pointer', padding: 4,
+                            background: filled ? 'oklch(0.97 0.035 250)' : 'oklch(0.98 0.005 250)',
+                            border: filled ? `1.5px solid ${colors.primary}` : '1.5px dashed oklch(0.85 0.01 250)',
+                          }}
+                        >
+                          {filled ? (
+                            <>
+                              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.5, color: colors.primary, marginBottom: 3 }}>{filled.position}</div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: colors.textBody, lineHeight: 1.15, padding: '0 3px' }}>{filled.name}</div>
+                            </>
+                          ) : (
+                            <div style={{ fontSize: 22, color: 'oklch(0.5 0.03 260)', fontWeight: 300 }}>+</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </Fragment>
+                ))}
+              </div>
 
-        {showGrid && selectedGrid && (
-          <>
-            <div onClick={backToPicker} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.primary, marginBottom: 12 }}>← Choose a different day</div>
-            <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 20px' }}>
-              Name a player who fits both the row and the column. Lives left: {progress.lives} / {MAX_LIVES}. Solved: {solvedCount} / 9.
-            </p>
+              <div style={{ textAlign: 'center', marginTop: 28 }}>
+                <div onClick={giveUp} style={{ display: 'inline-block', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, textDecoration: 'underline' }}>Give Up</div>
+              </div>
+            </>
+          )}
 
-            <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-              {Array.from({ length: MAX_LIVES }).map((_, i) => (
-                <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: i < progress.lives ? colors.primary : 'oklch(0.88 0.01 250)' }} />
-              ))}
+          {showResults && (
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <h2 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 30, margin: '0 0 10px', color: colors.primary }}>
+                {progress.status === 'won' ? 'Perfect grid!' : 'Out of lives'}
+              </h2>
+              <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 28px' }}>{solvedCount} of 9 cells solved.</p>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 24, flexWrap: 'wrap' }}>
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: i < solvedCount ? colors.primary : 'oklch(0.88 0.01 250)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {i < solvedCount && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5}><path d="M20 6L9 17l-5-5" /></svg>}
+          )}
+        </div>
+
+        <div style={{ width: isMobile ? '100%' : 240, flexShrink: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 10 }}>Other Grids</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {grids.slice().reverse().map((g) => {
+              const prog = myAttempts[g.id];
+              const solved = prog ? Object.keys(prog.answers).length : 0;
+              const statusText = !prog ? 'Not started' : (prog.status === 'won' ? `Solved ${solved}/9` : (prog.status === 'over' ? `Out of lives — ${solved}/9` : `${solved}/9 in progress`));
+              const active = g.id === selectedId;
+              return (
+                <div
+                  key={g.id}
+                  onClick={() => selectGrid(g.id)}
+                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: 'pointer' }}
+                >
+                  <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{g.date}</div>
+                  <div style={{ fontSize: 12, color: colors.textMuted }}>{statusText}</div>
                 </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: `${isMobile ? 56 : 88}px repeat(3, 1fr)`, gap: 6 }}>
-              <div />
-              {selectedGrid.cols.map((col) => (
-                <div key={col.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', fontSize: 11, fontWeight: 700, color: colors.primary, background: 'oklch(0.95 0.03 250)', borderRadius: 6, padding: '8px 4px', minHeight: cellMinHeight }}>
-                  <HeaderBadge header={col} size={headerSize} />
-                  <div>{col.label}</div>
-                </div>
-              ))}
-              {selectedGrid.rows.map((row) => (
-                <Fragment key={row.key}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', fontSize: 11, fontWeight: 700, color: colors.primary, background: 'oklch(0.95 0.03 250)', borderRadius: 6, padding: '8px 4px', minHeight: cellMinHeight }}>
-                    <HeaderBadge header={row} size={headerSize} />
-                    <div>{row.label}</div>
-                  </div>
-                  {selectedGrid.cols.map((col) => {
-                    const key = row.key + '|' + col.key;
-                    const filled = progress.answers[key];
-                    return (
-                      <div
-                        key={key}
-                        onClick={() => openCell(row.key, col.key)}
-                        style={{
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-                          minHeight: cellMinHeight, borderRadius: 6, cursor: 'pointer', padding: 4,
-                          background: filled ? 'oklch(0.97 0.035 250)' : 'oklch(0.98 0.005 250)',
-                          border: filled ? `1.5px solid ${colors.primary}` : '1.5px dashed oklch(0.85 0.01 250)',
-                        }}
-                      >
-                        {filled ? (
-                          <>
-                            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.5, color: colors.primary, marginBottom: 3 }}>{filled.position}</div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: colors.textBody, lineHeight: 1.15, padding: '0 3px' }}>{filled.name}</div>
-                          </>
-                        ) : (
-                          <div style={{ fontSize: 22, color: 'oklch(0.5 0.03 260)', fontWeight: 300 }}>+</div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </Fragment>
-              ))}
-            </div>
-
-            <div style={{ textAlign: 'center', marginTop: 28 }}>
-              <div onClick={giveUp} style={{ display: 'inline-block', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, textDecoration: 'underline' }}>Give Up</div>
-            </div>
-          </>
-        )}
-
-        {showResults && (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <h2 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 30, margin: '0 0 10px', color: colors.primary }}>
-              {progress.status === 'won' ? 'Perfect grid!' : 'Out of lives'}
-            </h2>
-            <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 28px' }}>{solvedCount} of 9 cells solved.</p>
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-              <div onClick={backToPicker} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary, textDecoration: 'underline' }}>Choose Another Day</div>
-              <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
-            </div>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
 
       {modalCell && selectedGrid && (

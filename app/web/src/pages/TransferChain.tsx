@@ -36,7 +36,7 @@ function ClubBadge({ club, size, ring }: { club: TransferClub | undefined; size:
   );
 }
 
-export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
+export default function TransferChain({ go, isMobile }: { go: (v: ViewName) => void; isMobile: boolean }) {
   const [clubs, setClubs] = useState<TransferClub[]>([]);
   const [dailies, setDailies] = useState<TransferDaily[]>([]);
   const [players, setPlayers] = useState<FootygridPlayer[]>([]);
@@ -56,13 +56,6 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
     fetchFootygridPlayers().then(setPlayers);
   }, []);
 
-  useEffect(() => {
-    if (dailies.length > 0 && !autoSelected) {
-      setAutoSelected(true);
-      setSelectedId(dailies[dailies.length - 1].id);
-    }
-  }, [dailies, autoSelected]);
-
   function selectDay(dayId: string) {
     setSelectedId(dayId);
     setStep(0);
@@ -73,9 +66,13 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
     setPointsAwardedText('');
   }
 
-  function backToPicker() {
-    setSelectedId(null);
-  }
+  useEffect(() => {
+    if (dailies.length > 0 && !autoSelected) {
+      setAutoSelected(true);
+      selectDay(dailies[dailies.length - 1].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dailies, autoSelected]);
 
   const day = dailies.find((d) => d.id === selectedId) || null;
   const clubById = (id: string) => clubs.find((c) => c.id === id);
@@ -120,119 +117,103 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
     score === day.rounds.length ? 'Perfect chain — you know your transfers.' : score >= day.rounds.length * 0.6 ? 'Solid work tracing the chain.' : 'A tough chain — give it another run.'
   );
 
-  if (!day) {
-    return (
-      <main style={{ flex: 1, maxWidth: 640, margin: '0 auto', padding: '72px 48px 120px', width: '100%' }}>
-        <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 16 }}>← Back to Home</div>
-        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 6px', color: colors.primary }}>Transfer Chain</h1>
-        <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 24px' }}>A new 5-round chain every day. Pick a day to play.</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {dailies.slice().reverse().map((d) => {
-            const isDone = doneDayIds.has(d.id);
-            return (
-              <div key={d.id} onClick={() => selectDay(d.id)} style={{ border: `1px solid ${colors.panelBorder}`, background: colors.panelBg, borderRadius: 8, padding: '18px 20px', cursor: 'pointer' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: colors.textBody }}>{d.date}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.primary }}>{isDone ? 'Completed' : 'Not started'}</div>
-                </div>
-                <div style={{ fontSize: 13, color: colors.textMuted }}>{d.rounds.length} rounds</div>
-              </div>
-            );
-          })}
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main style={{ flex: 1, maxWidth: 760, margin: '0 auto', padding: '72px 48px 120px', width: '100%' }}>
+    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '72px 48px 120px', width: '100%' }}>
       <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 8 }}>← Back to Home</div>
-      <div onClick={backToPicker} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.primary, marginBottom: 12 }}>← Choose a different day</div>
-      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: colors.primary, marginBottom: 20 }}>Transfer Chain — {day.date}</div>
+      <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 28, margin: '0 0 24px', color: colors.primary }}>Transfer Chain</h1>
 
-      {notFinished && (
-        <p style={{ fontSize: 15, color: colors.textSecondary, margin: '0 0 8px' }}>
-          Type the surname of a player who has played for all three clubs shown — no accents needed. Round {step + 1} of {day.rounds.length}.
-        </p>
-      )}
+      <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 340 }}>
+          {day && notFinished && (
+            <>
+              <p style={{ fontSize: 15, color: colors.textSecondary, margin: '0 0 32px' }}>
+                Three clubs, one player who's worn all three shirts. Name them — first name, last name, or full name all count, no accents needed. Round {step + 1} of {day.rounds.length}.
+              </p>
 
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', margin: '28px 0 40px', padding: 20, background: 'oklch(0.97 0.005 250)', borderRadius: 8 }}>
-        {clubs.map((c) => {
-          const inRound = notFinished && currentLink?.clubs.includes(c.id);
-          return (
-            <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 64 }}>
-              <ClubBadge club={c} size={52} ring={inRound ? colors.primary : 'oklch(0.9 0.01 250)'} />
-              <div style={{ fontSize: 9, fontWeight: 600, textAlign: 'center', lineHeight: 1.2, color: colors.textMuted }}>{c.short_name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 32, flexWrap: 'wrap' }}>
+                {currentLink && currentLink.clubs.map((id) => {
+                  const c = clubById(id);
+                  return (
+                    <div key={id} style={{ textAlign: 'center' }}>
+                      <div style={{ marginBottom: 10 }}><ClubBadge club={c} size={110} /></div>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{c?.short_name}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ maxWidth: 360, margin: '0 auto', position: 'relative' }}>
+                {status === 'playing' ? (
+                  <>
+                    <input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+                      placeholder="First name, last name, or full name"
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px', border: '1px solid oklch(0.85 0.01 250)', borderRadius: 4, fontSize: 15, fontFamily: fonts.body, textAlign: 'center', marginBottom: 8 }}
+                    />
+                    {suggestions.length > 0 && (
+                      <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
+                        {suggestions.map((s) => (
+                          <div
+                            key={s.id}
+                            onClick={() => setInput(s.name)}
+                            style={{ padding: '8px 14px', cursor: 'pointer', fontSize: 14, textAlign: 'center', borderBottom: `1px solid ${colors.borderLight}` }}
+                          >
+                            {s.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button onClick={submit} style={{ width: '100%', background: colors.primary, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body, marginTop: 8 }}>Submit</button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ textAlign: 'center', fontSize: 16, fontWeight: 700, marginBottom: 8, color: status === 'correct' ? colors.success : colors.danger }}>
+                      {status === 'correct' ? 'Correct!' : 'Not quite.'}
+                    </div>
+                    <div style={{ textAlign: 'center', fontSize: 14, color: colors.textMuted, marginBottom: 20 }}>Answer: {answerReveal}</div>
+                    <button onClick={next} style={{ width: '100%', background: colors.textBody, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>
+                      {step + 1 >= day.rounds.length ? 'See Final Score' : 'Next Round'}
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
+          {day && !notFinished && (
+            <div style={{ textAlign: 'center' }}>
+              <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 12px', color: colors.primary }}>{score} / {day.rounds.length} rounds solved</h1>
+              <p style={{ fontSize: 14, color: colors.success, fontWeight: 600, margin: '0 0 12px' }}>{pointsAwardedText}</p>
+              <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 32px' }}>{finalMessage}</p>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
+              </div>
             </div>
-          );
-        })}
-      </div>
+          )}
+        </div>
 
-      {notFinished && currentLink && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 32, flexWrap: 'wrap' }}>
-            {currentLink.clubs.map((id) => {
-              const c = clubById(id);
+        <div style={{ width: isMobile ? '100%' : 240, flexShrink: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 10 }}>Other Days</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {dailies.slice().reverse().map((d) => {
+              const isDone = doneDayIds.has(d.id);
+              const active = d.id === selectedId;
               return (
-                <div key={id} style={{ textAlign: 'center' }}>
-                  <div style={{ marginBottom: 10 }}><ClubBadge club={c} size={110} /></div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{c?.short_name}</div>
+                <div
+                  key={d.id}
+                  onClick={() => selectDay(d.id)}
+                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: 'pointer' }}
+                >
+                  <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{d.date}</div>
+                  <div style={{ fontSize: 12, color: colors.textMuted }}>{isDone ? 'Completed' : `${d.rounds.length} rounds`}</div>
                 </div>
               );
             })}
           </div>
-
-          <div style={{ maxWidth: 360, margin: '0 auto', position: 'relative' }}>
-            {status === 'playing' ? (
-              <>
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-                  placeholder="Player surname"
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px', border: '1px solid oklch(0.85 0.01 250)', borderRadius: 4, fontSize: 15, fontFamily: fonts.body, textAlign: 'center', marginBottom: 8 }}
-                />
-                {suggestions.length > 0 && (
-                  <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
-                    {suggestions.map((s) => (
-                      <div
-                        key={s.id}
-                        onClick={() => setInput(s.name)}
-                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: 14, textAlign: 'center', borderBottom: `1px solid ${colors.borderLight}` }}
-                      >
-                        {s.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <button onClick={submit} style={{ width: '100%', background: colors.primary, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body, marginTop: 8 }}>Submit</button>
-              </>
-            ) : (
-              <>
-                <div style={{ textAlign: 'center', fontSize: 16, fontWeight: 700, marginBottom: 8, color: status === 'correct' ? colors.success : colors.danger }}>
-                  {status === 'correct' ? 'Correct!' : 'Not quite.'}
-                </div>
-                <div style={{ textAlign: 'center', fontSize: 14, color: colors.textMuted, marginBottom: 20 }}>Answer: {answerReveal}</div>
-                <button onClick={next} style={{ width: '100%', background: colors.textBody, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>
-                  {step + 1 >= day.rounds.length ? 'See Final Score' : 'Next Round'}
-                </button>
-              </>
-            )}
-          </div>
-        </>
-      )}
-
-      {!notFinished && (
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 12px', color: colors.primary }}>{score} / {day.rounds.length} rounds solved</h1>
-          <p style={{ fontSize: 14, color: colors.success, fontWeight: 600, margin: '0 0 12px' }}>{pointsAwardedText}</p>
-          <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 32px' }}>{finalMessage}</p>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-            <div onClick={backToPicker} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary, textDecoration: 'underline' }}>Choose Another Day</div>
-            <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
-          </div>
         </div>
-      )}
+      </div>
     </main>
   );
 }

@@ -33,6 +33,7 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
   const [puzzles, setPuzzles] = useState<WordlePuzzlePublic[]>([]);
   const [myAttempts, setMyAttempts] = useState<Record<string, { guesses: WordleGuess[]; status: string }>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [autoSelected, setAutoSelected] = useState(false);
   const [guesses, setGuesses] = useState<WordleGuess[]>([]);
   const [currentGuess, setCurrentGuess] = useState('');
   const [status, setStatus] = useState<'playing' | 'won' | 'lost'>('playing');
@@ -60,6 +61,14 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
     setStatus('playing');
     setMessage('');
   }
+
+  useEffect(() => {
+    if (puzzles.length > 0 && !autoSelected) {
+      setAutoSelected(true);
+      startPuzzle(puzzles[puzzles.length - 1].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [puzzles, autoSelected]);
 
   const activePuzzle = puzzles.find((p) => p.id === activeId);
   const wordLength = activePuzzle ? activePuzzle.word.length : 5;
@@ -107,7 +116,7 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
     return () => window.removeEventListener('keydown', onKeydown);
   }, [activeId, status, submitGuess, wordLength]);
 
-  const tileSize = Math.max(28, Math.min(52, Math.floor(((isMobile ? 300 : 500) - 8 * (wordLength - 1)) / wordLength)));
+  const tileSize = Math.max(28, Math.min(52, Math.floor(((isMobile ? 300 : 400) - 8 * (wordLength - 1)) / wordLength)));
 
   const letterStatus: Record<string, string> = {};
   guesses.forEach((g) => {
@@ -148,88 +157,91 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
   );
 
   return (
-    <main style={{ flex: 1, maxWidth: 640, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '72px 48px 120px', width: '100%' }}>
+    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '72px 48px 120px', width: '100%' }}>
       <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 16 }}>← Back to Home</div>
-      <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 6px', color: colors.primary }}>Football Wordle</h1>
+      <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 24px', color: colors.primary }}>Football Wordle</h1>
 
-      {!activePuzzle && (
-        <>
-          <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 24px' }}>A new word every day. Pick a day to play.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 320 }}>
+          {isPlayView && activePuzzle && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: colors.primary }}>{activePuzzle.date} — {activePuzzle.category}</div>
+                <div style={{ fontSize: 13, color: colors.textMuted }}>Guess {Math.min(guesses.length + 1, maxGuesses)} of {maxGuesses}</div>
+              </div>
+              <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 28px' }}>{activePuzzle.hint}</p>
+
+              {renderBoard()}
+
+              <div style={{ minHeight: 24, textAlign: 'center', marginBottom: 16 }}>
+                {message && (
+                  <div style={{ fontSize: 14, fontWeight: 700, color: colors.textSecondary }}>{message}</div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24 }}>
+                {KEY_ROWS.map((row, ri) => (
+                  <div key={ri} style={{ display: 'flex', gap: 6 }}>
+                    {row.map((k) => {
+                      const isWide = k === 'ENTER' || k === '⌫';
+                      let bg = 'oklch(0.88 0.01 250)', color = 'oklch(0.22 0.01 250)';
+                      if (k.length === 1 && letterStatus[k]) { bg = WORDLE_COLOR[letterStatus[k]]; color = 'white'; }
+                      return (
+                        <div
+                          key={k}
+                          onClick={() => {
+                            if (status !== 'playing') return;
+                            if (k === 'ENTER') submitGuess();
+                            else if (submitting) return;
+                            else if (k === '⌫') setCurrentGuess((g) => g.slice(0, -1));
+                            else setCurrentGuess((g) => (g.length < wordLength ? g + k : g));
+                          }}
+                          style={{ minWidth: isWide ? 54 : 34, height: 46, padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: isWide ? 11 : 13, fontWeight: 700, cursor: submitting ? 'default' : 'pointer', fontFamily: fonts.body, userSelect: 'none', background: bg, color, opacity: submitting && k !== 'ENTER' ? 0.5 : 1 }}
+                        >
+                          {k}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {isResultView && (
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              {renderBoard()}
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 24, color: status === 'won' ? colors.success : colors.danger }}>{message}</div>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ width: isMobile ? '100%' : 260, flexShrink: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 10 }}>Other Days</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {puzzles.slice().reverse().map((w) => {
               const prior = myAttempts[w.id];
               const wMaxGuesses = maxGuessesFor(w.word.length);
               const statusText = !prior ? 'Not started' : (prior.status === 'won' ? `Solved in ${prior.guesses.length}/${wMaxGuesses}` : 'Not solved');
+              const active = w.id === activeId;
               return (
-                <div key={w.id} onClick={() => startPuzzle(w.id)} style={{ border: `1px solid ${colors.panelBorder}`, background: colors.panelBg, borderRadius: 8, padding: '18px 20px', cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
-                    <div style={{ fontWeight: 700, fontSize: 16, color: colors.textBody }}>{w.date}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: colors.primary }}>{statusText}</div>
-                  </div>
-                  <div style={{ fontSize: 13, color: colors.textMuted }}>{w.category} · {w.word.length} letters</div>
+                <div
+                  key={w.id}
+                  onClick={() => startPuzzle(w.id)}
+                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: 'pointer' }}
+                >
+                  <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{w.date}</div>
+                  <div style={{ fontSize: 12, color: colors.textMuted }}>{w.category} · {w.word.length} letters</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: colors.primary, marginTop: 2 }}>{statusText}</div>
                 </div>
               );
             })}
           </div>
-        </>
-      )}
-
-      {isPlayView && (
-        <>
-          <div onClick={() => setActiveId(null)} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.primary, marginBottom: 12 }}>← Choose a different day</div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ fontSize: 15, fontWeight: 600, color: colors.primary }}>{activePuzzle.date} — {activePuzzle.category}</div>
-            <div style={{ fontSize: 13, color: colors.textMuted }}>Guess {Math.min(guesses.length + 1, maxGuesses)} of {maxGuesses}</div>
-          </div>
-          <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 28px' }}>{activePuzzle.hint}</p>
-
-          {renderBoard()}
-
-          <div style={{ minHeight: 24, textAlign: 'center', marginBottom: 16 }}>
-            {message && (
-              <div style={{ fontSize: 14, fontWeight: 700, color: colors.textSecondary }}>{message}</div>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24 }}>
-            {KEY_ROWS.map((row, ri) => (
-              <div key={ri} style={{ display: 'flex', gap: 6 }}>
-                {row.map((k) => {
-                  const isWide = k === 'ENTER' || k === '⌫';
-                  let bg = 'oklch(0.88 0.01 250)', color = 'oklch(0.22 0.01 250)';
-                  if (k.length === 1 && letterStatus[k]) { bg = WORDLE_COLOR[letterStatus[k]]; color = 'white'; }
-                  return (
-                    <div
-                      key={k}
-                      onClick={() => {
-                        if (status !== 'playing') return;
-                        if (k === 'ENTER') submitGuess();
-                        else if (submitting) return;
-                        else if (k === '⌫') setCurrentGuess((g) => g.slice(0, -1));
-                        else setCurrentGuess((g) => (g.length < wordLength ? g + k : g));
-                      }}
-                      style={{ minWidth: isWide ? 54 : 34, height: 46, padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: isWide ? 11 : 13, fontWeight: 700, cursor: submitting ? 'default' : 'pointer', fontFamily: fonts.body, userSelect: 'none', background: bg, color, opacity: submitting && k !== 'ENTER' ? 0.5 : 1 }}
-                    >
-                      {k}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {isResultView && (
-        <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          {renderBoard()}
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 24, color: status === 'won' ? colors.success : colors.danger }}>{message}</div>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-            <div onClick={() => setActiveId(null)} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary, textDecoration: 'underline' }}>Choose Another Day</div>
-            <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
-          </div>
         </div>
-      )}
+      </div>
     </main>
   );
 }
