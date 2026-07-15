@@ -6,7 +6,7 @@ import type {
   WordlePuzzlePublic,
   WordleGuess,
   TransferClub,
-  TransferLinkPublic,
+  TransferDaily,
   Profile,
   MatchEntry,
   PointsLeaderboardRow,
@@ -125,10 +125,10 @@ export async function fetchTransferClubs(): Promise<TransferClub[]> {
   return data as TransferClub[];
 }
 
-export async function fetchTransferLinks(): Promise<TransferLinkPublic[]> {
-  const { data, error } = await supabase.from('transfer_links_public').select('*').order('position', { ascending: true });
+export async function fetchTransferDailies(): Promise<TransferDaily[]> {
+  const { data, error } = await supabase.from('transfer_dailies').select('*').order('id', { ascending: true });
   if (error) throw error;
-  return data as TransferLinkPublic[];
+  return data as TransferDaily[];
 }
 
 export async function completeTransferChain(score: number) {

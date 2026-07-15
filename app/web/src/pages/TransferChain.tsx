@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
-import { fetchTransferClubs, fetchTransferLinks, completeTransferChain } from '../lib/api';
-import type { TransferClub, TransferLinkPublic } from '../lib/types';
+import { fetchTransferClubs, fetchTransferDailies, fetchFootygridPlayers, completeTransferChain } from '../lib/api';
+import type { TransferClub, TransferDaily, FootygridPlayer } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 
 function normalizeAnswer(s: string) {
@@ -38,37 +38,75 @@ function ClubBadge({ club, size, ring }: { club: TransferClub | undefined; size:
 
 export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
   const [clubs, setClubs] = useState<TransferClub[]>([]);
-  const [links, setLinks] = useState<TransferLinkPublic[]>([]);
+  const [dailies, setDailies] = useState<TransferDaily[]>([]);
+  const [players, setPlayers] = useState<FootygridPlayer[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [input, setInput] = useState('');
   const [status, setStatus] = useState<'playing' | 'correct' | 'wrong' | 'finished'>('playing');
   const [score, setScore] = useState(0);
   const [answerReveal, setAnswerReveal] = useState('');
   const [pointsAwardedText, setPointsAwardedText] = useState('');
+  const [doneDayIds, setDoneDayIds] = useState<Set<string>>(new Set());
+  const [autoSelected, setAutoSelected] = useState(false);
 
   useEffect(() => {
     fetchTransferClubs().then(setClubs);
-    fetchTransferLinks().then(setLinks);
+    fetchTransferDailies().then(setDailies);
+    fetchFootygridPlayers().then(setPlayers);
   }, []);
 
+  useEffect(() => {
+    if (dailies.length > 0 && !autoSelected) {
+      setAutoSelected(true);
+      setSelectedId(dailies[dailies.length - 1].id);
+    }
+  }, [dailies, autoSelected]);
+
+  function selectDay(dayId: string) {
+    setSelectedId(dayId);
+    setStep(0);
+    setInput('');
+    setStatus('playing');
+    setScore(0);
+    setAnswerReveal('');
+    setPointsAwardedText('');
+  }
+
+  function backToPicker() {
+    setSelectedId(null);
+  }
+
+  const day = dailies.find((d) => d.id === selectedId) || null;
   const clubById = (id: string) => clubs.find((c) => c.id === id);
-  const currentLink = links[Math.min(step, links.length - 1)];
+  const currentLink = day ? day.rounds[Math.min(step, day.rounds.length - 1)] : null;
   const notFinished = status !== 'finished';
+
+  const searchQ = input.trim().toLowerCase();
+  const suggestions = status === 'playing' && searchQ.length > 1
+    ? players.filter((p) => p.name.toLowerCase().includes(searchQ)).slice(0, 6)
+    : [];
 
   function submit() {
     if (status !== 'playing' || !input.trim() || !currentLink) return;
     const normalizedGuess = normalizeAnswer(input);
-    const correct = currentLink.answers.some((a) => normalizeAnswer(a) === normalizedGuess);
+    const nameParts = currentLink.display.split(' ').map(normalizeAnswer).filter(Boolean);
+    const acceptable = new Set(currentLink.answers.map(normalizeAnswer));
+    nameParts.forEach((p) => acceptable.add(p));
+    acceptable.add(nameParts.join(''));
+    const correct = acceptable.has(normalizedGuess);
     setAnswerReveal(currentLink.display);
     setStatus(correct ? 'correct' : 'wrong');
     if (correct) setScore((s) => s + 1);
   }
 
   async function next() {
+    if (!day) return;
     const nextStep = step + 1;
-    if (nextStep >= links.length) {
+    if (nextStep >= day.rounds.length) {
       const res = await completeTransferChain(score);
       setPointsAwardedText(res.persisted ? '+10 points earned for completing the chain' : 'Sign in to save your Transfer Chain points');
+      setDoneDayIds((prev) => new Set(prev).add(day.id));
       setStep(nextStep);
       setStatus('finished');
     } else {
@@ -78,32 +116,49 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
     }
   }
 
-  function playAgain() {
-    setStep(0);
-    setInput('');
-    setStatus('playing');
-    setScore(0);
-    setAnswerReveal('');
-    setPointsAwardedText('');
-  }
+  const finalMessage = day && (
+    score === day.rounds.length ? 'Perfect chain — you know your transfers.' : score >= day.rounds.length * 0.6 ? 'Solid work tracing the chain.' : 'A tough chain — give it another run.'
+  );
 
-  const finalMessage =
-    score === links.length ? 'Perfect chain — you know your transfers.' : score >= links.length * 0.6 ? 'Solid work tracing the chain.' : 'A tough chain — give it another run.';
+  if (!day) {
+    return (
+      <main style={{ flex: 1, maxWidth: 640, margin: '0 auto', padding: '72px 48px 120px', width: '100%' }}>
+        <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 16 }}>← Back to Home</div>
+        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 6px', color: colors.primary }}>Transfer Chain</h1>
+        <p style={{ fontSize: 14, color: colors.textMuted, margin: '0 0 24px' }}>A new 5-round chain every day. Pick a day to play.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {dailies.slice().reverse().map((d) => {
+            const isDone = doneDayIds.has(d.id);
+            return (
+              <div key={d.id} onClick={() => selectDay(d.id)} style={{ border: `1px solid ${colors.panelBorder}`, background: colors.panelBg, borderRadius: 8, padding: '18px 20px', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, color: colors.textBody }}>{d.date}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.primary }}>{isDone ? 'Completed' : 'Not started'}</div>
+                </div>
+                <div style={{ fontSize: 13, color: colors.textMuted }}>{d.rounds.length} rounds</div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main style={{ flex: 1, maxWidth: 760, margin: '0 auto', padding: '72px 48px 120px', width: '100%' }}>
       <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 8 }}>← Back to Home</div>
-      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: colors.primary, marginBottom: 20 }}>Transfer Chain</div>
+      <div onClick={backToPicker} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: colors.primary, marginBottom: 12 }}>← Choose a different day</div>
+      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: colors.primary, marginBottom: 20 }}>Transfer Chain — {day.date}</div>
 
       {notFinished && (
         <p style={{ fontSize: 15, color: colors.textSecondary, margin: '0 0 8px' }}>
-          Type the surname of a player who has played for all three clubs shown — no accents needed. Round {step + 1} of {links.length}.
+          Type the surname of a player who has played for all three clubs shown — no accents needed. Round {step + 1} of {day.rounds.length}.
         </p>
       )}
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', margin: '28px 0 40px', padding: 20, background: 'oklch(0.97 0.005 250)', borderRadius: 8 }}>
         {clubs.map((c) => {
-          const inRound = notFinished && currentLink?.club_ids.includes(c.id);
+          const inRound = notFinished && currentLink?.clubs.includes(c.id);
           return (
             <div key={c.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 64 }}>
               <ClubBadge club={c} size={52} ring={inRound ? colors.primary : 'oklch(0.9 0.01 250)'} />
@@ -116,7 +171,7 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
       {notFinished && currentLink && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 32, flexWrap: 'wrap' }}>
-            {currentLink.club_ids.map((id) => {
+            {currentLink.clubs.map((id) => {
               const c = clubById(id);
               return (
                 <div key={id} style={{ textAlign: 'center' }}>
@@ -127,7 +182,7 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
             })}
           </div>
 
-          <div style={{ maxWidth: 360, margin: '0 auto' }}>
+          <div style={{ maxWidth: 360, margin: '0 auto', position: 'relative' }}>
             {status === 'playing' ? (
               <>
                 <input
@@ -135,9 +190,22 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
                   placeholder="Player surname"
-                  style={{ width: '100%', padding: '14px 16px', border: '1px solid oklch(0.85 0.01 250)', borderRadius: 4, fontSize: 15, fontFamily: fonts.body, textAlign: 'center', marginBottom: 16 }}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px', border: '1px solid oklch(0.85 0.01 250)', borderRadius: 4, fontSize: 15, fontFamily: fonts.body, textAlign: 'center', marginBottom: 8 }}
                 />
-                <button onClick={submit} style={{ width: '100%', background: colors.primary, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>Submit</button>
+                {suggestions.length > 0 && (
+                  <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
+                    {suggestions.map((s) => (
+                      <div
+                        key={s.id}
+                        onClick={() => setInput(s.name)}
+                        style={{ padding: '8px 14px', cursor: 'pointer', fontSize: 14, textAlign: 'center', borderBottom: `1px solid ${colors.borderLight}` }}
+                      >
+                        {s.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button onClick={submit} style={{ width: '100%', background: colors.primary, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body, marginTop: 8 }}>Submit</button>
               </>
             ) : (
               <>
@@ -146,7 +214,7 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
                 </div>
                 <div style={{ textAlign: 'center', fontSize: 14, color: colors.textMuted, marginBottom: 20 }}>Answer: {answerReveal}</div>
                 <button onClick={next} style={{ width: '100%', background: colors.textBody, color: 'white', border: 'none', padding: '14px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>
-                  {step + 1 >= links.length ? 'See Final Score' : 'Next Round'}
+                  {step + 1 >= day.rounds.length ? 'See Final Score' : 'Next Round'}
                 </button>
               </>
             )}
@@ -156,12 +224,12 @@ export default function TransferChain({ go }: { go: (v: ViewName) => void }) {
 
       {!notFinished && (
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 12px', color: colors.primary }}>{score} / {links.length} rounds solved</h1>
+          <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 12px', color: colors.primary }}>{score} / {day.rounds.length} rounds solved</h1>
           <p style={{ fontSize: 14, color: colors.success, fontWeight: 600, margin: '0 0 12px' }}>{pointsAwardedText}</p>
           <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 32px' }}>{finalMessage}</p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-            <button onClick={playAgain} style={{ background: colors.primary, color: 'white', border: 'none', padding: '14px 28px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>Play Again</button>
-            <div onClick={() => go('home')} style={{ alignSelf: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Done</div>
+            <div onClick={backToPicker} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary, textDecoration: 'underline' }}>Choose Another Day</div>
+            <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
           </div>
         </div>
       )}

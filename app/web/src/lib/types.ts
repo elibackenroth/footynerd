@@ -57,12 +57,16 @@ export interface TransferClub {
   short_name: string;
 }
 
-export interface TransferLinkPublic {
-  id: number;
-  position: number;
-  club_ids: string[];
+export interface TransferRound {
+  clubs: string[];
   answers: string[];
   display: string;
+}
+
+export interface TransferDaily {
+  id: string;
+  date: string;
+  rounds: TransferRound[];
 }
 
 export interface Profile {
@@ -106,6 +110,9 @@ export interface FootygridPlayer {
   id: string;
   name: string;
   position: string;
+  country: string;
+  clubs: string[];
+  trophies: string[];
 }
 
 export interface FootygridHeader {
@@ -121,7 +128,6 @@ export interface FootygridGrid {
   date: string;
   rows: FootygridHeader[];
   cols: FootygridHeader[];
-  answers: Record<string, string[]>;
 }
 
 export interface FootygridAnswerEntry {

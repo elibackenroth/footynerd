@@ -7,14 +7,16 @@ import type { User } from '@supabase/supabase-js';
 
 const MAX_LIVES = 9;
 
-const FLAG_URLS: Record<string, string> = {
-  germany: 'https://commons.wikimedia.org/wiki/Special:FilePath/Flag_of_Germany.svg?width=100',
-  spain: 'https://commons.wikimedia.org/wiki/Special:FilePath/Flag_of_Spain.svg?width=100',
-  brazil: 'https://commons.wikimedia.org/wiki/Special:FilePath/Flag_of_Brazil.svg?width=100',
-  argentina: 'https://commons.wikimedia.org/wiki/Special:FilePath/Flag_of_Argentina.svg?width=100',
-  france: 'https://commons.wikimedia.org/wiki/Special:FilePath/Flag_of_France.svg?width=100',
-  portugal: 'https://commons.wikimedia.org/wiki/Special:FilePath/Flag_of_Portugal.svg?width=100',
-};
+function footygridDefFits(player: FootygridPlayer, def: FootygridHeader | undefined): boolean {
+  if (!player || !def) return false;
+  if (def.isClub) return player.clubs.includes(def.key);
+  if (def.isFlag) return player.country === def.key;
+  return player.trophies.includes(def.key);
+}
+
+function footygridPlayerFits(player: FootygridPlayer, rowDef: FootygridHeader | undefined, colDef: FootygridHeader | undefined): boolean {
+  return footygridDefFits(player, rowDef) && footygridDefFits(player, colDef);
+}
 
 function HeaderBadge({ header, size }: { header: FootygridHeader; size: number }) {
   if (header.isClub) {
@@ -27,7 +29,7 @@ function HeaderBadge({ header, size }: { header: FootygridHeader; size: number }
   if (header.isFlag) {
     return (
       <div style={{ width: size * 1.15, height: size * 0.8, borderRadius: 3, overflow: 'hidden', margin: '0 auto 4px' }}>
-        <img src={FLAG_URLS[header.key]} alt={header.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={`/flags/${header.key}.webp`} alt={header.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
     );
   }
@@ -41,12 +43,21 @@ export default function FootyGrid({ go, user, isMobile }: { go: (v: ViewName) =>
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalCell, setModalCell] = useState<{ rowKey: string; colKey: string } | null>(null);
   const [searchInput, setSearchInput] = useState('');
+  const [autoSelected, setAutoSelected] = useState(false);
 
   useEffect(() => {
     fetchFootygridPlayers().then(setPlayers);
     fetchFootygridGrids().then(setGrids);
     if (user) fetchMyFootygridAttempts(user.id).then(setMyAttempts);
   }, [user]);
+
+  useEffect(() => {
+    if (grids.length > 0 && !autoSelected) {
+      setAutoSelected(true);
+      selectGrid(grids[grids.length - 1].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grids, autoSelected]);
 
   const selectedGrid = grids.find((g) => g.id === selectedId) || null;
   const progress: FootygridAttempt = (selectedId && myAttempts[selectedId]) || { grid_id: selectedId || '', answers: {}, lives: MAX_LIVES, status: 'playing' };
@@ -89,11 +100,12 @@ export default function FootyGrid({ go, user, isMobile }: { go: (v: ViewName) =>
   function pickPlayer(playerId: string) {
     if (!selectedId || !selectedGrid || !modalCell) return;
     const key = modalCell.rowKey + '|' + modalCell.colKey;
-    const accepted = selectedGrid.answers[key] || [];
+    const rowDef = selectedGrid.rows.find((r) => r.key === modalCell.rowKey);
+    const colDef = selectedGrid.cols.find((c) => c.key === modalCell.colKey);
     const player = players.find((p) => p.id === playerId);
     if (!player) return;
     let next: FootygridAttempt;
-    if (accepted.includes(playerId)) {
+    if (footygridPlayerFits(player, rowDef, colDef)) {
       const answers = { ...progress.answers, [key]: { id: player.id, name: player.name, position: player.position } };
       const solved = Object.keys(answers).length;
       next = { ...progress, answers, status: solved >= 9 ? 'won' : 'playing' };
