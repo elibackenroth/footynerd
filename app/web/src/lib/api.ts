@@ -33,6 +33,14 @@ export async function fetchQuizQuestions(quizId: string): Promise<QuizQuestionPu
   return data as QuizQuestionPublic[];
 }
 
+export async function fetchQuizQuestionCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase.from('quiz_questions_public').select('quiz_id');
+  if (error) throw error;
+  const counts: Record<string, number> = {};
+  (data as { quiz_id: string }[]).forEach((row) => { counts[row.quiz_id] = (counts[row.quiz_id] || 0) + 1; });
+  return counts;
+}
+
 export async function fetchMyAttempts(userId: string): Promise<Record<string, QuizAttempt>> {
   const { data, error } = await supabase.from('quiz_attempts').select('*').eq('user_id', userId);
   if (error) throw error;

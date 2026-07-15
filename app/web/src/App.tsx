@@ -6,6 +6,7 @@ import type { MatchFull } from './lib/api';
 import {
   fetchQuizzes,
   fetchQuizQuestions,
+  fetchQuizQuestionCounts,
   fetchMyAttempts,
   completeQuiz,
   updateProfile,
@@ -43,6 +44,7 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [view, setView] = useState<ViewName>('home');
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
   const [attempts, setAttempts] = useState<Record<string, QuizAttempt>>({});
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeDifficulty, setActiveDifficulty] = useState('all');
@@ -83,6 +85,7 @@ export default function App() {
       setQuizzes(qs);
       setMatchSetupQuizId((prev) => prev || qs[0]?.id || '');
     });
+    fetchQuizQuestionCounts().then(setQuestionCounts);
 
     const params = new URLSearchParams(window.location.search);
     const matchParam = params.get('match');
@@ -170,6 +173,11 @@ export default function App() {
   }
 
   function go(v: ViewName) { setView(v); }
+
+  function goCategory(category: string) {
+    setActiveCategory(category);
+    setView('quizzes');
+  }
 
   // ---------- regular quiz flow ----------
   async function startQuiz(quizId: string) {
@@ -358,8 +366,10 @@ export default function App() {
             quizzesPassedCount={quizzesPassedCount}
             totalAccountPoints={totalPoints}
             pointsRows={pointsRows}
+            questionCounts={questionCounts}
             isMobile={isMobile}
             go={go}
+            goCategory={goCategory}
             startQuiz={startQuiz}
             startMatchSetup={startMatchSetup}
             startWordlePicker={() => go('wordle')}
@@ -427,7 +437,7 @@ export default function App() {
         )}
 
         {view === 'leaderboard' && (
-          <Leaderboard pointsRows={pointsRows} />
+          <Leaderboard pointsRows={pointsRows} myName={profile?.name || null} isMobile={isMobile} />
         )}
 
         {view === 'match' && (
