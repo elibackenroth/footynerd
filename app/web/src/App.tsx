@@ -382,6 +382,7 @@ export default function App() {
           <Quizzes
             quizzes={quizzes}
             attempts={attempts}
+            questionCounts={questionCounts}
             activeCategory={activeCategory}
             setCategory={setActiveCategory}
             activeDifficulty={activeDifficulty}

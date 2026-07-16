@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { colors, fonts, PASS_THRESHOLD } from '../lib/tokens';
+import { colors, fonts, passThresholdFor } from '../lib/tokens';
 import type { ViewName } from '../lib/viewTypes';
 
 export default function Result({
@@ -30,7 +30,7 @@ export default function Result({
     ? 'Flawless. You know your football.'
     : passed
     ? 'You passed — solid performance.'
-    : `Not quite — you needed ${PASS_THRESHOLD} correct to pass. No retakes on this one.`;
+    : `Not quite — you needed ${passThresholdFor(total)} correct to pass. No retakes on this one.`;
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
   const [name, setName] = useState('');

@@ -68,9 +68,11 @@ export default function Home({
 
   const homeLeaderboardTop = pointsRows.slice(0, 10);
 
+  const cardStyle = { background: 'oklch(0.97 0.02 250)', border: '1px solid oklch(0.91 0.02 250)', borderRadius: 12, padding: 32 };
+
   return (
     <main style={{ flex: 1, width: '100%' }}>
-      <div style={{ width: '100%', background: 'linear-gradient(180deg, oklch(0.96 0.035 250), white 85%)' }}>
+      <div style={{ width: '100%' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: isMobile ? '32px 20px 24px' : '56px 48px 56px', textAlign: 'center' }}>
           <div style={{ display: 'inline-block', background: 'white', border: `1px solid ${colors.panelBorder}`, color: colors.primary, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', padding: '6px 16px', borderRadius: 999, marginBottom: 20 }}>
             {hasAccountName ? 'Welcome back' : 'New quizzes, wordles & grids daily'}
@@ -98,13 +100,12 @@ export default function Home({
         </div>
       </div>
 
-      <div style={{ width: '100%', background: 'oklch(0.97 0.02 250)', borderTop: '1px solid oklch(0.91 0.02 250)', borderBottom: '1px solid oklch(0.91 0.02 250)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '0 20px 56px' : '0 48px 80px' }}>
-          <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: 0, paddingTop: 48, marginBottom: 20, color: colors.primary }}>Daily Games</h2>
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '48px 48px 100px' }}>
+        <div style={cardStyle}>
+          <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: '0 0 20px', color: colors.primary }}>Daily Games</h2>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))', gap: 20, textAlign: 'left' }}>
             <ModeCard
               image="/mode-images/wordle.webp"
-              eyebrow="Word Game"
               title="Football Wordle"
               desc="10 puzzles — stadiums, players, coaches & clubs. Click to jump right in."
               buttonLabel="Play Wordle"
@@ -112,7 +113,6 @@ export default function Home({
             />
             <ModeCard
               image="/mode-images/transferchain.webp"
-              eyebrow="Club Trivia"
               title="Transfer Chain"
               desc="A new 5-round chain every day. Name the player who links three clubs."
               buttonLabel="Play Transfer Chain"
@@ -120,7 +120,6 @@ export default function Home({
             />
             <ModeCard
               image="/mode-images/footygrid.png"
-              eyebrow="Grid Game"
               title="FootyGrid"
               desc="A 3x3 grid of clubs, countries, and trophies. One player links each row and column."
               buttonLabel="Play FootyGrid"
@@ -128,78 +127,86 @@ export default function Home({
             />
           </div>
         </div>
-      </div>
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '0 20px 48px' : '0 48px 48px' }}>
-        <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: '0 0 28px', color: colors.primary }}>Featured Quizzes</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: isMobile ? 20 : 24, marginBottom: 28 }}>
-          {featured.map((quiz) => (
-            <QuizPreviewCard key={quiz.id} quiz={quiz} attempt={attempts[quiz.id]} questionCount={questionCounts[quiz.id]} onStart={() => startQuiz(quiz.id)} />
-          ))}
-        </div>
-      </div>
+        <div style={{ height: 48 }} />
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '0 20px 64px' : '0 48px 100px' }}>
-        <QuizCategorySection title="Latest Player Quizzes" quizzes={playerQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('players')} isMobile={isMobile} />
-        <QuizCategorySection title="Latest Club Quizzes" quizzes={clubQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('clubs')} isMobile={isMobile} />
-        <QuizCategorySection title="Latest National Team Quizzes" quizzes={nationalQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('national')} isMobile={isMobile} />
-
-        <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: '0 0 28px', color: colors.primary }}>Leaderboard</h2>
-        {homeLeaderboardTop.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', borderTop: `1px solid ${colors.borderLight}`, marginBottom: 20 }}>
-            {homeLeaderboardTop.map((row, idx) => (
-              <LeaderboardRow key={row.name + idx} row={row} rank={idx + 1} size="compact" />
-            ))}
+        <div style={cardStyle}>
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
+              <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 24, margin: 0, color: colors.primary }}>Featured Quizzes</h2>
+              <div onClick={() => go('quizzes')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>View all →</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 24 }}>
+              {featured.map((quiz) => (
+                <QuizPreviewCard key={quiz.id} quiz={quiz} attempt={attempts[quiz.id]} questionCount={questionCounts[quiz.id]} onStart={() => startQuiz(quiz.id)} />
+              ))}
+            </div>
           </div>
-        ) : (
-          <div style={{ padding: '32px 0', color: colors.textMuted, fontSize: 15, borderTop: `1px solid ${colors.borderLight}`, marginBottom: 20 }}>
-            No scores yet — play a quiz to take the top spot.
-          </div>
-        )}
-        <div>
-          <button
-            onClick={() => go('leaderboard')}
-            style={{ background: 'transparent', color: colors.primary, border: `1px solid ${colors.primary}`, padding: '12px 28px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}
-          >
-            View Full Leaderboard
-          </button>
+
+          <QuizCategorySection title="Latest Player Quizzes" quizzes={playerQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('players')} isMobile={isMobile} />
+          <QuizCategorySection title="Latest Club Quizzes" quizzes={clubQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('clubs')} isMobile={isMobile} />
+          <QuizCategorySection title="Latest National Team Quizzes" quizzes={nationalQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('national')} isMobile={isMobile} />
         </div>
 
-        <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: '48px 0 28px', color: colors.primary }}>Multiplayer Game Modes</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap', marginBottom: 20 }}>
-          <div style={{ background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 16, flex: 1, maxWidth: isMobile ? '100%' : '50%' }}>
-            <div style={{ width: '100%', height: 120 }}>
-              <img src="/mode-images/matchroom.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+        <div style={{ ...cardStyle, marginTop: 48 }}>
+          <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: '0 0 28px', color: colors.primary }}>Leaderboard</h2>
+          {homeLeaderboardTop.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', borderTop: `1px solid ${colors.borderLight}`, marginBottom: 20 }}>
+              {homeLeaderboardTop.map((row, idx) => (
+                <LeaderboardRow key={row.name + idx} row={row} rank={idx + 1} size="compact" />
+              ))}
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'white', background: colors.primary, padding: '3px 10px', borderRadius: 999, marginBottom: 8 }}>
-                Friend vs Friend
-              </div>
-              <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 21, margin: '0 0 6px', color: colors.textBody }}>Match Room</h3>
-              <p style={{ fontSize: 14, color: colors.textMuted, margin: 0 }}>Challenge a friend head-to-head on the same quiz.</p>
+          ) : (
+            <div style={{ padding: '32px 0', color: colors.textMuted, fontSize: 15, borderTop: `1px solid ${colors.borderLight}`, marginBottom: 20 }}>
+              No scores yet — play a quiz to take the top spot.
             </div>
+          )}
+          <div>
             <button
-              onClick={startMatchSetup}
-              style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', background: colors.primary, color: 'white', border: 'none', padding: '14px 20px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}
+              onClick={() => go('leaderboard')}
+              style={{ background: 'transparent', color: colors.primary, border: `1px solid ${colors.primary}`, padding: '12px 28px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}
             >
-              Start a Match
+              View Full Leaderboard
             </button>
           </div>
-          <p style={{ fontSize: 14, color: colors.textMuted, margin: 0, flex: 1, minWidth: 200 }}>More multiplayer match modes coming soon.</p>
+        </div>
+
+        <div style={{ ...cardStyle, marginTop: 48 }}>
+          <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: '0 0 28px', color: colors.primary }}>Multiplayer Game Modes</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
+            <div style={{ background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 16, flex: 1, maxWidth: isMobile ? '100%' : '50%' }}>
+              <div style={{ width: '100%', height: 120 }}>
+                <img src="/mode-images/matchroom.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'white', background: colors.primary, padding: '3px 10px', borderRadius: 999, marginBottom: 8 }}>
+                  Friend vs Friend
+                </div>
+                <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 21, margin: '0 0 6px', color: colors.textBody }}>Match Room</h3>
+                <p style={{ fontSize: 14, color: colors.textMuted, margin: 0 }}>Challenge a friend head-to-head on the same quiz.</p>
+              </div>
+              <button
+                onClick={startMatchSetup}
+                style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', background: colors.primary, color: 'white', border: 'none', padding: '14px 20px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}
+              >
+                Start a Match
+              </button>
+            </div>
+            <p style={{ fontSize: 14, color: colors.textMuted, margin: 0, flex: 1, minWidth: 200 }}>More multiplayer match modes coming soon.</p>
+          </div>
         </div>
       </div>
     </main>
   );
 }
 
-function ModeCard({ image, eyebrow, title, desc, buttonLabel, onClick }: { image: string; eyebrow: string; title: string; desc: string; buttonLabel: string; onClick: () => void }) {
+function ModeCard({ image, title, desc, buttonLabel, onClick }: { image: string; title: string; desc: string; buttonLabel: string; onClick: () => void }) {
   return (
     <div style={{ background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 8, padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
       <div style={{ width: '100%', height: 120, marginBottom: 4 }}>
         <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: colors.primary, marginBottom: 6 }}>{eyebrow}</div>
         <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 21, margin: '0 0 6px', color: colors.textBody }}>{title}</h3>
         <p style={{ fontSize: 14, color: colors.textMuted, margin: 0 }}>{desc}</p>
       </div>
@@ -223,7 +230,7 @@ function QuizPreviewCard({ quiz, attempt, questionCount, onStart }: { quiz: Quiz
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: colors.primary }}>{DIFFICULTY_LABEL[quiz.difficulty]}</div>
           {questionCount != null && (
-            <div style={{ fontSize: 11, fontWeight: 700, color: colors.danger, background: 'oklch(0.96 0.05 25)', padding: '2px 8px', borderRadius: 999, flexShrink: 0 }}>{questionCount} Qs</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'oklch(0.5 0.15 250)', background: 'oklch(0.95 0.04 250)', padding: '2px 8px', borderRadius: 999, flexShrink: 0 }}>{questionCount} Qs</div>
           )}
         </div>
         <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 19, margin: 0, lineHeight: 1.15, color: colors.textBody }}>{quiz.title}</h3>

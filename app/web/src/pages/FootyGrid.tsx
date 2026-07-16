@@ -146,7 +146,7 @@ export default function FootyGrid({ go, user, isMobile }: { go: (v: ViewName) =>
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: `${isMobile ? 56 : 88}px repeat(3, 1fr)`, gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `${isMobile ? 60 : 88}px repeat(3, 1fr)`, gap: 6 }}>
                 <div />
                 {selectedGrid.cols.map((col) => (
                   <div key={col.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', fontSize: 11, fontWeight: 700, color: colors.primary, background: 'oklch(0.95 0.03 250)', borderRadius: 6, padding: '8px 4px', minHeight: cellMinHeight }}>

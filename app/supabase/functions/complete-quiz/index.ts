@@ -6,7 +6,9 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const PASS_THRESHOLD = 4;
+function passThresholdFor(total: number) {
+  return total >= 10 ? 7 : 3;
+}
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -44,7 +46,7 @@ Deno.serve(async (req) => {
     for (const q of questions) {
       if (answers[q.position] === q.correct_index) score++;
     }
-    const passed = score >= PASS_THRESHOLD;
+    const passed = score >= passThresholdFor(total);
     const points = passed ? quiz.points : 0;
 
     // resolve the signed-in user, if any
