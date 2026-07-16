@@ -237,6 +237,69 @@ export async function fetchMatch(matchId: string): Promise<MatchFull | null> {
   };
 }
 
+// ---------- grid duel ----------
+
+export interface GridDuelEntry {
+  name: string;
+  solved: number;
+  lives_used: number;
+  time_ms: number;
+}
+
+export interface GridDuelFull {
+  id: string;
+  rounds: { id: number; round_number: number; grid_id: string; entries: GridDuelEntry[] }[];
+}
+
+export async function createGridDuelRoom(gridId: string): Promise<{ roomId: string; roundId: number }> {
+  const roomId = genMatchId();
+  const { error: roomErr } = await supabase.from('gridduel_rooms').insert({ id: roomId });
+  if (roomErr) throw roomErr;
+  const { data: round, error: roundErr } = await supabase
+    .from('gridduel_rounds')
+    .insert({ room_id: roomId, round_number: 1, grid_id: gridId })
+    .select()
+    .single();
+  if (roundErr) throw roundErr;
+  return { roomId, roundId: round.id };
+}
+
+export async function createGridDuelNextRound(roomId: string, roundNumber: number, gridId: string): Promise<{ roundId: number }> {
+  const { data: round, error } = await supabase
+    .from('gridduel_rounds')
+    .insert({ room_id: roomId, round_number: roundNumber, grid_id: gridId })
+    .select()
+    .single();
+  if (error) throw error;
+  return { roundId: round.id };
+}
+
+export async function submitGridDuelEntry(roundId: number, name: string, answers: Record<string, string>, livesUsed: number, timeMs: number) {
+  const { data, error } = await supabase.functions.invoke('submit-gridduel-entry', {
+    body: { roundId, name, answers, livesUsed, timeMs },
+  });
+  if (error) throw error;
+  return data as { solved: number; total: number; error?: string };
+}
+
+export async function fetchGridDuelRoom(roomId: string): Promise<GridDuelFull | null> {
+  const { data: rounds, error } = await supabase
+    .from('gridduel_rounds')
+    .select('*, gridduel_entries(*)')
+    .eq('room_id', roomId)
+    .order('round_number', { ascending: true });
+  if (error || !rounds) return null;
+  return {
+    id: roomId,
+    rounds: rounds.map((r: any) => ({
+      id: r.id,
+      round_number: r.round_number,
+      grid_id: r.grid_id,
+      entries: r.gridduel_entries as GridDuelEntry[],
+    })),
+  };
+}
+
 // ---------- leads ----------
 
 export async function submitLead(email: string, source: string) {

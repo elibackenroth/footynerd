@@ -1,44 +1,15 @@
 import { Fragment, useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
-import { fetchFootygridPlayers, fetchFootygridGrids, fetchMyFootygridAttempts, saveFootygridAttempt } from '../lib/api';
-import type { FootygridPlayer, FootygridGrid, FootygridAttempt, FootygridHeader } from '../lib/types';
+import { fetchMyFootygridAttempts, saveFootygridAttempt } from '../lib/api';
+import { footygridPlayerFits } from '../lib/footygrid';
+import type { FootygridPlayer, FootygridGrid, FootygridAttempt } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 import type { User } from '@supabase/supabase-js';
+import HeaderBadge from '../components/FootygridHeaderBadge';
 
 const MAX_LIVES = 9;
 
-function footygridDefFits(player: FootygridPlayer, def: FootygridHeader | undefined): boolean {
-  if (!player || !def) return false;
-  if (def.isClub) return player.clubs.includes(def.key);
-  if (def.isFlag) return player.country === def.key;
-  return player.trophies.includes(def.key);
-}
-
-function footygridPlayerFits(player: FootygridPlayer, rowDef: FootygridHeader | undefined, colDef: FootygridHeader | undefined): boolean {
-  return footygridDefFits(player, rowDef) && footygridDefFits(player, colDef);
-}
-
-function HeaderBadge({ header, size }: { header: FootygridHeader; size: number }) {
-  if (header.isClub) {
-    return (
-      <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 4px', background: 'white' }}>
-        <img src={`/club-logos/${header.key}.webp`} alt={header.label} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }} />
-      </div>
-    );
-  }
-  if (header.isFlag) {
-    return (
-      <div style={{ width: size * 1.15, height: size * 0.8, borderRadius: 3, overflow: 'hidden', margin: '0 auto 4px' }}>
-        <img src={`/flags/${header.key}.webp`} alt={header.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      </div>
-    );
-  }
-  return null;
-}
-
-export default function FootyGrid({ go, user, isMobile }: { go: (v: ViewName) => void; user: User | null; isMobile: boolean }) {
-  const [players, setPlayers] = useState<FootygridPlayer[]>([]);
-  const [grids, setGrids] = useState<FootygridGrid[]>([]);
+export default function FootyGrid({ go, user, isMobile, players, grids }: { go: (v: ViewName) => void; user: User | null; isMobile: boolean; players: FootygridPlayer[]; grids: FootygridGrid[] }) {
   const [myAttempts, setMyAttempts] = useState<Record<string, FootygridAttempt>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalCell, setModalCell] = useState<{ rowKey: string; colKey: string } | null>(null);
@@ -46,8 +17,6 @@ export default function FootyGrid({ go, user, isMobile }: { go: (v: ViewName) =>
   const [autoSelected, setAutoSelected] = useState(false);
 
   useEffect(() => {
-    fetchFootygridPlayers().then(setPlayers);
-    fetchFootygridGrids().then(setGrids);
     if (user) fetchMyFootygridAttempts(user.id).then(setMyAttempts);
   }, [user]);
 

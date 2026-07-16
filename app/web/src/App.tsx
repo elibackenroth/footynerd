@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import type { ViewName } from './lib/viewTypes';
-import type { Quiz, QuizAttempt, QuizQuestionPublic, PointsLeaderboardRow } from './lib/types';
-import type { MatchFull } from './lib/api';
+import type { Quiz, QuizAttempt, QuizQuestionPublic, PointsLeaderboardRow, FootygridPlayer, FootygridGrid } from './lib/types';
+import type { MatchFull, GridDuelFull } from './lib/api';
 import {
   fetchQuizzes,
   fetchQuizQuestions,
@@ -15,6 +15,12 @@ import {
   createNextRound,
   submitMatchEntry,
   fetchMatch,
+  fetchFootygridPlayers,
+  fetchFootygridGrids,
+  createGridDuelRoom,
+  createGridDuelNextRound,
+  submitGridDuelEntry,
+  fetchGridDuelRoom,
 } from './lib/api';
 
 import Nav from './components/Nav';
@@ -30,12 +36,15 @@ import MatchRoom from './pages/MatchRoom';
 import Wordle from './pages/Wordle';
 import TransferChain from './pages/TransferChain';
 import FootyGrid from './pages/FootyGrid';
+import GridDuel from './pages/GridDuel';
+import GridDuelPlay from './pages/GridDuelPlay';
 
 const GUEST_PLAYS_KEY = 'footynerd_guest_plays';
 function getGuestPlayCount() { return parseInt(localStorage.getItem(GUEST_PLAYS_KEY) || '0', 10); }
 function incrementGuestPlayCount() { localStorage.setItem(GUEST_PLAYS_KEY, String(getGuestPlayCount() + 1)); }
 
 function matchIdentityKey(matchId: string) { return 'footynerd_match_identity_' + matchId; }
+function gridDuelIdentityKey(roomId: string) { return 'footynerd_gridduel_identity_' + roomId; }
 
 export default function App() {
   const { user, profile, refreshProfile, signUp, signIn, signOut } = useAuth();
@@ -76,6 +85,18 @@ export default function App() {
   const [matchNameDraft, setMatchNameDraft] = useState('');
   const [matchLinkCopied, setMatchLinkCopied] = useState(false);
 
+  // footygrid (shared between FootyGrid page and Grid Duel)
+  const [footygridPlayers, setFootygridPlayers] = useState<FootygridPlayer[]>([]);
+  const [footygridGrids, setFootygridGrids] = useState<FootygridGrid[]>([]);
+
+  // grid duel
+  const [gridDuel, setGridDuel] = useState<GridDuelFull | null>(null);
+  const [gridDuelIdentity, setGridDuelIdentity] = useState<string | null>(null);
+  const [gridDuelPickingRematch, setGridDuelPickingRematch] = useState(false);
+  const [gridDuelSetupGridId, setGridDuelSetupGridId] = useState('');
+  const [gridDuelNameDraft, setGridDuelNameDraft] = useState('');
+  const [gridDuelLinkCopied, setGridDuelLinkCopied] = useState(false);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const lastView = useRef(view);
 
@@ -86,6 +107,11 @@ export default function App() {
       setMatchSetupQuizId((prev) => prev || qs[0]?.id || '');
     });
     fetchQuizQuestionCounts().then(setQuestionCounts);
+    fetchFootygridPlayers().then(setFootygridPlayers);
+    fetchFootygridGrids().then((gs) => {
+      setFootygridGrids(gs);
+      setGridDuelSetupGridId((prev) => prev || gs[gs.length - 1]?.id || '');
+    });
 
     const params = new URLSearchParams(window.location.search);
     const matchParam = params.get('match');
@@ -101,6 +127,21 @@ export default function App() {
       });
       const url = new URL(window.location.href);
       url.searchParams.delete('match');
+      window.history.replaceState({}, '', url.toString());
+    }
+    const duelParam = params.get('duel');
+    if (duelParam) {
+      fetchGridDuelRoom(duelParam).then((fresh) => {
+        if (!fresh) return;
+        const storedIdentity = localStorage.getItem(gridDuelIdentityKey(duelParam));
+        setGridDuel(fresh);
+        setGridDuelIdentity(storedIdentity || null);
+        setGridDuelPickingRematch(false);
+        setGridDuelLinkCopied(false);
+        setView('gridduel');
+      });
+      const url = new URL(window.location.href);
+      url.searchParams.delete('duel');
       window.history.replaceState({}, '', url.toString());
     }
   }, []);
@@ -139,6 +180,17 @@ export default function App() {
     }, 4000);
     return () => clearInterval(id);
   }, [view, match]);
+
+  // poll for opponent activity while sitting on the grid duel view
+  useEffect(() => {
+    if (view !== 'gridduel' || !gridDuel) return;
+    const round = gridDuel.rounds[gridDuel.rounds.length - 1];
+    if (round.entries.length >= 2) return;
+    const id = setInterval(() => {
+      fetchGridDuelRoom(gridDuel.id).then((fresh) => { if (fresh) setGridDuel(fresh); });
+    }, 4000);
+    return () => clearInterval(id);
+  }, [view, gridDuel]);
 
   // scroll-to-top + fade on every view change
   useEffect(() => {
@@ -348,6 +400,85 @@ export default function App() {
     setMatchActive(false);
   }
 
+  // ---------- grid duel ----------
+  function startGridDuelSetup() {
+    setGridDuel(null);
+    setGridDuelPickingRematch(false);
+    setGridDuelLinkCopied(false);
+    setGridDuelNameDraft(profile?.name || gridDuelNameDraft || '');
+    setGridDuelSetupGridId(footygridGrids[footygridGrids.length - 1]?.id || '');
+    setView('gridduel');
+  }
+
+  async function handleCreateGridDuelRoom() {
+    const name = gridDuelNameDraft.trim();
+    if (!name || !gridDuelSetupGridId) return;
+    const { roomId } = await createGridDuelRoom(gridDuelSetupGridId);
+    localStorage.setItem(gridDuelIdentityKey(roomId), name);
+    setGridDuelIdentity(name);
+    const fresh = await fetchGridDuelRoom(roomId);
+    setGridDuel(fresh);
+    setView('gridduelplay');
+  }
+
+  function handleAcceptGridDuelChallenge() {
+    const name = gridDuelNameDraft.trim();
+    if (!name || !gridDuel) return;
+    localStorage.setItem(gridDuelIdentityKey(gridDuel.id), name);
+    setGridDuelIdentity(name);
+    setView('gridduelplay');
+  }
+
+  function handlePlayGridDuelTurn() {
+    if (!gridDuel) return;
+    setView('gridduelplay');
+  }
+
+  function handleCopyGridDuelLink() {
+    if (!gridDuel) return;
+    const url = `${window.location.origin}${window.location.pathname}?duel=${gridDuel.id}`;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => setGridDuelLinkCopied(true)).catch(() => setGridDuelLinkCopied(true));
+    } else {
+      setGridDuelLinkCopied(true);
+    }
+  }
+
+  function handleStartGridDuelRematchPick() {
+    setGridDuelPickingRematch(true);
+    setGridDuelSetupGridId((prev) => prev || footygridGrids[footygridGrids.length - 1]?.id || '');
+  }
+
+  async function handleCreateGridDuelNextRound() {
+    if (!gridDuel || !gridDuelSetupGridId) return;
+    const nextRoundNumber = gridDuel.rounds.length + 1;
+    await createGridDuelNextRound(gridDuel.id, nextRoundNumber, gridDuelSetupGridId);
+    const fresh = await fetchGridDuelRoom(gridDuel.id);
+    setGridDuel(fresh);
+    setGridDuelPickingRematch(false);
+    setView('gridduelplay');
+  }
+
+  async function handleGridDuelFinish(result: { answers: Record<string, { id: string; name: string; position: string }>; livesUsed: number; timeMs: number }) {
+    if (!gridDuel) return;
+    const round = gridDuel.rounds[gridDuel.rounds.length - 1];
+    const answersForServer: Record<string, string> = {};
+    Object.entries(result.answers).forEach(([key, player]) => { answersForServer[key] = player.id; });
+    await submitGridDuelEntry(round.id, gridDuelIdentity || 'Guest', answersForServer, result.livesUsed, result.timeMs);
+    const fresh = await fetchGridDuelRoom(gridDuel.id);
+    setGridDuel(fresh);
+    setGridDuelPickingRematch(false);
+    setView('gridduel');
+  }
+
+  function leaveGridDuel() {
+    setView('home');
+    setGridDuel(null);
+    setGridDuelIdentity(null);
+    setGridDuelPickingRematch(false);
+    setGridDuelLinkCopied(false);
+  }
+
   const quizzesPassedCount = Object.values(attempts).filter((a) => a.passed).length;
   const totalPoints = Object.values(attempts).reduce((sum, a) => sum + (a.passed ? a.points : 0), 0) + (profile?.transfer_points ?? 0);
 
@@ -375,6 +506,7 @@ export default function App() {
             startWordlePicker={() => go('wordle')}
             startTransferChain={() => go('transferchain')}
             startFootygrid={() => go('footygrid')}
+            startGridDuelSetup={startGridDuelSetup}
           />
         )}
 
@@ -464,7 +596,41 @@ export default function App() {
 
         {view === 'wordle' && <Wordle go={go} user={user} isMobile={isMobile} />}
         {view === 'transferchain' && <TransferChain go={go} isMobile={isMobile} />}
-        {view === 'footygrid' && <FootyGrid go={go} user={user} isMobile={isMobile} />}
+        {view === 'footygrid' && <FootyGrid go={go} user={user} isMobile={isMobile} players={footygridPlayers} grids={footygridGrids} />}
+
+        {view === 'gridduel' && (
+          <GridDuel
+            grids={footygridGrids}
+            gridDuel={gridDuel}
+            identity={gridDuelIdentity}
+            pickingRematch={gridDuelPickingRematch}
+            setupGridId={gridDuelSetupGridId}
+            nameDraft={gridDuelNameDraft}
+            linkCopied={gridDuelLinkCopied}
+            onPickGrid={setGridDuelSetupGridId}
+            onNameDraftChange={setGridDuelNameDraft}
+            onCreateRoom={handleCreateGridDuelRoom}
+            onAcceptChallenge={handleAcceptGridDuelChallenge}
+            onPlayTurn={handlePlayGridDuelTurn}
+            onCopyLink={handleCopyGridDuelLink}
+            onStartRematchPick={handleStartGridDuelRematchPick}
+            onCreateNextRound={handleCreateGridDuelNextRound}
+            onLeave={leaveGridDuel}
+          />
+        )}
+
+        {view === 'gridduelplay' && gridDuel && (() => {
+          const round = gridDuel.rounds[gridDuel.rounds.length - 1];
+          const grid = footygridGrids.find((g) => g.id === round.grid_id);
+          if (!grid) return null;
+          return (
+            <main style={{ flex: 1, width: '100%', background: 'white', padding: isMobile ? '32px 16px 80px' : '48px 20px 100px' }}>
+              <div style={{ maxWidth: 520, margin: '0 auto' }}>
+                <GridDuelPlay grid={grid} players={footygridPlayers} isMobile={isMobile} onFinish={handleGridDuelFinish} />
+              </div>
+            </main>
+          );
+        })()}
       </div>
 
       {showEmailGate && <EmailGateModal onContinue={submitEmailGate} onClose={closeEmailGate} />}

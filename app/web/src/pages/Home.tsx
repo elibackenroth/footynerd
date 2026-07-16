@@ -22,6 +22,7 @@ export default function Home({
   startWordlePicker,
   startTransferChain,
   startFootygrid,
+  startGridDuelSetup,
 }: {
   quizzes: Quiz[];
   attempts: Record<string, QuizAttempt>;
@@ -38,28 +39,9 @@ export default function Home({
   startWordlePicker: () => void;
   startTransferChain: () => void;
   startFootygrid: () => void;
+  startGridDuelSetup: () => void;
 }) {
-  const featuredIds = (() => {
-    const used = new Set<string>();
-    const pickReplacement = () => {
-      for (let i = quizzes.length - 1; i >= 0; i--) {
-        const cand = quizzes[i];
-        if (!attempts[cand.id] && !used.has(cand.id)) return cand.id;
-      }
-      return null;
-    };
-    return FEATURED_BASE_IDS.map((id) => {
-      if (!attempts[id] && !used.has(id) && quizzes.some((q) => q.id === id)) {
-        used.add(id);
-        return id;
-      }
-      const rep = pickReplacement();
-      const finalId = rep || id;
-      used.add(finalId);
-      return finalId;
-    });
-  })();
-  const featured = featuredIds.map((id) => quizzes.find((q) => q.id === id)).filter(Boolean) as Quiz[];
+  const featured = FEATURED_BASE_IDS.map((id) => quizzes.find((q) => q.id === id)).filter(Boolean) as Quiz[];
 
   const buildCategoryPreview = (category: string) => quizzes.filter((q) => q.category === category).slice().reverse().slice(0, 3);
   const playerQuizzes = buildCategoryPreview('players');
@@ -178,8 +160,8 @@ export default function Home({
               <div style={{ width: '100%', height: 120 }}>
                 <img src="/mode-images/matchroom.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'white', background: colors.primary, padding: '3px 10px', borderRadius: 999, marginBottom: 8 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ alignSelf: 'flex-start', fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'white', background: colors.primary, padding: '3px 10px', borderRadius: 999, marginBottom: 8 }}>
                   Friend vs Friend
                 </div>
                 <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 21, margin: '0 0 6px', color: colors.textBody }}>Match Room</h3>
@@ -192,7 +174,24 @@ export default function Home({
                 Start a Match
               </button>
             </div>
-            <p style={{ fontSize: 14, color: colors.textMuted, margin: 0, flex: 1, minWidth: 200 }}>More multiplayer match modes coming soon.</p>
+            <div style={{ background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 16, flex: 1, maxWidth: isMobile ? '100%' : '50%' }}>
+              <div style={{ width: '100%', height: 120 }}>
+                <img src="/mode-images/gridduel.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ alignSelf: 'flex-start', fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'white', background: colors.primary, padding: '3px 10px', borderRadius: 999, marginBottom: 8 }}>
+                  Friend vs Friend
+                </div>
+                <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 21, margin: '0 0 6px', color: colors.textBody }}>Grid Duel</h3>
+                <p style={{ fontSize: 14, color: colors.textMuted, margin: 0 }}>Race a friend to fill the FootyGrid faster.</p>
+              </div>
+              <button
+                onClick={startGridDuelSetup}
+                style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', background: colors.primary, color: 'white', border: 'none', padding: '14px 20px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}
+              >
+                Start a Grid Duel
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -233,7 +232,8 @@ function QuizPreviewCard({ quiz, attempt, questionCount, onStart }: { quiz: Quiz
             <div style={{ fontSize: 11, fontWeight: 700, color: 'oklch(0.5 0.15 250)', background: 'oklch(0.95 0.04 250)', padding: '2px 8px', borderRadius: 999, flexShrink: 0 }}>{questionCount} Qs</div>
           )}
         </div>
-        <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 19, margin: 0, lineHeight: 1.15, color: colors.textBody }}>{quiz.title}</h3>
+        <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 19, margin: 0, lineHeight: 1.15, minHeight: 44, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: colors.textBody }}>{quiz.title}</h3>
+        <div style={{ flex: 1 }} />
         {!attempt ? (
           <button
             onClick={onStart}

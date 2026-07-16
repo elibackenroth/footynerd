@@ -148,7 +148,7 @@ export default function Quizzes({
               <div
                 key={quiz.id}
                 style={{
-                  border: `1px solid ${colors.border}`, borderRadius: 4, overflow: 'hidden', height: 440, display: 'flex', flexDirection: 'column',
+                  border: `1px solid ${colors.border}`, borderRadius: 4, overflow: 'hidden', height: 454, display: 'flex', flexDirection: 'column',
                   ...(isMobile ? { flex: '0 0 82%', scrollSnapAlign: 'start' } : {}),
                 }}
               >
@@ -164,8 +164,9 @@ export default function Quizzes({
                       <div style={{ fontSize: 12, fontWeight: 700, color: 'oklch(0.5 0.15 250)', background: 'oklch(0.95 0.04 250)', padding: '3px 10px', borderRadius: 999, flexShrink: 0 }}>{questionCount} Qs</div>
                     )}
                   </div>
-                  <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: 0, lineHeight: 1.15, color: colors.primary }}>{quiz.title}</h2>
-                  <p style={{ fontSize: 15, color: colors.textMuted, margin: 0, lineHeight: 1.5, flex: 1 }}>{quiz.description}</p>
+                  <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: 0, lineHeight: 1.15, minHeight: 60, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: colors.primary }}>{quiz.title}</h2>
+                  <p style={{ fontSize: 15, color: colors.textMuted, margin: 0, lineHeight: 1.5, minHeight: 45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{quiz.description}</p>
+                  <div style={{ flex: 1 }} />
                   {!attempt ? (
                     <button
                       onClick={() => startQuiz(quiz.id)}

@@ -8,4 +8,6 @@ export type ViewName =
   | 'match'
   | 'wordle'
   | 'transferchain'
-  | 'footygrid';
+  | 'footygrid'
+  | 'gridduel'
+  | 'gridduelplay';
