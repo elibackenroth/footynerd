@@ -50,7 +50,7 @@ export const DIFFICULTIES = [
 export const DIFFICULTY_LABEL: Record<string, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
 export function passThresholdFor(total: number) {
-  return total >= 10 ? 7 : 3;
+  return total >= 20 ? 13 : total >= 10 ? 7 : 3;
 }
 
 export function quizHash(id: string) {

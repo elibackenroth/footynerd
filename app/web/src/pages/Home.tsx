@@ -118,9 +118,12 @@ export default function Home({
               <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 24, margin: 0, color: colors.primary }}>Featured Quizzes</h2>
               <div onClick={() => go('quizzes')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>View all →</div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 24 }}>
+            <div style={isMobile
+              ? { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', gap: 16, margin: '0 -20px', padding: '4px 20px 12px', WebkitOverflowScrolling: 'touch' }
+              : { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}
+            >
               {featured.map((quiz) => (
-                <QuizPreviewCard key={quiz.id} quiz={quiz} attempt={attempts[quiz.id]} questionCount={questionCounts[quiz.id]} onStart={() => startQuiz(quiz.id)} />
+                <QuizPreviewCard key={quiz.id} quiz={quiz} attempt={attempts[quiz.id]} questionCount={questionCounts[quiz.id]} onStart={() => startQuiz(quiz.id)} isMobile={isMobile} />
               ))}
             </div>
           </div>
@@ -219,9 +222,9 @@ function ModeCard({ image, title, desc, buttonLabel, onClick }: { image: string;
   );
 }
 
-function QuizPreviewCard({ quiz, attempt, questionCount, onStart }: { quiz: Quiz; attempt?: QuizAttempt; questionCount?: number; onStart: () => void }) {
+function QuizPreviewCard({ quiz, attempt, questionCount, onStart, isMobile }: { quiz: Quiz; attempt?: QuizAttempt; questionCount?: number; onStart: () => void; isMobile?: boolean }) {
   return (
-    <div style={{ border: `1px solid ${colors.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ border: `1px solid ${colors.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', ...(isMobile ? { flex: '0 0 82%', scrollSnapAlign: 'start' } : {}) }}>
       <div style={{ width: '100%', height: 140 }}>
         <QuizImage quizId={quiz.id} fallback={quiz.image} alt={quiz.title} />
       </div>
@@ -269,9 +272,12 @@ function QuizCategorySection({
         <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 24, margin: 0, color: colors.primary }}>{title}</h2>
         <div onClick={onViewAll} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>View all →</div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
+      <div style={isMobile
+        ? { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', gap: 16, margin: '0 -20px', padding: '4px 20px 12px', WebkitOverflowScrolling: 'touch' }
+        : { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}
+      >
         {quizzes.map((quiz) => (
-          <QuizPreviewCard key={quiz.id} quiz={quiz} attempt={attempts[quiz.id]} questionCount={questionCounts[quiz.id]} onStart={() => startQuiz(quiz.id)} />
+          <QuizPreviewCard key={quiz.id} quiz={quiz} attempt={attempts[quiz.id]} questionCount={questionCounts[quiz.id]} onStart={() => startQuiz(quiz.id)} isMobile={isMobile} />
         ))}
       </div>
     </div>
