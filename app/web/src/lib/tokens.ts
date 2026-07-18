@@ -47,6 +47,11 @@ export const DIFFICULTIES = [
   { id: 'hard', label: 'Hard · 75 pts' },
 ];
 
+export const SORTS = [
+  { id: 'featured', label: 'Featured' },
+  { id: 'recent', label: 'Most Recent' },
+];
+
 export const DIFFICULTY_LABEL: Record<string, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
 export function passThresholdFor(total: number) {

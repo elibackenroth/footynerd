@@ -208,12 +208,36 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
             </>
           )}
 
-          {isResultView && (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          {isResultView && activePuzzle && (
+            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+              <div style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'white', background: status === 'won' ? colors.success : colors.danger, padding: '6px 16px', borderRadius: 999, marginBottom: 20 }}>
+                {message}
+              </div>
               {renderBoard()}
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 24, color: status === 'won' ? colors.success : colors.danger }}>{message}</div>
-              <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-                <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>Return to Home</div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxWidth: 420, margin: '0 auto 28px' }}>
+                <div style={{ background: 'oklch(0.97 0.01 250)', borderRadius: 8, padding: '16px 8px' }}>
+                  <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 26, color: colors.primary }}>{guesses.length}/{maxGuesses}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.4, textTransform: 'uppercase', color: colors.textMuted, marginTop: 4 }}>Guesses Used</div>
+                </div>
+                <div style={{ background: 'oklch(0.97 0.01 250)', borderRadius: 8, padding: '16px 8px' }}>
+                  <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 26, color: colors.primary }}>{activePuzzle.category}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.4, textTransform: 'uppercase', color: colors.textMuted, marginTop: 4 }}>Category</div>
+                </div>
+                <div style={{ background: 'oklch(0.97 0.01 250)', borderRadius: 8, padding: '16px 8px' }}>
+                  <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 22, color: colors.primary, letterSpacing: 1 }}>{activePuzzle.word}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.4, textTransform: 'uppercase', color: colors.textMuted, marginTop: 4 }}>The Word</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => go('quizzes')}
+                  style={{ background: colors.primary, color: 'white', border: 'none', padding: '14px 26px', fontSize: 14, fontWeight: 700, borderRadius: 999, cursor: 'pointer', fontFamily: fonts.body }}
+                >
+                  Play a Different Quiz
+                </button>
+                <div onClick={() => go('home')} style={{ alignSelf: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'oklch(0.4 0.01 250)', textDecoration: 'underline' }}>Return to Home</div>
               </div>
             </div>
           )}

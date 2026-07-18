@@ -57,6 +57,7 @@ export default function App() {
   const [attempts, setAttempts] = useState<Record<string, QuizAttempt>>({});
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeDifficulty, setActiveDifficulty] = useState('all');
+  const [activeSort, setActiveSort] = useState('featured');
 
   // quiz play
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
@@ -486,7 +487,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Nav view={view} go={go} isMobile={isMobile} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)} />
+      <Nav view={view} go={go} isMobile={isMobile} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)} quizzes={quizzes} startQuiz={startQuiz} startMatchSetup={startMatchSetup} />
 
       <div ref={contentRef} style={{ transition: 'opacity 0.15s ease', opacity: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
         {view === 'home' && (
@@ -519,6 +520,8 @@ export default function App() {
             setCategory={setActiveCategory}
             activeDifficulty={activeDifficulty}
             setDifficulty={setActiveDifficulty}
+            activeSort={activeSort}
+            setSort={setActiveSort}
             startQuiz={startQuiz}
             quizzesPassedCount={quizzesPassedCount}
             totalPoints={totalPoints}

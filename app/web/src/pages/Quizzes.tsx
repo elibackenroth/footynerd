@@ -1,4 +1,4 @@
-import { colors, fonts, CATEGORIES, DIFFICULTIES, DIFFICULTY_LABEL, quizHash } from '../lib/tokens';
+import { colors, fonts, CATEGORIES, DIFFICULTIES, SORTS, DIFFICULTY_LABEL, quizHash } from '../lib/tokens';
 import type { Quiz, QuizAttempt } from '../lib/types';
 import QuizImage from '../components/QuizImage';
 
@@ -10,6 +10,8 @@ export default function Quizzes({
   setCategory,
   activeDifficulty,
   setDifficulty,
+  activeSort,
+  setSort,
   startQuiz,
   quizzesPassedCount,
   totalPoints,
@@ -22,21 +24,25 @@ export default function Quizzes({
   setCategory: (id: string) => void;
   activeDifficulty: string;
   setDifficulty: (id: string) => void;
+  activeSort: string;
+  setSort: (id: string) => void;
   startQuiz: (id: string) => void;
   quizzesPassedCount: number;
   totalPoints: number;
   isMobile: boolean;
 }) {
   const filtered = quizzes
-    .filter((q) => activeCategory === 'all' || q.category === activeCategory)
-    .filter((q) => activeDifficulty === 'all' || q.difficulty === activeDifficulty)
-    .slice()
+    .map((q, idx) => ({ q, idx }))
+    .filter(({ q }) => activeCategory === 'all' || q.category === activeCategory)
+    .filter(({ q }) => activeDifficulty === 'all' || q.difficulty === activeDifficulty)
     .sort((a, b) => {
-      const aAttempt = attempts[a.id] ? 1 : 0;
-      const bAttempt = attempts[b.id] ? 1 : 0;
+      if (activeSort === 'recent') return b.idx - a.idx;
+      const aAttempt = attempts[a.q.id] ? 1 : 0;
+      const bAttempt = attempts[b.q.id] ? 1 : 0;
       if (aAttempt !== bAttempt) return aAttempt - bAttempt;
-      return quizHash(a.id) - quizHash(b.id);
-    });
+      return quizHash(a.q.id) - quizHash(b.q.id);
+    })
+    .map(({ q }) => q);
 
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', maxWidth: 1160, margin: '0 auto', width: '100%', position: 'relative', overflowX: 'hidden', boxSizing: 'border-box' }}>
@@ -81,8 +87,41 @@ export default function Quizzes({
         </div>
       )}
 
+      {isMobile && (
+        <div style={{ padding: '10px 20px 0' }}>
+          <select
+            value={activeSort}
+            onChange={(e) => setSort(e.target.value)}
+            style={{ width: '100%', padding: '10px 12px', fontSize: 14, fontFamily: fonts.body, border: '1px solid oklch(0.85 0.02 250)', borderRadius: 6, background: 'white', color: colors.textBody }}
+          >
+            {SORTS.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {!isMobile && (
         <aside style={{ width: 170, flexShrink: 0, padding: '260px 0 120px 48px' }}>
+          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textFaint, marginBottom: 10 }}>Sort By</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 24 }}>
+            {SORTS.map((s) => {
+              const active = activeSort === s.id;
+              return (
+                <div
+                  key={s.id}
+                  onClick={() => setSort(s.id)}
+                  style={{
+                    display: 'block', padding: '6px 10px', borderRadius: 3, fontSize: 12, fontWeight: active ? 700 : 500, cursor: 'pointer', textAlign: 'left',
+                    background: active ? 'oklch(0.95 0.03 250)' : 'transparent',
+                    color: active ? colors.primary : 'oklch(0.65 0.01 250)',
+                  }}
+                >
+                  {s.label}
+                </div>
+              );
+            })}
+          </div>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textFaint, marginBottom: 10 }}>Difficulty</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {DIFFICULTIES.map((d) => {
