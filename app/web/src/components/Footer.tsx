@@ -51,11 +51,7 @@ export default function Footer({ go }: { go: (v: ViewName) => void }) {
         </nav>
       </div>
 
-      <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: 28 }}>
-        <div style={{ display: 'flex', gap: 14 }}>
-          <a href="#" style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'white' }}>IG</a>
-          <a href="#" style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'white' }}>X</a>
-        </div>
+      <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 16, borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: 28 }}>
         <div style={{ fontSize: 14, color: 'oklch(0.75 0.01 250)' }}>© 2026 by FootyNerd</div>
       </div>
     </footer>

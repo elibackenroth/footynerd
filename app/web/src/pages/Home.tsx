@@ -4,7 +4,7 @@ import type { ViewName } from '../lib/viewTypes';
 import QuizImage from '../components/QuizImage';
 import LeaderboardRow from '../components/LeaderboardRow';
 
-const FEATURED_BASE_IDS = ['worldcup', 'legends', 'ballondor'];
+const FEATURED_BASE_IDS = ['istanbul2005', 'henryarsenal', 'dortmundacademy'];
 
 export default function Home({
   quizzes,
