@@ -23,6 +23,9 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
 
 export default function QuizImage({ quizId, fallback, alt, style }: { quizId: string; fallback: string | null; alt: string; style?: CSSProperties }) {
   const hasLocalImage = LOCAL_IMAGE_QUIZ_IDS.has(quizId);
+  if (!hasLocalImage && !fallback) {
+    return <div style={{ width: '100%', height: '100%', background: 'oklch(0.95 0.03 250)', ...style }} />;
+  }
   return (
     <img
       src={hasLocalImage ? `/quiz-images/${quizId}.webp` : fallback ?? undefined}
