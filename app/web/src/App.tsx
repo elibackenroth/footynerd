@@ -57,7 +57,6 @@ export default function App() {
   const [attempts, setAttempts] = useState<Record<string, QuizAttempt>>({});
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeDifficulty, setActiveDifficulty] = useState('all');
-  const [activeSort, setActiveSort] = useState('featured');
 
   // quiz play
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
@@ -520,8 +519,6 @@ export default function App() {
             setCategory={setActiveCategory}
             activeDifficulty={activeDifficulty}
             setDifficulty={setActiveDifficulty}
-            activeSort={activeSort}
-            setSort={setActiveSort}
             startQuiz={startQuiz}
             quizzesPassedCount={quizzesPassedCount}
             totalPoints={totalPoints}
@@ -598,7 +595,7 @@ export default function App() {
         )}
 
         {view === 'wordle' && <Wordle go={go} user={user} isMobile={isMobile} />}
-        {view === 'transferchain' && <TransferChain go={go} isMobile={isMobile} />}
+        {view === 'transferchain' && <TransferChain go={go} isMobile={isMobile} playerName={profile?.name} />}
         {view === 'footygrid' && <FootyGrid go={go} user={user} isMobile={isMobile} players={footygridPlayers} grids={footygridGrids} />}
 
         {view === 'gridduel' && (

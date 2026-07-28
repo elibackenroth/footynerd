@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchTransferClubs, fetchTransferDailies, fetchFootygridPlayers, completeTransferChain } from '../lib/api';
+import { pushActivity } from '../lib/activityFeed';
 import type { TransferClub, TransferDaily, FootygridPlayer } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 
@@ -38,7 +39,7 @@ function ClubBadge({ club, size, ring }: { club: TransferClub | undefined; size:
   );
 }
 
-export default function TransferChain({ go, isMobile }: { go: (v: ViewName) => void; isMobile: boolean }) {
+export default function TransferChain({ go, isMobile, playerName }: { go: (v: ViewName) => void; isMobile: boolean; playerName?: string | null }) {
   const [clubs, setClubs] = useState<TransferClub[]>([]);
   const [dailies, setDailies] = useState<TransferDaily[]>([]);
   const [players, setPlayers] = useState<FootygridPlayer[]>([]);
@@ -111,6 +112,7 @@ export default function TransferChain({ go, isMobile }: { go: (v: ViewName) => v
       const res = await completeTransferChain(score);
       setPointsAwardedText(res.persisted ? '+10 points earned for completing the chain' : 'Sign in to save your Transfer Chain points');
       setPointsPersisted(res.persisted);
+      pushActivity({ name: playerName || 'Guest', kind: 'transferchain', title: 'Transfer Chain', points: TRANSFER_POINTS_PER_CHAIN, passed: true });
       setDoneDayIds((prev) => new Set(prev).add(day.id));
       setStep(nextStep);
       setStatus('finished');

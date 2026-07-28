@@ -1,10 +1,17 @@
+import { useEffect, useState } from 'react';
 import { colors, fonts, AVATAR_COLORS, initials } from '../lib/tokens';
+import { loadActivityFeed, relativeTimeFrom, type ActivityEntry } from '../lib/activityFeed';
 import type { PointsLeaderboardRow } from '../lib/types';
 
 const PODIUM_ORDER = [1, 0, 2];
 const MEDAL_COLORS: Record<number, string> = { 1: 'oklch(0.45 0.19 255)', 2: 'oklch(0.58 0.15 248)', 3: 'oklch(0.7 0.09 240)' };
 
 export default function Leaderboard({ pointsRows, myName, isMobile }: { pointsRows: PointsLeaderboardRow[]; myName: string | null; isMobile: boolean }) {
+  const [activityFeed, setActivityFeed] = useState<ActivityEntry[]>([]);
+  useEffect(() => {
+    setActivityFeed(loadActivityFeed());
+  }, []);
+
   const sorted = [...pointsRows].sort((a, b) => b.points - a.points);
 
   const lbTotalPlayers = sorted.length;
@@ -117,6 +124,28 @@ export default function Leaderboard({ pointsRows, myName, isMobile }: { pointsRo
         </>
       ) : (
         <div style={{ textAlign: 'center', padding: '60px 0', color: colors.textMuted, fontSize: 15 }}>No scores yet — play a quiz to take the top spot.</div>
+      )}
+
+      {activityFeed.length > 0 && (
+        <div style={{ marginTop: 48, borderTop: `1px solid ${colors.borderLight}`, paddingTop: 32 }}>
+          <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 20, margin: '0 0 16px', color: colors.primary }}>Friend Activity</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {activityFeed.slice(0, 12).map((item, idx) => (
+              <div key={item.ts} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 4px', borderBottom: `1px solid ${colors.borderLight}` }}>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: AVATAR_COLORS[idx % AVATAR_COLORS.length], color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
+                  {initials(item.name)}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.name} completed the Transfer Chain
+                  </div>
+                  <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{relativeTimeFrom(item.ts)}</div>
+                </div>
+                <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 15, color: colors.primary, flexShrink: 0 }}>+{item.points}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </main>
   );
