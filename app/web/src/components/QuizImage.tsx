@@ -19,6 +19,12 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
   'kante', 'iceland2016', 'leicester1516', 'costarica2014', 'tagliafico', 'acmilanclub', 'portugueseleague',
   'dortmundacademy', 'france98final', 'haalandquiz', 'henryarsenal', 'invinciblesarsenal',
   'istanbul2005', 'messicopaamerica', 'simeoneatletico', 'varera', 'zidanerealmadrid',
+  'aguero', 'arsenalclub', 'beckham', 'belgianproleague', 'chelseaclub',
+  'croatia', 'iniesta', 'jleague', 'juventusclub', 'psgclub',
+  'scottishprem', 'tottenham', 'vinicius', 'wales', 'zlatan',
+  'barcelonaclub', 'brazilnt', 'brazilserieA', 'championship', 'euro2024',
+  'intermilanclub', 'mancityclub', 'modric', 'neymar', 'saudiproleague',
+  'sergioramos', 'superlig', 'vandijk', 'wcfinal1966', 'wcfinal2022',
 ]);
 
 export default function QuizImage({ quizId, fallback, alt, style }: { quizId: string; fallback: string | null; alt: string; style?: CSSProperties }) {
