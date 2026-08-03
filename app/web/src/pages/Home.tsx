@@ -1,7 +1,8 @@
-import { colors, fonts, DIFFICULTY_LABEL } from '../lib/tokens';
+import { colors, fonts, DIFFICULTY_LABEL, passThresholdFor } from '../lib/tokens';
+import { todaysDaily } from '../lib/daily';
 import type { Quiz, QuizAttempt, PointsLeaderboardRow } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
-import QuizImage from '../components/QuizImage';
+import QuizImage, { getQuizImageSrc } from '../components/QuizImage';
 import LeaderboardRow from '../components/LeaderboardRow';
 
 const FEATURED_BASE_IDS = ['worldcup', 'messi', 'ronaldo'];
@@ -43,12 +44,17 @@ export default function Home({
 }) {
   const featured = FEATURED_BASE_IDS.map((id) => quizzes.find((q) => q.id === id)).filter(Boolean) as Quiz[];
 
-  const buildCategoryPreview = (category: string) => quizzes.filter((q) => q.category === category).slice().reverse().slice(0, 3);
+  const buildCategoryPreview = (category: string) => quizzes.filter((q) => q.category === category && !q.is_mega).slice().reverse().slice(0, 3);
   const playerQuizzes = buildCategoryPreview('players');
   const clubQuizzes = buildCategoryPreview('clubs');
   const nationalQuizzes = buildCategoryPreview('national');
 
   const homeLeaderboardTop = pointsRows.slice(0, 10);
+
+  const megas = quizzes.filter((q) => q.is_mega);
+  const megaQuiz = megas.length ? todaysDaily(megas.map((q) => ({ ...q, date: q.mega_date || '' }))) : null;
+  const megaAttempt = megaQuiz ? attempts[megaQuiz.id] : undefined;
+  const megaImageSrc = megaQuiz ? getQuizImageSrc(megaQuiz.id, megaQuiz.image) : null;
 
   const cardStyle = { background: 'oklch(0.97 0.02 250)', border: '1px solid oklch(0.91 0.02 250)', borderRadius: 12, padding: 32 };
 
@@ -111,6 +117,50 @@ export default function Home({
         </div>
 
         <div style={{ height: 48 }} />
+
+        {megaQuiz && (
+          <>
+            <div style={cardStyle}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
+                <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 26, margin: 0, color: colors.primary }}>Today's Mega Quiz</h2>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'white', background: colors.primary, padding: '3px 12px', borderRadius: 999 }}>100 Qs</div>
+              </div>
+              <div
+                onClick={() => startQuiz(megaQuiz.id)}
+                style={{
+                  display: isMobile ? 'flex' : 'grid', flexDirection: 'column', gridTemplateColumns: isMobile ? undefined : '1.05fr 1fr',
+                  border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, overflow: 'hidden', background: 'white', cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(20,20,40,0.06)',
+                }}
+              >
+                <div style={{ width: '100%', height: isMobile ? 180 : 260 }}>
+                  {megaImageSrc ? (
+                    <img src={megaImageSrc} alt={megaQuiz.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'oklch(0.94 0.03 250)', fontFamily: fonts.heading, fontWeight: 700, fontSize: 40, color: 'oklch(0.5 0.13 250)' }}>100</div>
+                  )}
+                </div>
+                <div style={{ padding: isMobile ? '20px' : '28px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: isMobile ? 22 : 28, margin: 0, lineHeight: 1.15, color: colors.textBody }}>{megaQuiz.title.replace('MEGA QUIZ: ', '')}</h3>
+                  <p style={{ fontSize: 14, color: colors.textMuted, margin: 0, lineHeight: 1.5 }}>{megaQuiz.description}</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, margin: '4px 0' }}>
+                    <MiniStat value={questionCounts[megaQuiz.id] ?? 100} label="Questions" />
+                    <MiniStat value={megaQuiz.points} label="Points" />
+                    <MiniStat value={passThresholdFor(questionCounts[megaQuiz.id] ?? 100)} label="To Pass" />
+                  </div>
+                  {!megaAttempt ? (
+                    <div style={{ fontSize: 13, fontWeight: 700, color: colors.primary }}>Play →</div>
+                  ) : (
+                    <div style={{ fontSize: 13, fontWeight: 700, color: megaAttempt.passed ? colors.success : colors.danger }}>
+                      {megaAttempt.passed ? `Passed · ${megaAttempt.score}/${megaAttempt.total}` : `Failed · ${megaAttempt.score}/${megaAttempt.total}`}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div style={{ height: 48 }} />
+          </>
+        )}
 
         <div style={cardStyle}>
           <div style={{ marginBottom: 48 }}>
@@ -222,11 +272,29 @@ function ModeCard({ image, title, desc, buttonLabel, onClick }: { image: string;
   );
 }
 
+function MiniStat({ value, label }: { value: number | string; label: string }) {
+  return (
+    <div style={{ background: 'oklch(0.97 0.02 250)', borderRadius: 6, padding: '8px 6px', textAlign: 'center' }}>
+      <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 17, lineHeight: 1, color: colors.primary }}>{value}</div>
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'oklch(0.58 0.01 250)', marginTop: 3 }}>{label}</div>
+    </div>
+  );
+}
+
 function QuizPreviewCard({ quiz, attempt, questionCount, onStart, isMobile }: { quiz: Quiz; attempt?: QuizAttempt; questionCount?: number; onStart: () => void; isMobile?: boolean }) {
   return (
     <div style={{ border: `1px solid ${colors.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', ...(isMobile ? { flex: '0 0 82%', scrollSnapAlign: 'start' } : {}) }}>
-      <div style={{ width: '100%', height: 140 }}>
+      <div style={{ width: '100%', height: 140, position: 'relative', filter: attempt ? 'grayscale(0.45) saturate(0.7) brightness(0.97)' : 'none' }}>
         <QuizImage quizId={quiz.id} fallback={quiz.image} alt={quiz.title} />
+        {attempt && (
+          <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 999, background: attempt.passed ? colors.success : colors.danger, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+            {attempt.passed ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12.5 9.5 18 20 6.5" /></svg>
+            ) : (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5} strokeLinecap="round"><line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" /></svg>
+            )}
+          </div>
+        )}
       </div>
       <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>

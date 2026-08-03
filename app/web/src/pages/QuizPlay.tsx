@@ -1,4 +1,5 @@
 import { colors, fonts } from '../lib/tokens';
+import { getQuizImageSrc } from '../components/QuizImage';
 import type { Quiz, QuizQuestionPublic } from '../lib/types';
 
 export default function QuizPlay({
@@ -27,9 +28,25 @@ export default function QuizPlay({
   const hasAnswered = selectedIndex !== null;
   const progressPct = Math.round(((qIndex + (hasAnswered ? 1 : 0)) / total) * 100) + '%';
   const nextButtonLabel = qIndex + 1 < total ? 'Next Question' : 'See Results';
+  const backdropSrc = getQuizImageSrc(quiz.id, quiz.image);
 
   return (
-    <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: isMobile ? '32px 20px 80px' : '72px 48px 120px', width: '100%' }}>
+    <div style={{ position: 'relative' }}>
+      {backdropSrc && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+          <img
+            src={backdropSrc}
+            alt=""
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover', opacity: 0.24,
+              filter: 'saturate(0.8) blur(3px)', transform: 'scale(1.04)',
+              WebkitMaskImage: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)',
+              maskImage: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)',
+            }}
+          />
+        </div>
+      )}
+    <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: isMobile ? '32px 20px 80px' : '72px 48px 120px', width: '100%', position: 'relative', zIndex: 1 }}>
       {matchActive && (
         <div style={{ display: 'inline-block', marginBottom: 14, padding: '4px 10px', borderRadius: 999, background: colors.badgeBg, color: 'oklch(0.4 0.14 250)', fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
           MATCH ROOM
@@ -97,5 +114,6 @@ export default function QuizPlay({
         </div>
       )}
     </main>
+    </div>
   );
 }

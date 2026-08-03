@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchWordlePuzzles, fetchMyWordleAttempts, submitWordleGuess } from '../lib/api';
+import { todaysDaily, isFutureDaily, relativeDayLabel } from '../lib/daily';
 import type { WordlePuzzlePublic, WordleGuess } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 import type { User } from '@supabase/supabase-js';
@@ -65,7 +66,8 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
   useEffect(() => {
     if (puzzles.length > 0 && !autoSelected) {
       setAutoSelected(true);
-      startPuzzle(puzzles[puzzles.length - 1].id);
+      const today = todaysDaily(puzzles);
+      if (today) startPuzzle(today.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzles, autoSelected]);
@@ -249,16 +251,20 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
             {puzzles.slice().reverse().map((w) => {
               const prior = myAttempts[w.id];
               const wMaxGuesses = maxGuessesFor(w.word.length);
-              const statusText = !prior ? 'Not started' : (prior.status === 'won' ? `Solved in ${prior.guesses.length}/${wMaxGuesses}` : 'Not solved');
+              const locked = isFutureDaily(w.date);
+              const statusText = locked ? `Unlocks ${relativeDayLabel(w.date).toLowerCase()}` : (!prior ? 'Not started' : (prior.status === 'won' ? `Solved in ${prior.guesses.length}/${wMaxGuesses}` : 'Not solved'));
               const active = w.id === activeId;
               return (
                 <div
                   key={w.id}
-                  onClick={() => startPuzzle(w.id)}
-                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: 'pointer' }}
+                  onClick={() => !locked && startPuzzle(w.id)}
+                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.55 : 1 }}
                 >
-                  <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{w.date}</div>
-                  <div style={{ fontSize: 12, color: colors.textMuted }}>{w.category} · {w.word.length} letters</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{w.date}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: colors.textFaint }}>{relativeDayLabel(w.date)}</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: colors.textMuted }}>{locked ? '?????' : `${w.category} · ${w.word.length} letters`}</div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: colors.primary, marginTop: 2 }}>{statusText}</div>
                 </div>
               );

@@ -34,10 +34,16 @@ export const AVATAR_COLORS = [
 
 export const CATEGORIES = [
   { id: 'all', label: 'All Quizzes' },
+  { id: 'mega', label: 'Mega' },
   { id: 'players', label: 'Players' },
   { id: 'leagues', label: 'Leagues' },
   { id: 'national', label: 'National' },
   { id: 'clubs', label: 'Clubs' },
+];
+
+export const SORTS = [
+  { id: 'random', label: '↻ Shuffle' },
+  { id: 'recent', label: 'Most Recent' },
 ];
 
 export const DIFFICULTIES = [

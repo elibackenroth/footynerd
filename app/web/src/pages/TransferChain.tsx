@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchTransferClubs, fetchTransferDailies, fetchFootygridPlayers, completeTransferChain } from '../lib/api';
 import { pushActivity } from '../lib/activityFeed';
+import { todaysDaily, isFutureDaily, relativeDayLabel } from '../lib/daily';
 import type { TransferClub, TransferDaily, FootygridPlayer } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 
@@ -76,7 +77,8 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
   useEffect(() => {
     if (dailies.length > 0 && !autoSelected) {
       setAutoSelected(true);
-      selectDay(dailies[dailies.length - 1].id);
+      const today = todaysDaily(dailies);
+      if (today) selectDay(today.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dailies, autoSelected]);
@@ -247,14 +249,18 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
             {dailies.slice().reverse().map((d) => {
               const isDone = doneDayIds.has(d.id);
               const active = d.id === selectedId;
+              const locked = isFutureDaily(d.date);
               return (
                 <div
                   key={d.id}
-                  onClick={() => selectDay(d.id)}
-                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: 'pointer' }}
+                  onClick={() => !locked && selectDay(d.id)}
+                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.55 : 1 }}
                 >
-                  <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{d.date}</div>
-                  <div style={{ fontSize: 12, color: colors.textMuted }}>{isDone ? 'Completed' : `${d.rounds.length} rounds`}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{d.date}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: colors.textFaint }}>{relativeDayLabel(d.date)}</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: colors.textMuted }}>{locked ? `Unlocks ${relativeDayLabel(d.date).toLowerCase()}` : (isDone ? 'Completed' : `${d.rounds.length} rounds`)}</div>
                 </div>
               );
             })}

@@ -1,4 +1,4 @@
-import { colors, fonts, CATEGORIES, DIFFICULTIES, DIFFICULTY_LABEL, quizHash } from '../lib/tokens';
+import { colors, fonts, CATEGORIES, DIFFICULTIES, SORTS, DIFFICULTY_LABEL } from '../lib/tokens';
 import type { Quiz, QuizAttempt } from '../lib/types';
 import QuizImage from '../components/QuizImage';
 
@@ -10,6 +10,9 @@ export default function Quizzes({
   setCategory,
   activeDifficulty,
   setDifficulty,
+  activeSort,
+  setSort,
+  shuffleOrder,
   startQuiz,
   quizzesPassedCount,
   totalPoints,
@@ -22,21 +25,25 @@ export default function Quizzes({
   setCategory: (id: string) => void;
   activeDifficulty: string;
   setDifficulty: (id: string) => void;
+  activeSort: string;
+  setSort: (id: string) => void;
+  shuffleOrder: string[];
   startQuiz: (id: string) => void;
   quizzesPassedCount: number;
   totalPoints: number;
   isMobile: boolean;
 }) {
+  const shuffleIndex: Record<string, number> = {};
+  shuffleOrder.forEach((id, i) => { shuffleIndex[id] = i; });
+  const seededRank = (id: string) => (id in shuffleIndex ? shuffleIndex[id] : 1e6);
+
   const filtered = quizzes
-    .filter((q) => activeCategory === 'all' || q.category === activeCategory)
-    .filter((q) => activeDifficulty === 'all' || q.difficulty === activeDifficulty)
+    .map((q, idx) => ({ q, idx }))
+    .filter(({ q }) => (activeCategory === 'mega' ? !!q.is_mega : !q.is_mega && (activeCategory === 'all' || q.category === activeCategory)))
+    .filter(({ q }) => activeDifficulty === 'all' || q.difficulty === activeDifficulty)
     .slice()
-    .sort((a, b) => {
-      const aAttempt = attempts[a.id] ? 1 : 0;
-      const bAttempt = attempts[b.id] ? 1 : 0;
-      if (aAttempt !== bAttempt) return aAttempt - bAttempt;
-      return quizHash(a.id) - quizHash(b.id);
-    });
+    .sort((a, b) => (activeSort === 'recent' ? b.idx - a.idx : seededRank(a.q.id) - seededRank(b.q.id)))
+    .map(({ q }) => q);
 
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', maxWidth: 1160, margin: '0 auto', width: '100%', position: 'relative', overflowX: 'hidden', boxSizing: 'border-box' }}>
@@ -78,13 +85,22 @@ export default function Quizzes({
               <option key={d.id} value={d.id}>{d.label}</option>
             ))}
           </select>
+          <select
+            value={activeSort}
+            onChange={(e) => setSort(e.target.value)}
+            style={{ flex: 1, padding: '10px 12px', fontSize: 14, fontFamily: fonts.body, border: '1px solid oklch(0.85 0.02 250)', borderRadius: 6, background: 'white', color: colors.textBody }}
+          >
+            {SORTS.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
         </div>
       )}
 
       {!isMobile && (
         <aside style={{ width: 170, flexShrink: 0, padding: '260px 0 120px 48px' }}>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textFaint, marginBottom: 10 }}>Difficulty</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 24 }}>
             {DIFFICULTIES.map((d) => {
               const active = activeDifficulty === d.id;
               return (
@@ -98,6 +114,25 @@ export default function Quizzes({
                   }}
                 >
                   {d.label}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textFaint, marginBottom: 10 }}>Sort By</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {SORTS.map((s) => {
+              const active = activeSort === s.id;
+              return (
+                <div
+                  key={s.id}
+                  onClick={() => setSort(s.id)}
+                  style={{
+                    display: 'block', padding: '6px 10px', borderRadius: 3, fontSize: 12, fontWeight: active ? 700 : 500, cursor: 'pointer', textAlign: 'left',
+                    background: active ? 'oklch(0.95 0.03 250)' : 'transparent',
+                    color: active ? colors.primary : 'oklch(0.65 0.01 250)',
+                  }}
+                >
+                  {s.label}
                 </div>
               );
             })}
@@ -152,8 +187,17 @@ export default function Quizzes({
                   ...(isMobile ? { flex: '0 0 82%', scrollSnapAlign: 'start' } : {}),
                 }}
               >
-                <div style={{ width: '100%', height: 160 }}>
+                <div style={{ width: '100%', height: 160, position: 'relative', filter: attempt ? 'grayscale(0.45) saturate(0.7) brightness(0.97)' : 'none' }}>
                   <QuizImage quizId={quiz.id} fallback={quiz.image} alt={quiz.title} />
+                  {attempt && (
+                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 999, background: attempt.passed ? colors.success : colors.danger, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                      {attempt.passed ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12.5 9.5 18 20 6.5" /></svg>
+                      ) : (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5} strokeLinecap="round"><line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" /></svg>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>

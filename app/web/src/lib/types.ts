@@ -7,6 +7,8 @@ export interface Quiz {
   image: string | null;
   image_credit: string | null;
   points: number;
+  is_mega: boolean;
+  mega_date: string | null;
 }
 
 export interface QuizQuestionPublic {

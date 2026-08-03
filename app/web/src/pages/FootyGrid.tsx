@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchMyFootygridAttempts, saveFootygridAttempt } from '../lib/api';
 import { footygridPlayerFits } from '../lib/footygrid';
+import { todaysDaily, isFutureDaily, relativeDayLabel } from '../lib/daily';
 import type { FootygridPlayer, FootygridGrid, FootygridAttempt } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 import type { User } from '@supabase/supabase-js';
@@ -23,7 +24,8 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
   useEffect(() => {
     if (grids.length > 0 && !autoSelected) {
       setAutoSelected(true);
-      selectGrid(grids[grids.length - 1].id);
+      const today = todaysDaily(grids);
+      if (today) selectGrid(today.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grids, autoSelected]);
@@ -216,15 +218,19 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
             {grids.slice().reverse().map((g) => {
               const prog = myAttempts[g.id];
               const solved = prog ? Object.keys(prog.answers).length : 0;
-              const statusText = !prog ? 'Not started' : (prog.status === 'won' ? `Solved ${solved}/9` : (prog.status === 'over' ? `Out of lives — ${solved}/9` : `${solved}/9 in progress`));
+              const locked = isFutureDaily(g.date);
+              const statusText = locked ? `Unlocks ${relativeDayLabel(g.date).toLowerCase()}` : (!prog ? 'Not started' : (prog.status === 'won' ? `Solved ${solved}/9` : (prog.status === 'over' ? `Out of lives — ${solved}/9` : `${solved}/9 in progress`)));
               const active = g.id === selectedId;
               return (
                 <div
                   key={g.id}
-                  onClick={() => selectGrid(g.id)}
-                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: 'pointer' }}
+                  onClick={() => !locked && selectGrid(g.id)}
+                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.55 : 1 }}
                 >
-                  <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{g.date}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{g.date}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: colors.textFaint }}>{relativeDayLabel(g.date)}</div>
+                  </div>
                   <div style={{ fontSize: 12, color: colors.textMuted }}>{statusText}</div>
                 </div>
               );

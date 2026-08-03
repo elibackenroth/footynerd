@@ -25,7 +25,15 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
   'barcelonaclub', 'brazilnt', 'brazilserieA', 'championship', 'euro2024',
   'intermilanclub', 'mancityclub', 'modric', 'neymar', 'saudiproleague',
   'sergioramos', 'superlig', 'vandijk', 'wcfinal1966', 'wcfinal2022',
+  'anthonytaylor', 'astonvilla', 'championsleague', 'chinesesuperleague', 'dimaria',
+  'ezrikonsa', 'footballmoney', 'franklampard', 'iagoaspas', 'josebordalas',
+  'megaengland', 'megapremierleague', 'morocco', 'neymarsantos', 'ribery',
+  'spainworldcup', 'sportinglisbon',
 ]);
+
+export function getQuizImageSrc(quizId: string, fallback: string | null): string | null {
+  return LOCAL_IMAGE_QUIZ_IDS.has(quizId) ? `/quiz-images/${quizId}.webp` : fallback;
+}
 
 export default function QuizImage({ quizId, fallback, alt, style }: { quizId: string; fallback: string | null; alt: string; style?: CSSProperties }) {
   const hasLocalImage = LOCAL_IMAGE_QUIZ_IDS.has(quizId);
