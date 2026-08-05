@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import type { ViewName } from './lib/viewTypes';
-import type { Quiz, QuizAttempt, QuizQuestionPublic, PointsLeaderboardRow, FootygridPlayer, FootygridGrid } from './lib/types';
+import type { Quiz, QuizAttempt, QuizQuestionPublic, PointsLeaderboardRow, FootygridPlayer, FootygridGrid, WordlePuzzlePublic, WordleGuess, TransferDaily, FootygridAttempt } from './lib/types';
 import type { MatchFull, GridDuelFull } from './lib/api';
 import {
   fetchQuizzes,
@@ -21,7 +21,12 @@ import {
   createGridDuelNextRound,
   submitGridDuelEntry,
   fetchGridDuelRoom,
+  fetchWordlePuzzles,
+  fetchMyWordleAttempts,
+  fetchTransferDailies,
+  fetchMyFootygridAttempts,
 } from './lib/api';
+import { loadDoneTransferDays } from './lib/daily';
 
 import Nav from './components/Nav';
 import Footer from './components/Footer';
@@ -59,7 +64,6 @@ export default function App() {
   const [activeDifficulty, setActiveDifficulty] = useState('all');
   const [activeSort, setActiveSort] = useState('random');
   const [shuffleOrder, setShuffleOrder] = useState<string[]>([]);
-  const [quizQuery, setQuizQuery] = useState('');
 
   // quiz play
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
@@ -91,6 +95,13 @@ export default function App() {
   // footygrid (shared between FootyGrid page and Grid Duel)
   const [footygridPlayers, setFootygridPlayers] = useState<FootygridPlayer[]>([]);
   const [footygridGrids, setFootygridGrids] = useState<FootygridGrid[]>([]);
+  const [footygridAttempts, setFootygridAttempts] = useState<Record<string, FootygridAttempt>>({});
+
+  // daily games summary (for Home page "Today's Daily Games")
+  const [wordlePuzzles, setWordlePuzzles] = useState<WordlePuzzlePublic[]>([]);
+  const [wordleAttempts, setWordleAttempts] = useState<Record<string, { guesses: WordleGuess[]; status: string }>>({});
+  const [transferDailies, setTransferDailies] = useState<TransferDaily[]>([]);
+  const [doneTransferDays, setDoneTransferDays] = useState<Record<string, { score: number; total: number }>>({});
 
   // grid duel
   const [gridDuel, setGridDuel] = useState<GridDuelFull | null>(null);
@@ -130,6 +141,9 @@ export default function App() {
       setFootygridGrids(gs);
       setGridDuelSetupGridId((prev) => prev || gs[gs.length - 1]?.id || '');
     });
+    fetchWordlePuzzles().then(setWordlePuzzles);
+    fetchTransferDailies().then(setTransferDailies);
+    setDoneTransferDays(loadDoneTransferDays());
 
     const params = new URLSearchParams(window.location.search);
     const matchParam = params.get('match');
@@ -165,8 +179,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (user) fetchMyAttempts(user.id).then(setAttempts);
-    else setAttempts({});
+    if (user) {
+      fetchMyAttempts(user.id).then(setAttempts);
+      fetchMyWordleAttempts(user.id).then(setWordleAttempts);
+      fetchMyFootygridAttempts(user.id).then(setFootygridAttempts);
+    } else {
+      setAttempts({});
+      setWordleAttempts({});
+      setFootygridAttempts({});
+    }
   }, [user]);
 
   useEffect(() => {
@@ -512,10 +533,17 @@ export default function App() {
             quizzes={quizzes}
             attempts={attempts}
             hasAccountName={!!user}
-            quizzesPassedCount={quizzesPassedCount}
+            myName={profile?.name || null}
+            accountStreak={profile?.current_streak ?? 0}
             totalAccountPoints={totalPoints}
             pointsRows={pointsRows}
             questionCounts={questionCounts}
+            wordlePuzzles={wordlePuzzles}
+            wordleAttempts={wordleAttempts}
+            transferDailies={transferDailies}
+            doneTransferDays={doneTransferDays}
+            footygridGrids={footygridGrids}
+            footygridAttempts={footygridAttempts}
             isMobile={isMobile}
             go={go}
             goCategory={goCategory}
@@ -540,12 +568,9 @@ export default function App() {
             activeSort={activeSort}
             setSort={setQuizSort}
             shuffleOrder={shuffleOrder}
-            quizQuery={quizQuery}
-            setQuizQuery={setQuizQuery}
             startQuiz={startQuiz}
             quizzesPassedCount={quizzesPassedCount}
             totalPoints={totalPoints}
-            accountStreak={profile?.current_streak ?? 0}
             isMobile={isMobile}
           />
         )}

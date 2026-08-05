@@ -15,6 +15,26 @@ export function isFutureDaily(dateStr: string): boolean {
   return new Date(dateStr) > new Date();
 }
 
+const TRANSFER_DONE_KEY = 'footynerdTransferDaysDone';
+
+export function loadDoneTransferDays(): Record<string, { score: number; total: number }> {
+  try {
+    const raw = localStorage.getItem(TRANSFER_DONE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function markTransferDayDone(dayId: string, score: number, total: number) {
+  try {
+    const next = { ...loadDoneTransferDays(), [dayId]: { score, total } };
+    localStorage.setItem(TRANSFER_DONE_KEY, JSON.stringify(next));
+  } catch {
+    // ignore
+  }
+}
+
 export function relativeDayLabel(dateStr: string): string {
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diffDays = Math.round((startOfDay(new Date(dateStr)) - startOfDay(new Date())) / 86400000);

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchTransferClubs, fetchTransferDailies, fetchFootygridPlayers, completeTransferChain } from '../lib/api';
 import { pushActivity } from '../lib/activityFeed';
-import { todaysDaily, isFutureDaily, relativeDayLabel } from '../lib/daily';
+import { todaysDaily, isFutureDaily, relativeDayLabel, markTransferDayDone } from '../lib/daily';
 import type { TransferClub, TransferDaily, FootygridPlayer } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 
@@ -115,6 +115,7 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
       setPointsAwardedText(res.persisted ? '+10 points earned for completing the chain' : 'Sign in to save your Transfer Chain points');
       setPointsPersisted(res.persisted);
       pushActivity({ name: playerName || 'Guest', kind: 'transferchain', title: 'Transfer Chain', points: TRANSFER_POINTS_PER_CHAIN, passed: true });
+      markTransferDayDone(day.id, score, day.rounds.length);
       setDoneDayIds((prev) => new Set(prev).add(day.id));
       setStep(nextStep);
       setStatus('finished');
