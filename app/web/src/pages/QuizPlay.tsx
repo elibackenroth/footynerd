@@ -30,23 +30,35 @@ export default function QuizPlay({
   const nextButtonLabel = qIndex + 1 < total ? 'Next Question' : 'See Results';
   const backdropSrc = getQuizImageSrc(quiz.id, quiz.image);
 
+  const optionMinHeight = isMobile ? 62 : 0;
+  const optionGap = 14;
+  const optionRowPadding = isMobile ? '16px 18px' : '17px 20px';
+
   return (
     <div style={{ position: 'relative' }}>
       {backdropSrc && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <div style={isMobile
+          ? { position: 'fixed', top: 0, left: 0, right: 0, height: '58vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }
+          : { position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}
+        >
           <img
             src={backdropSrc}
             alt=""
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover', opacity: 0.24,
-              filter: 'saturate(0.8) blur(3px)', transform: 'scale(1.04)',
-              WebkitMaskImage: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)',
-              maskImage: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)',
-            }}
+            style={isMobile
+              ? { width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55, filter: 'saturate(0.9)', transform: 'scale(1.02)' }
+              : {
+                  width: '100%', height: '100%', objectFit: 'cover', opacity: 0.24,
+                  filter: 'saturate(0.8) blur(3px)', transform: 'scale(1.04)',
+                  WebkitMaskImage: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)',
+                  maskImage: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.25) 85%, rgba(0,0,0,0) 100%)',
+                }}
           />
+          {isMobile && (
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.82) 38%, rgba(255,255,255,0.97) 72%, rgb(255,255,255) 100%)' }} />
+          )}
         </div>
       )}
-    <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: isMobile ? '32px 20px 80px' : '72px 48px 120px', width: '100%', position: 'relative', zIndex: 1 }}>
+    <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: isMobile ? '24px 20px 96px' : '72px 48px 120px', width: '100%', position: 'relative', zIndex: 1 }}>
       {matchActive && (
         <div style={{ display: 'inline-block', marginBottom: 14, padding: '4px 10px', borderRadius: 999, background: colors.badgeBg, color: 'oklch(0.4 0.14 250)', fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
           MATCH ROOM
@@ -62,7 +74,7 @@ export default function QuizPlay({
 
       <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: isMobile ? 23 : 32, lineHeight: 1.3, margin: '0 0 32px' }}>{question.question}</h2>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: optionGap }}>
         {question.options.map((text, idx) => {
           let borderColor = 'oklch(0.9 0.01 250)';
           let bgColor = 'white';
@@ -91,7 +103,7 @@ export default function QuizPlay({
               key={idx}
               onClick={() => !hasAnswered && onSelect(idx)}
               style={{
-                border: `2px solid ${borderColor}`, background: bgColor, borderRadius: 4, padding: '18px 22px',
+                border: `2px solid ${borderColor}`, background: bgColor, borderRadius: 4, padding: optionRowPadding, minHeight: optionMinHeight, boxSizing: 'border-box',
                 cursor: hasAnswered ? 'default' : 'pointer', fontSize: 16, fontWeight: 500,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}
@@ -104,10 +116,20 @@ export default function QuizPlay({
       </div>
 
       {hasAnswered && (
-        <div style={{ marginTop: 40, display: 'flex', justifyContent: 'flex-end' }}>
+        <div
+          style={
+            isMobile
+              ? { position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 40, display: 'flex', padding: '12px 20px calc(12px + env(safe-area-inset-bottom))', background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderTop: '1px solid oklch(0.92 0.01 250)' }
+              : { marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16 }
+          }
+        >
           <button
             onClick={onNext}
-            style={{ background: colors.textBody, color: 'white', border: 'none', padding: '14px 32px', fontSize: 15, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}
+            style={
+              isMobile
+                ? { background: colors.textBody, color: 'white', border: 'none', fontWeight: 600, borderRadius: 12, cursor: 'pointer', fontFamily: fonts.body, flex: 1, height: 54, fontSize: 16 }
+                : { background: colors.textBody, color: 'white', border: 'none', fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontFamily: fonts.body, padding: '14px 32px', fontSize: 15 }
+            }
           >
             {nextButtonLabel}
           </button>

@@ -59,6 +59,7 @@ export default function App() {
   const [activeDifficulty, setActiveDifficulty] = useState('all');
   const [activeSort, setActiveSort] = useState('random');
   const [shuffleOrder, setShuffleOrder] = useState<string[]>([]);
+  const [quizQuery, setQuizQuery] = useState('');
 
   // quiz play
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
@@ -539,9 +540,12 @@ export default function App() {
             activeSort={activeSort}
             setSort={setQuizSort}
             shuffleOrder={shuffleOrder}
+            quizQuery={quizQuery}
+            setQuizQuery={setQuizQuery}
             startQuiz={startQuiz}
             quizzesPassedCount={quizzesPassedCount}
             totalPoints={totalPoints}
+            accountStreak={profile?.current_streak ?? 0}
             isMobile={isMobile}
           />
         )}

@@ -28,7 +28,7 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
   'anthonytaylor', 'astonvilla', 'championsleague', 'chinesesuperleague', 'dimaria',
   'ezrikonsa', 'footballmoney', 'franklampard', 'iagoaspas', 'josebordalas',
   'megaengland', 'megapremierleague', 'morocco', 'neymarsantos', 'ribery',
-  'spainworldcup', 'sportinglisbon',
+  'spainworldcup', 'sportinglisbon', 'megaworldcup',
 ]);
 
 export function getQuizImageSrc(quizId: string, fallback: string | null): string | null {

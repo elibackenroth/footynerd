@@ -127,27 +127,29 @@ export default function Home({
               </div>
               <div
                 onClick={() => startQuiz(megaQuiz.id)}
-                style={{
-                  display: isMobile ? 'flex' : 'grid', flexDirection: 'column', gridTemplateColumns: isMobile ? undefined : '1.05fr 1fr',
-                  border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, overflow: 'hidden', background: 'white', cursor: 'pointer',
-                  boxShadow: '0 1px 3px rgba(20,20,40,0.06)',
-                }}
+                style={
+                  isMobile
+                    ? { display: 'flex', alignItems: 'stretch', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, overflow: 'hidden', background: 'white', cursor: 'pointer', boxShadow: '0 1px 3px rgba(20,20,40,0.06)' }
+                    : { display: 'grid', gridTemplateColumns: '1.05fr 1fr', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, overflow: 'hidden', background: 'white', cursor: 'pointer', boxShadow: '0 1px 3px rgba(20,20,40,0.06)' }
+                }
               >
-                <div style={{ width: '100%', height: isMobile ? 180 : 260 }}>
+                <div style={isMobile ? { position: 'relative', width: 104, flexShrink: 0, background: 'oklch(0.95 0.01 250)' } : { position: 'relative', width: '100%', height: 260 }}>
                   {megaImageSrc ? (
                     <img src={megaImageSrc} alt={megaQuiz.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'oklch(0.94 0.03 250)', fontFamily: fonts.heading, fontWeight: 700, fontSize: 40, color: 'oklch(0.5 0.13 250)' }}>100</div>
                   )}
                 </div>
-                <div style={{ padding: isMobile ? '20px' : '28px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: isMobile ? 22 : 28, margin: 0, lineHeight: 1.15, color: colors.textBody }}>{megaQuiz.title.replace('MEGA QUIZ: ', '')}</h3>
-                  <p style={{ fontSize: 14, color: colors.textMuted, margin: 0, lineHeight: 1.5 }}>{megaQuiz.description}</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, margin: '4px 0' }}>
-                    <MiniStat value={questionCounts[megaQuiz.id] ?? 100} label="Questions" />
-                    <MiniStat value={megaQuiz.points} label="Points" />
-                    <MiniStat value={passThresholdFor(questionCounts[megaQuiz.id] ?? 100)} label="To Pass" />
-                  </div>
+                <div style={isMobile ? { padding: '12px 14px', minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 8 } : { padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: isMobile ? 17 : 28, margin: 0, lineHeight: 1.15, color: colors.textBody, overflow: 'hidden', textOverflow: 'ellipsis', ...(isMobile ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const } : {}) }}>{megaQuiz.title.replace('MEGA QUIZ: ', '')}</h3>
+                  <p style={{ fontSize: isMobile ? 12 : 14, color: colors.textMuted, margin: 0, lineHeight: 1.4, ...(isMobile ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' } : {}) }}>{megaQuiz.description}</p>
+                  {!isMobile && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, margin: '4px 0' }}>
+                      <MiniStat value={questionCounts[megaQuiz.id] ?? 100} label="Questions" />
+                      <MiniStat value={megaQuiz.points} label="Points" />
+                      <MiniStat value={passThresholdFor(questionCounts[megaQuiz.id] ?? 100)} label="To Pass" />
+                    </div>
+                  )}
                   {!megaAttempt ? (
                     <div style={{ fontSize: 13, fontWeight: 700, color: colors.primary }}>Play →</div>
                   ) : (
