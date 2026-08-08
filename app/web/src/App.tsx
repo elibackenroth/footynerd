@@ -531,7 +531,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Nav view={view} go={go} isMobile={isMobile} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)} quizzes={quizzes} startQuiz={startQuiz} startMatchSetup={startMatchSetup} />
+      <Nav view={view} go={go} isMobile={isMobile} mobileMenuOpen={mobileMenuOpen} onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)} />
 
       <div ref={contentRef} style={{ transition: 'opacity 0.15s ease', opacity: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
         {view === 'home' && (
