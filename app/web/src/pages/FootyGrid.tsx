@@ -2,15 +2,41 @@ import { Fragment, useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchMyFootygridAttempts, saveFootygridAttempt } from '../lib/api';
 import { footygridPlayerFits } from '../lib/footygrid';
-import { todaysDaily, isFutureDaily, relativeDayLabel } from '../lib/daily';
-import type { FootygridPlayer, FootygridGrid, FootygridAttempt } from '../lib/types';
+import { todaysDaily, buildDailyAxis } from '../lib/daily';
+import type { DailyKind } from '../lib/daily';
+import type { FootygridPlayer, FootygridGrid, FootygridAttempt, WordlePuzzlePublic, WordleGuess, TransferDaily, Quiz, QuizAttempt } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 import type { User } from '@supabase/supabase-js';
 import HeaderBadge from '../components/FootygridHeaderBadge';
+import DailyPicker from '../components/DailyPicker';
+import RecommendedQuizzes from '../components/RecommendedQuizzes';
 
 const MAX_LIVES = 9;
 
-export default function FootyGrid({ go, user, isMobile, players, grids }: { go: (v: ViewName) => void; user: User | null; isMobile: boolean; players: FootygridPlayer[]; grids: FootygridGrid[] }) {
+export default function FootyGrid({
+  go, user, isMobile, players, grids,
+  wordlePuzzles, wordleAttempts, transferDailies, doneTransferDays,
+  quizzes, attempts, questionCounts, startQuiz,
+  jumpDate, clearJumpDate, goDaily, onProgressChange,
+}: {
+  go: (v: ViewName) => void;
+  user: User | null;
+  isMobile: boolean;
+  players: FootygridPlayer[];
+  grids: FootygridGrid[];
+  wordlePuzzles: WordlePuzzlePublic[];
+  wordleAttempts: Record<string, { guesses: WordleGuess[]; status: string }>;
+  transferDailies: TransferDaily[];
+  doneTransferDays: Record<string, { score: number; total: number }>;
+  quizzes: Quiz[];
+  attempts: Record<string, QuizAttempt>;
+  questionCounts: Record<string, number>;
+  startQuiz: (id: string) => void;
+  jumpDate: string | null;
+  clearJumpDate: () => void;
+  goDaily: (view: ViewName, date: string) => void;
+  onProgressChange: () => void;
+}) {
   const [myAttempts, setMyAttempts] = useState<Record<string, FootygridAttempt>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalCell, setModalCell] = useState<{ rowKey: string; colKey: string } | null>(null);
@@ -24,6 +50,11 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
   useEffect(() => {
     if (grids.length > 0 && !autoSelected) {
       setAutoSelected(true);
+      if (jumpDate) {
+        const match = grids.find((g) => g.date === jumpDate);
+        clearJumpDate();
+        if (match) { selectGrid(match.id); return; }
+      }
       const today = todaysDaily(grids);
       if (today) selectGrid(today.id);
     }
@@ -39,6 +70,7 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
   function persist(gridId: string, next: FootygridAttempt) {
     setMyAttempts((prev) => ({ ...prev, [gridId]: next }));
     if (user) saveFootygridAttempt(user.id, next).catch(() => {});
+    if (next.status !== 'playing') onProgressChange();
   }
 
   function selectGrid(id: string) {
@@ -91,12 +123,75 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
   const headerSize = isMobile ? 28 : 34;
   const cellMinHeight = isMobile ? 66 : 78;
 
+  const dailyCurrentDate = selectedGrid ? selectedGrid.date : (todaysDaily(grids)?.date || '');
+  const axisDates = buildDailyAxis([wordlePuzzles.map((p) => p.date), transferDailies.map((d) => d.date), grids.map((g) => g.date)]);
+
+  function hasItem(kind: DailyKind, date: string) {
+    if (kind === 'wordle') return wordlePuzzles.some((p) => p.date === date);
+    if (kind === 'transfer') return transferDailies.some((d) => d.date === date);
+    return grids.some((g) => g.date === date);
+  }
+
+  function wordleStatusText(date: string) {
+    const p = wordlePuzzles.find((x) => x.date === date);
+    if (!p) return 'No puzzle this day';
+    const prog = wordleAttempts[p.id];
+    if (!prog || (prog.status !== 'won' && prog.status !== 'lost' && prog.guesses.length === 0)) return 'Not started';
+    if (prog.status === 'won') return `Solved in ${prog.guesses.length}/${Math.max(6, p.word.length + 1)}`;
+    if (prog.status === 'lost') return 'Not solved';
+    return `${prog.guesses.length} guesses in`;
+  }
+
+  function transferStatusText(date: string) {
+    const d = transferDailies.find((x) => x.date === date);
+    if (!d) return 'No puzzle this day';
+    const prog = doneTransferDays[d.id];
+    return prog ? `${prog.score}/${prog.total} solved` : 'Not started';
+  }
+
+  function footygridStatusText(date: string) {
+    const g = grids.find((x) => x.date === date);
+    if (!g) return 'No puzzle this day';
+    const prog = myAttempts[g.id];
+    const solved = prog ? Object.keys(prog.answers).length : 0;
+    if (!prog || (prog.status === 'playing' && solved === 0)) return 'Not started';
+    if (prog.status === 'won') return `Solved ${solved}/9`;
+    if (prog.status === 'over') return `Out of lives · ${solved}/9`;
+    return `${solved}/9 filled`;
+  }
+
+  function statusText(kind: DailyKind, date: string) {
+    if (kind === 'wordle') return wordleStatusText(date);
+    if (kind === 'transfer') return transferStatusText(date);
+    return footygridStatusText(date);
+  }
+
+  function dotState(kind: DailyKind, date: string): 'done' | 'progress' | 'todo' | 'none' | 'locked' {
+    if (!hasItem(kind, date)) return 'none';
+    if (new Date(date) > new Date()) return 'locked';
+    const st = statusText(kind, date);
+    if (st === 'Not started') return 'todo';
+    if (st.startsWith('Solved') || st === 'Not solved' || st.startsWith('Out of lives')) return 'done';
+    return 'progress';
+  }
+
+  function handleDailyNavigate(kind: DailyKind, date: string) {
+    if (kind === 'footygrid') {
+      const match = grids.find((g) => g.date === date);
+      if (match) selectGrid(match.id);
+    } else if (kind === 'wordle') {
+      goDaily('wordle', date);
+    } else {
+      goDaily('transferchain', date);
+    }
+  }
+
   return (
-    <main style={{ flex: 1, maxWidth: 920, margin: '0 auto', width: '100%', background: 'white', padding: isMobile ? '32px 16px 80px' : '48px 20px 100px' }}>
+    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', width: '100%', padding: isMobile ? '24px 16px 80px' : '72px 48px 120px' }}>
       <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 16 }}>← Back to Home</div>
       <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: isMobile ? 26 : 32, margin: '0 0 24px', color: colors.primary }}>FootyGrid</h1>
 
-      <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <div style={isMobile ? { display: 'flex', flexDirection: 'column', gap: 28, alignItems: 'stretch' } : { display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 340, maxWidth: 480 }}>
           {showGrid && selectedGrid && (
             <>
@@ -212,32 +307,22 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
           )}
         </div>
 
-        <div style={{ width: isMobile ? '100%' : 240, flexShrink: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 10 }}>Other Grids</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {grids.slice().reverse().map((g) => {
-              const prog = myAttempts[g.id];
-              const solved = prog ? Object.keys(prog.answers).length : 0;
-              const locked = isFutureDaily(g.date);
-              const statusText = locked ? `Unlocks ${relativeDayLabel(g.date).toLowerCase()}` : (!prog ? 'Not started' : (prog.status === 'won' ? `Solved ${solved}/9` : (prog.status === 'over' ? `Out of lives — ${solved}/9` : `${solved}/9 in progress`)));
-              const active = g.id === selectedId;
-              return (
-                <div
-                  key={g.id}
-                  onClick={() => !locked && selectGrid(g.id)}
-                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.55 : 1 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{g.date}</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: colors.textFaint }}>{relativeDayLabel(g.date)}</div>
-                  </div>
-                  <div style={{ fontSize: 12, color: colors.textMuted }}>{statusText}</div>
-                </div>
-              );
-            })}
+        {dailyCurrentDate && (
+          <div style={{ width: isMobile ? '100%' : 250, flexShrink: 0 }}>
+            <DailyPicker
+              currentKind="footygrid"
+              currentDate={dailyCurrentDate}
+              axisDates={axisDates}
+              hasItem={hasItem}
+              statusText={statusText}
+              dotState={dotState}
+              onNavigate={handleDailyNavigate}
+            />
           </div>
-        </div>
+        )}
       </div>
+
+      <RecommendedQuizzes quizzes={quizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} goQuizzes={() => go('quizzes')} />
 
       {modalCell && selectedGrid && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }} onClick={() => setModalCell(null)}>

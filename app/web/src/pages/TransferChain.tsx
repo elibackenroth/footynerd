@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchTransferClubs, fetchTransferDailies, fetchFootygridPlayers, completeTransferChain } from '../lib/api';
 import { pushActivity } from '../lib/activityFeed';
-import { todaysDaily, isFutureDaily, relativeDayLabel, markTransferDayDone } from '../lib/daily';
-import type { TransferClub, TransferDaily, FootygridPlayer } from '../lib/types';
+import { todaysDaily, buildDailyAxis, markTransferDayDone } from '../lib/daily';
+import type { DailyKind } from '../lib/daily';
+import type { TransferClub, TransferDaily, FootygridPlayer, WordlePuzzlePublic, WordleGuess, FootygridGrid, FootygridAttempt, Quiz, QuizAttempt } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
+import DailyPicker from '../components/DailyPicker';
+import RecommendedQuizzes from '../components/RecommendedQuizzes';
 
 const TRANSFER_POINTS_PER_CHAIN = 10;
 
@@ -40,7 +43,29 @@ function ClubBadge({ club, size, ring }: { club: TransferClub | undefined; size:
   );
 }
 
-export default function TransferChain({ go, isMobile, playerName }: { go: (v: ViewName) => void; isMobile: boolean; playerName?: string | null }) {
+export default function TransferChain({
+  go, isMobile, playerName,
+  wordlePuzzles, wordleAttempts, footygridGrids, footygridAttempts, doneTransferDays,
+  quizzes, attempts, questionCounts, startQuiz,
+  jumpDate, clearJumpDate, goDaily, onChainComplete,
+}: {
+  go: (v: ViewName) => void;
+  isMobile: boolean;
+  playerName?: string | null;
+  wordlePuzzles: WordlePuzzlePublic[];
+  wordleAttempts: Record<string, { guesses: WordleGuess[]; status: string }>;
+  footygridGrids: FootygridGrid[];
+  footygridAttempts: Record<string, FootygridAttempt>;
+  doneTransferDays: Record<string, { score: number; total: number }>;
+  quizzes: Quiz[];
+  attempts: Record<string, QuizAttempt>;
+  questionCounts: Record<string, number>;
+  startQuiz: (id: string) => void;
+  jumpDate: string | null;
+  clearJumpDate: () => void;
+  goDaily: (view: ViewName, date: string) => void;
+  onChainComplete: () => void;
+}) {
   const [clubs, setClubs] = useState<TransferClub[]>([]);
   const [dailies, setDailies] = useState<TransferDaily[]>([]);
   const [players, setPlayers] = useState<FootygridPlayer[]>([]);
@@ -52,7 +77,6 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
   const [answerReveal, setAnswerReveal] = useState('');
   const [pointsAwardedText, setPointsAwardedText] = useState('');
   const [pointsPersisted, setPointsPersisted] = useState(true);
-  const [doneDayIds, setDoneDayIds] = useState<Set<string>>(new Set());
   const [autoSelected, setAutoSelected] = useState(false);
   const [roundHistory, setRoundHistory] = useState<{ clubs: string[]; input: string; correct: boolean; display: string }[]>([]);
 
@@ -77,6 +101,11 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
   useEffect(() => {
     if (dailies.length > 0 && !autoSelected) {
       setAutoSelected(true);
+      if (jumpDate) {
+        const match = dailies.find((d) => d.date === jumpDate);
+        clearJumpDate();
+        if (match) { selectDay(match.id); return; }
+      }
       const today = todaysDaily(dailies);
       if (today) selectDay(today.id);
     }
@@ -116,7 +145,7 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
       setPointsPersisted(res.persisted);
       pushActivity({ name: playerName || 'Guest', kind: 'transferchain', title: 'Transfer Chain', points: TRANSFER_POINTS_PER_CHAIN, passed: true });
       markTransferDayDone(day.id, score, day.rounds.length);
-      setDoneDayIds((prev) => new Set(prev).add(day.id));
+      onChainComplete();
       setStep(nextStep);
       setStatus('finished');
     } else {
@@ -130,12 +159,76 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
     score === day.rounds.length ? 'Perfect chain — you know your transfers.' : score >= day.rounds.length * 0.6 ? 'Solid work tracing the chain.' : 'A tough chain — give it another run.'
   );
 
+  const dailyCurrentDate = day ? day.date : (todaysDaily(dailies)?.date || '');
+  const axisDates = buildDailyAxis([wordlePuzzles.map((p) => p.date), dailies.map((d) => d.date), footygridGrids.map((g) => g.date)]);
+
+  function hasItem(kind: DailyKind, date: string) {
+    if (kind === 'wordle') return wordlePuzzles.some((p) => p.date === date);
+    if (kind === 'transfer') return dailies.some((d) => d.date === date);
+    return footygridGrids.some((g) => g.date === date);
+  }
+
+  function wordleStatusText(date: string) {
+    const p = wordlePuzzles.find((x) => x.date === date);
+    if (!p) return 'No puzzle this day';
+    const prog = wordleAttempts[p.id];
+    if (!prog || (prog.status !== 'won' && prog.status !== 'lost' && prog.guesses.length === 0)) return 'Not started';
+    if (prog.status === 'won') return `Solved in ${prog.guesses.length}/${Math.max(6, p.word.length + 1)}`;
+    if (prog.status === 'lost') return 'Not solved';
+    return `${prog.guesses.length} guesses in`;
+  }
+
+  function transferStatusText(date: string) {
+    const d = dailies.find((x) => x.date === date);
+    if (!d) return 'No puzzle this day';
+    if (d.id === selectedId && !notFinished) return `${score}/${day!.rounds.length} solved`;
+    const prog = doneTransferDays[d.id];
+    return prog ? `${prog.score}/${prog.total} solved` : 'Not started';
+  }
+
+  function footygridStatusText(date: string) {
+    const g = footygridGrids.find((x) => x.date === date);
+    if (!g) return 'No puzzle this day';
+    const prog = footygridAttempts[g.id];
+    const solved = prog ? Object.keys(prog.answers).length : 0;
+    if (!prog || (prog.status === 'playing' && solved === 0)) return 'Not started';
+    if (prog.status === 'won') return `Solved ${solved}/9`;
+    if (prog.status === 'over') return `Out of lives · ${solved}/9`;
+    return `${solved}/9 filled`;
+  }
+
+  function statusText(kind: DailyKind, date: string) {
+    if (kind === 'wordle') return wordleStatusText(date);
+    if (kind === 'footygrid') return footygridStatusText(date);
+    return transferStatusText(date);
+  }
+
+  function dotState(kind: DailyKind, date: string): 'done' | 'progress' | 'todo' | 'none' | 'locked' {
+    if (!hasItem(kind, date)) return 'none';
+    if (new Date(date) > new Date()) return 'locked';
+    const st = statusText(kind, date);
+    if (st === 'Not started') return 'todo';
+    if (st.startsWith('Solved') || st === 'Not solved' || st.startsWith('Out of lives')) return 'done';
+    return 'progress';
+  }
+
+  function handleDailyNavigate(kind: DailyKind, date: string) {
+    if (kind === 'transfer') {
+      const match = dailies.find((d) => d.date === date);
+      if (match) selectDay(match.id);
+    } else if (kind === 'wordle') {
+      goDaily('wordle', date);
+    } else {
+      goDaily('footygrid', date);
+    }
+  }
+
   return (
-    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 16px 80px' : '72px 48px 120px', width: '100%' }}>
+    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', padding: isMobile ? '24px 16px 80px' : '72px 48px 120px', width: '100%' }}>
       <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 8 }}>← Back to Home</div>
       <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 28, margin: '0 0 24px', color: colors.primary }}>Transfer Chain</h1>
 
-      <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <div style={isMobile ? { display: 'flex', flexDirection: 'column', gap: 28, alignItems: 'stretch' } : { display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 340 }}>
           {day && notFinished && (
             <>
@@ -143,13 +236,16 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
                 Three clubs, one player who's worn all three shirts. Name them — first name, last name, or full name all count, no accents needed. Round {step + 1} of {day.rounds.length}.
               </p>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 32, flexWrap: 'wrap' }}>
+              <div style={isMobile
+                ? { display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 10, marginBottom: 26 }
+                : { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 32, flexWrap: 'wrap' }}
+              >
                 {currentLink && currentLink.clubs.map((id) => {
                   const c = clubById(id);
                   return (
                     <div key={id} style={{ textAlign: 'center' }}>
-                      <div style={{ marginBottom: 10 }}><ClubBadge club={c} size={110} /></div>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>{c?.short_name}</div>
+                      <div style={{ marginBottom: isMobile ? 8 : 10 }}><ClubBadge club={c} size={isMobile ? 90 : 110} /></div>
+                      <div style={{ fontWeight: 700, fontSize: isMobile ? 11.5 : 14 }}>{c?.short_name}</div>
                     </div>
                   );
                 })}
@@ -244,30 +340,22 @@ export default function TransferChain({ go, isMobile, playerName }: { go: (v: Vi
           )}
         </div>
 
-        <div style={{ width: isMobile ? '100%' : 240, flexShrink: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 10 }}>Other Days</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {dailies.slice().reverse().map((d) => {
-              const isDone = doneDayIds.has(d.id);
-              const active = d.id === selectedId;
-              const locked = isFutureDaily(d.date);
-              return (
-                <div
-                  key={d.id}
-                  onClick={() => !locked && selectDay(d.id)}
-                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.55 : 1 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{d.date}</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: colors.textFaint }}>{relativeDayLabel(d.date)}</div>
-                  </div>
-                  <div style={{ fontSize: 12, color: colors.textMuted }}>{locked ? `Unlocks ${relativeDayLabel(d.date).toLowerCase()}` : (isDone ? 'Completed' : `${d.rounds.length} rounds`)}</div>
-                </div>
-              );
-            })}
+        {dailyCurrentDate && (
+          <div style={{ width: isMobile ? '100%' : 250, flexShrink: 0 }}>
+            <DailyPicker
+              currentKind="transfer"
+              currentDate={dailyCurrentDate}
+              axisDates={axisDates}
+              hasItem={hasItem}
+              statusText={statusText}
+              dotState={dotState}
+              onNavigate={handleDailyNavigate}
+            />
           </div>
-        </div>
+        )}
       </div>
+
+      <RecommendedQuizzes quizzes={quizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} goQuizzes={() => go('quizzes')} />
     </main>
   );
 }

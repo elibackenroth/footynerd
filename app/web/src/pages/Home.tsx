@@ -257,8 +257,8 @@ export default function Home({
 
   return (
     <main style={{ flex: 1, width: '100%' }}>
-      {!hasAccountName && (
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: isMobile ? '4px 20px 10px' : '4px 48px 14px', textAlign: 'center' }}>
+      {!hasAccountName && !isMobile && (
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '4px 48px 14px', textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
               <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 19, lineHeight: 1, color: colors.primary }}>{totalQuizCount}</div>

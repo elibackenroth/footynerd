@@ -1,10 +1,13 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { fetchWordlePuzzles, fetchMyWordleAttempts, submitWordleGuess } from '../lib/api';
-import { todaysDaily, isFutureDaily, relativeDayLabel } from '../lib/daily';
-import type { WordlePuzzlePublic, WordleGuess } from '../lib/types';
+import { todaysDaily, buildDailyAxis } from '../lib/daily';
+import type { DailyKind } from '../lib/daily';
+import type { WordlePuzzlePublic, WordleGuess, TransferDaily, FootygridGrid, FootygridAttempt, Quiz, QuizAttempt } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 import type { User } from '@supabase/supabase-js';
+import DailyPicker from '../components/DailyPicker';
+import RecommendedQuizzes from '../components/RecommendedQuizzes';
 
 const WORDLE_COLOR: Record<string, string> = { correct: 'oklch(0.62 0.15 145)', present: 'oklch(0.75 0.14 85)', absent: 'oklch(0.5 0.01 250)' };
 const KEY_ROWS = [['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'], ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'], ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']];
@@ -30,7 +33,28 @@ function evalGuess(guess: string, answer: string): ('correct' | 'present' | 'abs
   return result;
 }
 
-export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => void; user: User | null; isMobile: boolean }) {
+export default function Wordle({
+  go, user, isMobile,
+  transferDailies, doneTransferDays, footygridGrids, footygridAttempts,
+  quizzes, attempts, questionCounts, startQuiz,
+  jumpDate, clearJumpDate, goDaily, onProgressChange,
+}: {
+  go: (v: ViewName) => void;
+  user: User | null;
+  isMobile: boolean;
+  transferDailies: TransferDaily[];
+  doneTransferDays: Record<string, { score: number; total: number }>;
+  footygridGrids: FootygridGrid[];
+  footygridAttempts: Record<string, FootygridAttempt>;
+  quizzes: Quiz[];
+  attempts: Record<string, QuizAttempt>;
+  questionCounts: Record<string, number>;
+  startQuiz: (id: string) => void;
+  jumpDate: string | null;
+  clearJumpDate: () => void;
+  goDaily: (view: ViewName, date: string) => void;
+  onProgressChange: () => void;
+}) {
   const [puzzles, setPuzzles] = useState<WordlePuzzlePublic[]>([]);
   const [myAttempts, setMyAttempts] = useState<Record<string, { guesses: WordleGuess[]; status: string }>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -40,6 +64,8 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
   const [status, setStatus] = useState<'playing' | 'won' | 'lost'>('playing');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const nativeInputRef = useRef<HTMLInputElement | null>(null);
+  const lastFocusedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetchWordlePuzzles().then(setPuzzles);
@@ -66,6 +92,11 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
   useEffect(() => {
     if (puzzles.length > 0 && !autoSelected) {
       setAutoSelected(true);
+      if (jumpDate) {
+        const match = puzzles.find((p) => p.date === jumpDate);
+        clearJumpDate();
+        if (match) { startPuzzle(match.id); return; }
+      }
       const today = todaysDaily(puzzles);
       if (today) startPuzzle(today.id);
     }
@@ -89,6 +120,7 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
     setGuesses(newGuesses);
     setStatus(newStatus);
     setCurrentGuess('');
+    if (nativeInputRef.current) nativeInputRef.current.value = '';
     if (newStatus === 'won') setMessage(PRAISE[Math.min(newGuesses.length - 1, PRAISE.length - 1)]);
     else if (newStatus === 'lost') setMessage('Out of guesses — the word was ' + answer);
     else setMessage('');
@@ -98,6 +130,7 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
       await submitWordleGuess(activeId, guessWord, priorGuesses);
       if (user && newStatus !== 'playing') {
         fetchMyWordleAttempts(user.id).then(setMyAttempts);
+        onProgressChange();
       }
     } finally {
       setSubmitting(false);
@@ -106,6 +139,7 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
 
   useEffect(() => {
     if (!activeId || status !== 'playing') return;
+    if (isMobile) return; // mobile types through the hidden native input instead
     function onKeydown(e: KeyboardEvent) {
       if (e.key === 'Enter') { submitGuess(); return; }
       if (submitting) return;
@@ -116,7 +150,31 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
     }
     window.addEventListener('keydown', onKeydown);
     return () => window.removeEventListener('keydown', onKeydown);
-  }, [activeId, status, submitGuess, wordLength]);
+  }, [activeId, status, submitGuess, wordLength, isMobile]);
+
+  useEffect(() => {
+    const el = nativeInputRef.current;
+    if (el && isMobile && activeId && status === 'playing' && lastFocusedIdRef.current !== activeId) {
+      lastFocusedIdRef.current = activeId;
+      el.value = '';
+    }
+  }, [activeId, status, isMobile]);
+
+  function focusWordleInput() {
+    if (nativeInputRef.current) nativeInputRef.current.focus();
+  }
+
+  function handleNativeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (status !== 'playing') return;
+    const sanitized = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, wordLength);
+    e.target.value = sanitized;
+    setCurrentGuess(sanitized);
+    setMessage('');
+  }
+
+  function handleNativeKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') { e.preventDefault(); submitGuess(); }
+  }
 
   const tileSize = Math.max(28, Math.min(52, Math.floor(((isMobile ? 300 : 400) - 8 * (wordLength - 1)) / wordLength)));
 
@@ -133,7 +191,7 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
   const isResultView = !!activePuzzle && status !== 'playing';
 
   const renderBoard = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24 }}>
+    <div onClick={focusWordleInput} style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24, position: 'relative' }}>
       {Array.from({ length: maxGuesses }).map((_, i) => {
         let cells: { letter: string; bg: string; border: string; color: string }[];
         if (i < guesses.length) {
@@ -155,15 +213,93 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
           </div>
         );
       })}
+      {isMobile && (
+        <input
+          ref={nativeInputRef}
+          defaultValue=""
+          onChange={handleNativeChange}
+          onKeyDown={handleNativeKeyDown}
+          autoCapitalize="characters"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          inputMode="text"
+          enterKeyHint="done"
+          style={{ position: 'absolute', inset: 0, opacity: 0, fontSize: 16, border: 'none', background: 'transparent', cursor: 'text' }}
+        />
+      )}
     </div>
   );
 
+  const dailyCurrentDate = activePuzzle ? activePuzzle.date : (todaysDaily(puzzles)?.date || '');
+  const axisDates = buildDailyAxis([puzzles.map((p) => p.date), transferDailies.map((d) => d.date), footygridGrids.map((g) => g.date)]);
+
+  function hasItem(kind: DailyKind, date: string) {
+    if (kind === 'wordle') return puzzles.some((p) => p.date === date);
+    if (kind === 'transfer') return transferDailies.some((d) => d.date === date);
+    return footygridGrids.some((g) => g.date === date);
+  }
+
+  function wordleStatusText(date: string) {
+    const p = puzzles.find((x) => x.date === date);
+    if (!p) return 'No puzzle this day';
+    const prog = myAttempts[p.id];
+    if (!prog || (prog.status !== 'won' && prog.status !== 'lost' && prog.guesses.length === 0)) return 'Not started';
+    if (prog.status === 'won') return `Solved in ${prog.guesses.length}/${maxGuessesFor(p.word.length)}`;
+    if (prog.status === 'lost') return 'Not solved';
+    return `${prog.guesses.length} guesses in`;
+  }
+
+  function transferStatusText(date: string) {
+    const d = transferDailies.find((x) => x.date === date);
+    if (!d) return 'No puzzle this day';
+    const prog = doneTransferDays[d.id];
+    return prog ? `${prog.score}/${prog.total} solved` : 'Not started';
+  }
+
+  function footygridStatusText(date: string) {
+    const g = footygridGrids.find((x) => x.date === date);
+    if (!g) return 'No puzzle this day';
+    const prog = footygridAttempts[g.id];
+    const solved = prog ? Object.keys(prog.answers).length : 0;
+    if (!prog || (prog.status === 'playing' && solved === 0)) return 'Not started';
+    if (prog.status === 'won') return `Solved ${solved}/9`;
+    if (prog.status === 'over') return `Out of lives · ${solved}/9`;
+    return `${solved}/9 filled`;
+  }
+
+  function statusText(kind: DailyKind, date: string) {
+    if (kind === 'wordle') return wordleStatusText(date);
+    if (kind === 'transfer') return transferStatusText(date);
+    return footygridStatusText(date);
+  }
+
+  function dotState(kind: DailyKind, date: string): 'done' | 'progress' | 'todo' | 'none' | 'locked' {
+    if (!hasItem(kind, date)) return 'none';
+    if (new Date(date) > new Date()) return 'locked';
+    const st = statusText(kind, date);
+    if (st === 'Not started') return 'todo';
+    if (st.startsWith('Solved') || st === 'Not solved' || st.startsWith('Out of lives')) return 'done';
+    return 'progress';
+  }
+
+  function handleDailyNavigate(kind: DailyKind, date: string) {
+    if (kind === 'wordle') {
+      const match = puzzles.find((p) => p.date === date);
+      if (match) startPuzzle(match.id);
+    } else if (kind === 'transfer') {
+      goDaily('transferchain', date);
+    } else {
+      goDaily('footygrid', date);
+    }
+  }
+
   return (
-    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '72px 48px 120px', width: '100%' }}>
+    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', padding: isMobile ? '24px 16px 80px' : '72px 48px 120px', width: '100%' }}>
       <div onClick={() => go('home')} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, marginBottom: 16 }}>← Back to Home</div>
       <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 32, margin: '0 0 24px', color: colors.primary }}>Football Wordle</h1>
 
-      <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <div style={isMobile ? { display: 'flex', flexDirection: 'column', gap: 28, alignItems: 'stretch' } : { display: 'flex', gap: 40, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 320 }}>
           {isPlayView && activePuzzle && (
             <>
@@ -181,32 +317,38 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
                 )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24 }}>
-                {KEY_ROWS.map((row, ri) => (
-                  <div key={ri} style={{ display: 'flex', gap: 6 }}>
-                    {row.map((k) => {
-                      const isWide = k === 'ENTER' || k === '⌫';
-                      let bg = 'oklch(0.88 0.01 250)', color = 'oklch(0.22 0.01 250)';
-                      if (k.length === 1 && letterStatus[k]) { bg = WORDLE_COLOR[letterStatus[k]]; color = 'white'; }
-                      return (
-                        <div
-                          key={k}
-                          onClick={() => {
-                            if (status !== 'playing') return;
-                            if (k === 'ENTER') submitGuess();
-                            else if (submitting) return;
-                            else if (k === '⌫') setCurrentGuess((g) => g.slice(0, -1));
-                            else setCurrentGuess((g) => (g.length < wordLength ? g + k : g));
-                          }}
-                          style={{ minWidth: isWide ? 54 : 34, height: 46, padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: isWide ? 11 : 13, fontWeight: 700, cursor: submitting ? 'default' : 'pointer', fontFamily: fonts.body, userSelect: 'none', background: bg, color, opacity: submitting && k !== 'ENTER' ? 0.5 : 1 }}
-                        >
-                          {k}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
+              {isMobile && (
+                <div onClick={focusWordleInput} style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'oklch(0.55 0.01 250)', marginBottom: 20, cursor: 'pointer' }}>Tap the grid to open your keyboard</div>
+              )}
+
+              {!isMobile && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', marginBottom: 24 }}>
+                  {KEY_ROWS.map((row, ri) => (
+                    <div key={ri} style={{ display: 'flex', gap: 6 }}>
+                      {row.map((k) => {
+                        const isWide = k === 'ENTER' || k === '⌫';
+                        let bg = 'oklch(0.88 0.01 250)', color = 'oklch(0.22 0.01 250)';
+                        if (k.length === 1 && letterStatus[k]) { bg = WORDLE_COLOR[letterStatus[k]]; color = 'white'; }
+                        return (
+                          <div
+                            key={k}
+                            onClick={() => {
+                              if (status !== 'playing') return;
+                              if (k === 'ENTER') submitGuess();
+                              else if (submitting) return;
+                              else if (k === '⌫') setCurrentGuess((g) => g.slice(0, -1));
+                              else setCurrentGuess((g) => (g.length < wordLength ? g + k : g));
+                            }}
+                            style={{ minWidth: isWide ? 54 : 34, height: 46, padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, fontSize: isWide ? 11 : 13, fontWeight: 700, cursor: submitting ? 'default' : 'pointer', fontFamily: fonts.body, userSelect: 'none', background: bg, color, opacity: submitting && k !== 'ENTER' ? 0.5 : 1 }}
+                          >
+                            {k}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
 
@@ -245,33 +387,22 @@ export default function Wordle({ go, user, isMobile }: { go: (v: ViewName) => vo
           )}
         </div>
 
-        <div style={{ width: isMobile ? '100%' : 260, flexShrink: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 10 }}>Other Days</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {puzzles.slice().reverse().map((w) => {
-              const prior = myAttempts[w.id];
-              const wMaxGuesses = maxGuessesFor(w.word.length);
-              const locked = isFutureDaily(w.date);
-              const statusText = locked ? `Unlocks ${relativeDayLabel(w.date).toLowerCase()}` : (!prior ? 'Not started' : (prior.status === 'won' ? `Solved in ${prior.guesses.length}/${wMaxGuesses}` : 'Not solved'));
-              const active = w.id === activeId;
-              return (
-                <div
-                  key={w.id}
-                  onClick={() => !locked && startPuzzle(w.id)}
-                  style={{ border: `1px solid ${active ? colors.primary : 'oklch(0.9 0.01 250)'}`, background: active ? 'oklch(0.93 0.05 250)' : 'white', borderRadius: 8, padding: '12px 14px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.55 : 1 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: colors.textBody }}>{w.date}</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: colors.textFaint }}>{relativeDayLabel(w.date)}</div>
-                  </div>
-                  <div style={{ fontSize: 12, color: colors.textMuted }}>{locked ? '?????' : `${w.category} · ${w.word.length} letters`}</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: colors.primary, marginTop: 2 }}>{statusText}</div>
-                </div>
-              );
-            })}
+        {dailyCurrentDate && (
+          <div style={{ width: isMobile ? '100%' : 250, flexShrink: 0 }}>
+            <DailyPicker
+              currentKind="wordle"
+              currentDate={dailyCurrentDate}
+              axisDates={axisDates}
+              hasItem={hasItem}
+              statusText={statusText}
+              dotState={dotState}
+              onNavigate={handleDailyNavigate}
+            />
           </div>
-        </div>
+        )}
       </div>
+
+      <RecommendedQuizzes quizzes={quizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} goQuizzes={() => go('quizzes')} />
     </main>
   );
 }

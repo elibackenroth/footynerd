@@ -53,6 +53,7 @@ export default function Quizzes({
   totalPoints,
   accountStreak,
   isMobile,
+  isTablet,
 }: {
   quizzes: Quiz[];
   attempts: Record<string, QuizAttempt>;
@@ -71,6 +72,7 @@ export default function Quizzes({
   totalPoints: number;
   accountStreak: number;
   isMobile: boolean;
+  isTablet: boolean;
 }) {
   const [filtersSheetOpen, setFiltersSheetOpen] = useState(false);
   const [quizPage, setQuizPage] = useState(0);
@@ -110,7 +112,7 @@ export default function Quizzes({
     .map(({ q }) => q);
 
   const pageKey = [activeCategory, activeDifficulty, activeSort, quizQuery].join('|');
-  const quizPageSize = isMobile ? 5 : 15;
+  const quizPageSize = isMobile ? 10 : (isTablet ? 12 : 15);
   const quizPageCount = Math.max(1, Math.ceil(filtered.length / quizPageSize));
   const quizPageIndex = Math.min(quizPageKey === pageKey ? quizPage : 0, quizPageCount - 1);
   if (quizPageKey !== pageKey) {
@@ -239,8 +241,8 @@ export default function Quizzes({
         <div
           style={
             isMobile
-              ? { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', gap: 16, margin: '0 -20px', padding: '4px 20px 12px', WebkitOverflowScrolling: 'touch' }
-              : { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28 }
+              ? { display: 'grid', gridTemplateColumns: '1fr', gap: 18 }
+              : { display: 'grid', gridTemplateColumns: isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: isTablet ? 20 : 28 }
           }
         >
           {pagedQuizzes.map((quiz) => {
@@ -250,8 +252,8 @@ export default function Quizzes({
               <div
                 key={quiz.id}
                 style={{
-                  border: `1px solid ${colors.border}`, borderRadius: 4, overflow: 'hidden', height: 386, display: 'flex', flexDirection: 'column',
-                  ...(isMobile ? { flex: '0 0 82%', scrollSnapAlign: 'start' } : {}),
+                  border: `1px solid ${colors.border}`, borderRadius: 4, overflow: 'hidden', height: 404, display: 'flex', flexDirection: 'column',
+                  ...(isMobile ? { width: '100%', height: 'auto' } : {}),
                 }}
               >
                 <div style={{ width: '100%', height: 150, position: 'relative', filter: attempt ? 'grayscale(0.45) saturate(0.7) brightness(0.97)' : 'none' }}>
