@@ -34,10 +34,17 @@ export async function fetchQuizQuestions(quizId: string): Promise<QuizQuestionPu
 }
 
 export async function fetchQuizQuestionCounts(): Promise<Record<string, number>> {
-  const { data, error } = await supabase.from('quiz_questions_public').select('quiz_id');
-  if (error) throw error;
   const counts: Record<string, number> = {};
-  (data as { quiz_id: string }[]).forEach((row) => { counts[row.quiz_id] = (counts[row.quiz_id] || 0) + 1; });
+  const pageSize = 1000;
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase.from('quiz_questions_public').select('quiz_id').range(from, from + pageSize - 1);
+    if (error) throw error;
+    const rows = data as { quiz_id: string }[];
+    rows.forEach((row) => { counts[row.quiz_id] = (counts[row.quiz_id] || 0) + 1; });
+    if (rows.length < pageSize) break;
+    from += pageSize;
+  }
   return counts;
 }
 
