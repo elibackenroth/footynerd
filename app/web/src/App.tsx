@@ -27,6 +27,7 @@ import {
   fetchMyFootygridAttempts,
 } from './lib/api';
 import { loadDoneTransferDays } from './lib/daily';
+import { pathForView, routeFromPath } from './lib/routing';
 
 import Nav from './components/Nav';
 import Footer from './components/Footer';
@@ -60,7 +61,7 @@ export default function App() {
   const [isTablet, setIsTablet] = useState(() => { try { return window.innerWidth > 767 && window.innerWidth <= 1024; } catch { return false; } });
   const [dailyJumpDate, setDailyJumpDate] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [view, setView] = useState<ViewName>('home');
+  const [view, setView] = useState<ViewName>(() => { try { return routeFromPath(window.location.pathname).view; } catch { return 'home'; } });
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
   const [attempts, setAttempts] = useState<Record<string, QuizAttempt>>({});
@@ -69,7 +70,7 @@ export default function App() {
   const [activeSort, setActiveSort] = useState('random');
   const [shuffleOrder, setShuffleOrder] = useState<string[]>([]);
   const [quizQuery, setQuizQuery] = useState('');
-  const [seriesId, setSeriesId] = useState<string | null>(null);
+  const [seriesId, setSeriesId] = useState<string | null>(() => { try { return routeFromPath(window.location.pathname).seriesId; } catch { return null; } });
 
   // quiz play
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
@@ -201,6 +202,26 @@ export default function App() {
       fetchPointsLeaderboard().then(setPointsRows);
     }
   }, [view]);
+
+  // keep the URL in sync with the current top-level view, so refresh and browser
+  // back/forward work for the pages that don't depend on an in-progress session
+  // (an active quiz, a match room, a grid duel fall back to whatever view was last synced)
+  useEffect(() => {
+    const path = pathForView(view, seriesId);
+    if (path && window.location.pathname !== path) {
+      window.history.pushState({ view, seriesId }, '', path);
+    }
+  }, [view, seriesId]);
+
+  useEffect(() => {
+    function handlePopState() {
+      const { view: v, seriesId: sid } = routeFromPath(window.location.pathname);
+      setView(v);
+      setSeriesId(sid);
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // track viewport size for the mobile nav/layout
   useEffect(() => {
