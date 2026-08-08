@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { relativeTimeFrom } from '../lib/activityFeed';
 import { colors, fonts, AVATAR_COLORS, initials, DIFFICULTY_LABEL } from '../lib/tokens';
-import { loadActivityFeed, relativeTimeFrom, type ActivityEntry } from '../lib/activityFeed';
 import { getQuizImageSrc } from '../components/QuizImage';
 import type { PointsLeaderboardRow, Quiz, QuizAttempt } from '../lib/types';
 
@@ -19,10 +18,19 @@ export default function Leaderboard({
   attempts: Record<string, QuizAttempt>;
   startQuiz: (id: string) => void;
 }) {
-  const [activityFeed, setActivityFeed] = useState<ActivityEntry[]>([]);
-  useEffect(() => {
-    setActivityFeed(loadActivityFeed());
-  }, []);
+  const quizById: Record<string, Quiz> = {};
+  quizzes.forEach((q) => { quizById[q.id] = q; });
+  const activityRows = Object.values(attempts)
+    .filter((a) => quizById[a.quiz_id])
+    .slice()
+    .sort((a, b) => Date.parse(b.completed_at) - Date.parse(a.completed_at))
+    .slice(0, 8)
+    .map((a) => ({
+      name: myName || 'You',
+      headline: `${myName || 'You'} ${a.passed ? 'passed' : 'attempted'} "${quizById[a.quiz_id].title}"`,
+      ts: Date.parse(a.completed_at),
+      points: a.passed ? a.points : 0,
+    }));
 
   const sorted = [...pointsRows].sort((a, b) => b.points - a.points);
   const myRank = myName ? sorted.findIndex((r) => r.name === myName) + 1 : 0;
@@ -111,18 +119,18 @@ export default function Leaderboard({
           )}
         </div>
 
-        {activityFeed.length > 0 && (
+        {activityRows.length > 0 && (
           <aside>
             <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 15, letterSpacing: 0.4, textTransform: 'uppercase', margin: '0 0 14px', color: 'oklch(0.55 0.01 250)' }}>Recent Activity</h2>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {activityFeed.slice(0, 8).map((item, idx) => (
+              {activityRows.map((item, idx) => (
                 <div key={item.ts} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: '1px solid oklch(0.95 0.01 250)' }}>
                   <div style={{ width: 30, height: 30, borderRadius: '50%', background: AVATAR_COLORS[idx % AVATAR_COLORS.length], color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, flexShrink: 0 }}>
                     {initials(item.name)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'oklch(0.28 0.01 250)' }}>
-                      {item.name} completed the Transfer Chain
+                      {item.headline}
                     </div>
                     <div style={{ fontSize: 11.5, color: 'oklch(0.62 0.01 250)', marginTop: 2 }}>{relativeTimeFrom(item.ts)}</div>
                   </div>
