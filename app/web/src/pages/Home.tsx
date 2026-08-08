@@ -19,15 +19,6 @@ function QuizPreviewCard({ quiz, attempt, questionCount, onStart, isMobile }: { 
     <div onClick={onStart} style={{ border: `1px solid ${colors.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', background: 'white', ...(isMobile ? { flex: '0 0 86%', scrollSnapAlign: 'start' } : {}) }}>
       <div style={{ width: '100%', height: 140, position: 'relative', filter: attempt ? 'grayscale(0.45) saturate(0.7) brightness(0.97)' : 'none' }}>
         <QuizImage quizId={quiz.id} fallback={quiz.image} alt={quiz.title} />
-        {attempt && (
-          <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 999, background: attempt.passed ? colors.success : colors.danger, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-            {attempt.passed ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12.5 9.5 18 20 6.5" /></svg>
-            ) : (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5} strokeLinecap="round"><line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" /></svg>
-            )}
-          </div>
-        )}
       </div>
       <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 9, flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
