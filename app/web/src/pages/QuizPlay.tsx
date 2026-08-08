@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { getQuizImageSrc } from '../components/QuizImage';
 import type { Quiz, QuizQuestionPublic } from '../lib/types';
@@ -12,6 +13,7 @@ export default function QuizPlay({
   isMobile,
   onSelect,
   onNext,
+  onQuit,
 }: {
   quiz: Quiz;
   questions: QuizQuestionPublic[];
@@ -22,7 +24,9 @@ export default function QuizPlay({
   isMobile: boolean;
   onSelect: (idx: number) => void;
   onNext: () => void;
+  onQuit: () => void;
 }) {
+  const [confirmQuitOpen, setConfirmQuitOpen] = useState(false);
   const total = questions.length;
   const question = questions[qIndex];
   const hasAnswered = selectedIndex !== null;
@@ -59,6 +63,13 @@ export default function QuizPlay({
         </div>
       )}
     <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: isMobile ? '24px 20px 96px' : '72px 48px 120px', width: '100%', position: 'relative', zIndex: 1 }}>
+      <div
+        onClick={() => setConfirmQuitOpen(true)}
+        style={{ position: 'relative', zIndex: 1, display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13.5, fontWeight: 600, color: colors.primary, marginBottom: 16 }}
+      >
+        <span style={{ fontSize: 15, lineHeight: 1 }}>←</span>
+        <span>Back to quizzes</span>
+      </div>
       {matchActive && (
         <div style={{ display: 'inline-block', marginBottom: 14, padding: '4px 10px', borderRadius: 999, background: colors.badgeBg, color: 'oklch(0.4 0.14 250)', fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
           MATCH ROOM
@@ -133,6 +144,29 @@ export default function QuizPlay({
           >
             {nextButtonLabel}
           </button>
+        </div>
+      )}
+
+      {confirmQuitOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(20,20,40,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ background: 'white', borderRadius: 14, padding: 28, maxWidth: 400, width: '100%', boxShadow: '0 24px 60px rgba(20,20,40,0.25)' }}>
+            <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: '0 0 10px', color: colors.textBody }}>Quit this quiz?</h3>
+            <p style={{ fontSize: 14.5, lineHeight: 1.55, color: colors.textSecondary, margin: '0 0 22px' }}>Nothing is recorded and your progress is lost — but the quiz stays available to play again.</p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setConfirmQuitOpen(false)}
+                style={{ background: 'white', color: colors.textSecondary, border: '1px solid oklch(0.88 0.01 250)', padding: '11px 20px', fontSize: 14, fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontFamily: fonts.body }}
+              >
+                Keep playing
+              </button>
+              <button
+                onClick={onQuit}
+                style={{ background: colors.textBody, color: 'white', border: 'none', padding: '11px 20px', fontSize: 14, fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontFamily: fonts.body }}
+              >
+                Quit quiz
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </main>

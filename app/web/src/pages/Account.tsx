@@ -95,78 +95,121 @@ function SignedInAccount({
     }
   }
 
+  const attemptedQuizzes = quizzes.filter((q) => attempts[q.id]);
+  const quizzesTakenText = `${attemptedQuizzes.length} ${attemptedQuizzes.length === 1 ? 'quiz taken' : 'quizzes taken'}`;
+
   return (
-    <main style={{ flex: 1, maxWidth: 760, margin: '0 auto', padding: '80px 48px 120px', width: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16 }}>
-        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 44, margin: '0 0 12px', color: colors.primary }}>Account</h1>
+    <main style={{ flex: 1, maxWidth: 860, margin: '0 auto', padding: '64px 48px 120px', width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 40, margin: 0, color: colors.primary }}>Account</h1>
         <div onClick={onSignOut} style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600, color: colors.textMuted, textDecoration: 'underline' }}>Sign out</div>
       </div>
-      <p style={{ fontSize: 16, color: colors.textSecondary, margin: '0 0 48px' }}>{profile.name}'s quiz history and streak.</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 56 }}>
-        <StatCard label="Current Streak" value={`${profile.current_streak} day(s)`} accent />
-        <StatCard label="Total Points" value={String(totalPoints)} />
-        <StatCard label="Quizzes Passed" value={String(quizzesPassedCount)} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', background: colors.primary, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 19, overflow: 'hidden', flexShrink: 0, border: '1px solid oklch(0.88 0.01 250)' }}>
+          {profile.avatar_url ? (
+            <img src={profile.avatar_url} alt="Your profile photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            initials(profile.name)
+          )}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 24, lineHeight: 1.15, color: colors.textBody }}>{profile.name}</div>
+          <div style={{ fontSize: 13.5, color: colors.textMuted, marginTop: 3 }}>{quizzesTakenText}</div>
+        </div>
       </div>
 
-      <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 20, margin: '0 0 20px' }}>Account settings</h2>
-      <div style={{ border: `1px solid ${colors.border}`, borderRadius: 4, padding: 28, maxWidth: 420, marginBottom: 56 }}>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Profile photo</label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18 }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: colors.primary, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22, overflow: 'hidden', position: 'relative', flexShrink: 0, border: `1px solid ${colors.border}` }}>
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="Your profile photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              initials(profile.name)
-            )}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <label style={{ display: 'inline-block', background: 'white', color: 'oklch(0.25 0.01 250)', border: `1px solid ${colors.border}`, padding: '8px 16px', fontSize: 13, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body, width: 'fit-content' }}>
-              {photoBusy ? 'Uploading…' : 'Upload photo'}
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} disabled={photoBusy} style={{ display: 'none' }} />
-            </label>
-            {profile.avatar_url && (
-              <div onClick={handleRemovePhoto} style={{ cursor: 'pointer', fontSize: 12, color: colors.textMuted, textDecoration: 'underline', width: 'fit-content' }}>Remove photo</div>
-            )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
+        <div style={{ background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 12, padding: 20 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: 'oklch(0.55 0.02 250)', marginBottom: 6 }}>Current Streak</div>
+          <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 34, lineHeight: 1, color: colors.primary }}>
+            {profile.current_streak}<span style={{ fontSize: 15, fontWeight: 600, color: 'oklch(0.55 0.02 250)', marginLeft: 6 }}>{profile.current_streak === 1 ? 'day' : 'days'}</span>
           </div>
         </div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Name</label>
-        <input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} placeholder="Your name" style={{ width: '100%', padding: '12px 14px', border: `1px solid ${colors.border}`, borderRadius: 4, fontSize: 15, fontFamily: fonts.body, marginBottom: 18 }} />
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Email</label>
-        <input value={email} onChange={(e) => { setEmail(e.target.value); setSaved(false); }} placeholder="you@example.com" style={{ width: '100%', padding: '12px 14px', border: `1px solid ${colors.border}`, borderRadius: 4, fontSize: 15, fontFamily: fonts.body, marginBottom: 18 }} />
-        <button onClick={save} style={{ background: colors.primary, color: 'white', border: 'none', padding: '12px 24px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: 'pointer', fontFamily: fonts.body }}>Save Changes</button>
-        {saved && <span style={{ marginLeft: 14, fontSize: 13, fontWeight: 600, color: colors.success }}>Saved</span>}
+        <div style={{ background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 12, padding: 20 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: 'oklch(0.55 0.02 250)', marginBottom: 6 }}>Total Points</div>
+          <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 34, lineHeight: 1, color: colors.textBody }}>{totalPoints}</div>
+        </div>
+        <div style={{ background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 12, padding: 20 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: 'oklch(0.55 0.02 250)', marginBottom: 6 }}>Quizzes Passed</div>
+          <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 34, lineHeight: 1, color: colors.textBody }}>{quizzesPassedCount}</div>
+        </div>
       </div>
 
-      <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 20, margin: '0 0 20px' }}>All quizzes</h2>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {quizzes.filter((q) => attempts[q.id]).map((q) => {
-          const attempt = attempts[q.id];
-          const statusText = attempt ? (attempt.passed ? 'Passed' : 'Failed') : 'Not played';
-          const statusColor = attempt ? (attempt.passed ? colors.success : colors.danger) : colors.textFaint;
-          const scoreText = attempt ? `${attempt.score}/${attempt.total}` : '—';
-          const pointsText = attempt ? (attempt.passed ? `+${attempt.points}` : '0') : '—';
-          return (
-            <div key={q.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 0', borderBottom: `1px solid ${colors.borderLight}` }}>
-              <div style={{ flex: 1, minWidth: 0, fontWeight: 600, fontSize: 15 }}>{q.title}</div>
-              <div style={{ width: 70, fontSize: 13, color: colors.textMuted }}>{DIFFICULTY_LABEL[q.difficulty]}</div>
-              <div style={{ width: 70, fontSize: 13, color: colors.textMuted }}>{scoreText}</div>
-              <div style={{ width: 90, fontSize: 13, fontWeight: 700, color: statusColor }}>{statusText}</div>
-              <div style={{ width: 50, textAlign: 'right', fontFamily: fonts.heading, fontWeight: 700, fontSize: 15 }}>{pointsText}</div>
+      <div style={{ background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 12, padding: 20, marginBottom: 32 }}>
+        <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: '0 0 16px', color: colors.primary }}>Account settings</h2>
+        <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 10, padding: 24 }}>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Profile photo</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: colors.primary, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22, overflow: 'hidden', position: 'relative', flexShrink: 0, border: `1px solid ${colors.border}` }}>
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="Your profile photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                initials(profile.name)
+              )}
             </div>
-          );
-        })}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <label style={{ display: 'inline-block', background: 'white', color: 'oklch(0.25 0.01 250)', border: `1px solid ${colors.border}`, padding: '8px 16px', fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontFamily: fonts.body, width: 'fit-content' }}>
+                {photoBusy ? 'Uploading…' : 'Upload photo'}
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} disabled={photoBusy} style={{ display: 'none' }} />
+              </label>
+              {profile.avatar_url && (
+                <div onClick={handleRemovePhoto} style={{ cursor: 'pointer', fontSize: 12, color: colors.textMuted, textDecoration: 'underline', width: 'fit-content' }}>Remove photo</div>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 20 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Name</label>
+              <input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} placeholder="Your name" style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', border: `1px solid ${colors.border}`, borderRadius: 8, fontSize: 15, fontFamily: fonts.body }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 6 }}>Email</label>
+              <input value={email} onChange={(e) => { setEmail(e.target.value); setSaved(false); }} placeholder="you@example.com" style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', border: `1px solid ${colors.border}`, borderRadius: 8, fontSize: 15, fontFamily: fonts.body }} />
+            </div>
+          </div>
+          <button onClick={save} style={{ background: colors.primary, color: 'white', border: 'none', padding: '12px 24px', fontSize: 14, fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontFamily: fonts.body }}>Save Changes</button>
+          {saved && <span style={{ marginLeft: 14, fontSize: 13, fontWeight: 600, color: colors.success }}>Saved</span>}
+        </div>
+      </div>
+
+      <div style={{ background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 12, padding: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: 0, color: colors.primary }}>Quizzes Taken</h2>
+        </div>
+        {attemptedQuizzes.length > 0 ? (
+          <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 10, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 18px', background: 'oklch(0.975 0.005 250)', borderBottom: '1px solid oklch(0.93 0.01 250)', fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: colors.textMuted }}>
+              <div style={{ flex: 1, minWidth: 0 }}>Quiz</div>
+              <div style={{ width: 76 }}>Level</div>
+              <div style={{ width: 64 }}>Score</div>
+              <div style={{ width: 86 }}>Result</div>
+              <div style={{ width: 56, textAlign: 'right' }}>Pts</div>
+            </div>
+            {attemptedQuizzes.map((q) => {
+              const attempt = attempts[q.id];
+              const statusText = attempt.passed ? 'Passed' : 'Failed';
+              const statusColor = attempt.passed ? colors.success : colors.danger;
+              const scoreText = `${attempt.score}/${attempt.total}`;
+              const pointsText = attempt.passed ? `+${attempt.points}` : '0';
+              return (
+                <div key={q.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', borderBottom: '1px solid oklch(0.95 0.01 250)' }}>
+                  <div style={{ flex: 1, minWidth: 0, fontWeight: 600, fontSize: 14.5, color: colors.textBody, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.title}</div>
+                  <div style={{ width: 76, fontSize: 13, color: colors.textMuted }}>{DIFFICULTY_LABEL[q.difficulty]}</div>
+                  <div style={{ width: 64, fontSize: 13, color: colors.textMuted }}>{scoreText}</div>
+                  <div style={{ width: 86, fontSize: 12.5, fontWeight: 700, color: statusColor }}>{statusText}</div>
+                  <div style={{ width: 56, textAlign: 'right', fontFamily: fonts.heading, fontWeight: 700, fontSize: 15, color: 'oklch(0.3 0.01 250)' }}>{pointsText}</div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 10, padding: '36px 24px', textAlign: 'center' }}>
+            <p style={{ fontSize: 15, color: colors.textSecondary, margin: '0 0 18px' }}>No quizzes yet. Play one and it lands here with your score and points.</p>
+          </div>
+        )}
       </div>
     </main>
-  );
-}
-
-function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div style={{ border: `1px solid ${colors.border}`, borderRadius: 4, padding: 24 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted, marginBottom: 8 }}>{label}</div>
-      <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 36, color: accent ? colors.primary : undefined }}>{value}</div>
-    </div>
   );
 }
 

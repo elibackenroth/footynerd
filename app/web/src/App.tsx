@@ -607,6 +607,7 @@ export default function App() {
             isMobile={isMobile}
             onSelect={selectAnswer}
             onNext={nextQuestion}
+            onQuit={() => go('quizzes')}
           />
         )}
 
@@ -640,7 +641,7 @@ export default function App() {
         )}
 
         {view === 'leaderboard' && (
-          <Leaderboard pointsRows={pointsRows} myName={profile?.name || null} isMobile={isMobile} />
+          <Leaderboard pointsRows={pointsRows} myName={profile?.name || null} isMobile={isMobile} quizzes={quizzes} attempts={attempts} startQuiz={startQuiz} />
         )}
 
         {view === 'match' && (

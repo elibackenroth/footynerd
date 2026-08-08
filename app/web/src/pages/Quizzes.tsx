@@ -73,6 +73,8 @@ export default function Quizzes({
   isMobile: boolean;
 }) {
   const [filtersSheetOpen, setFiltersSheetOpen] = useState(false);
+  const [quizPage, setQuizPage] = useState(0);
+  const [quizPageKey, setQuizPageKey] = useState('');
 
   const shuffleIndex: Record<string, number> = {};
   shuffleOrder.forEach((id, i) => { shuffleIndex[id] = i; });
@@ -106,6 +108,26 @@ export default function Quizzes({
       return activeSort === 'recent' ? b.idx - a.idx : seededRank(a.q.id) - seededRank(b.q.id);
     })
     .map(({ q }) => q);
+
+  const pageKey = [activeCategory, activeDifficulty, activeSort, quizQuery].join('|');
+  const quizPageSize = isMobile ? 5 : 15;
+  const quizPageCount = Math.max(1, Math.ceil(filtered.length / quizPageSize));
+  const quizPageIndex = Math.min(quizPageKey === pageKey ? quizPage : 0, quizPageCount - 1);
+  if (quizPageKey !== pageKey) {
+    // reset to page 0 whenever filters/search/sort change
+    setQuizPageKey(pageKey);
+    setQuizPage(0);
+  }
+  const quizPageStart = quizPageIndex * quizPageSize;
+  const pagedQuizzes = filtered.slice(quizPageStart, quizPageStart + quizPageSize);
+  const showQuizPager = filtered.length > quizPageSize;
+  const quizPagerRangeText = filtered.length
+    ? `Showing ${quizPageStart + 1}–${Math.min(quizPageStart + quizPageSize, filtered.length)} of ${filtered.length}`
+    : '';
+  const goToPage = (i: number) => { setQuizPage(i); setQuizPageKey(pageKey); };
+  const pagerPages = Array.from({ length: quizPageCount }, (_, i) => i).filter(
+    (i) => i === 0 || i === quizPageCount - 1 || Math.abs(i - quizPageIndex) <= 1
+  );
 
   const quizzesTotalCount = quizzes.filter((q) => !q.is_mega).length;
   const quizzesProgressPct = Math.round((quizzesPassedCount / Math.max(1, quizzesTotalCount)) * 100) + '%';
@@ -221,7 +243,7 @@ export default function Quizzes({
               : { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28 }
           }
         >
-          {filtered.map((quiz) => {
+          {pagedQuizzes.map((quiz) => {
             const attempt = attempts[quiz.id];
             const questionCount = questionCounts[quiz.id];
             return (
@@ -273,6 +295,41 @@ export default function Quizzes({
             );
           })}
         </div>
+
+        {showQuizPager && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginTop: 32, paddingTop: 22, borderTop: '1px solid oklch(0.92 0.01 250)' }}>
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: colors.textMuted }}>{quizPagerRangeText}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <div
+                onClick={() => quizPageIndex > 0 && goToPage(quizPageIndex - 1)}
+                style={{ padding: '10px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: `1px solid ${quizPageIndex > 0 ? 'oklch(0.86 0.03 250)' : 'oklch(0.93 0.01 250)'}`, background: 'white', color: quizPageIndex > 0 ? colors.primary : 'oklch(0.78 0.01 250)', cursor: quizPageIndex > 0 ? 'pointer' : 'default', whiteSpace: 'nowrap' }}
+              >
+                ← Previous
+              </div>
+              {pagerPages.map((i) => (
+                <div
+                  key={i}
+                  onClick={() => goToPage(i)}
+                  style={{
+                    minWidth: 38, height: 38, padding: '0 10px', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                    border: `1px solid ${i === quizPageIndex ? colors.primary : 'oklch(0.9 0.01 250)'}`,
+                    background: i === quizPageIndex ? colors.primary : 'white',
+                    color: i === quizPageIndex ? 'white' : 'oklch(0.4 0.01 250)',
+                  }}
+                >
+                  {i + 1}
+                </div>
+              ))}
+              <div
+                onClick={() => quizPageIndex < quizPageCount - 1 && goToPage(quizPageIndex + 1)}
+                style={{ padding: '10px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: `1px solid ${quizPageIndex < quizPageCount - 1 ? 'oklch(0.86 0.03 250)' : 'oklch(0.93 0.01 250)'}`, background: 'white', color: quizPageIndex < quizPageCount - 1 ? colors.primary : 'oklch(0.78 0.01 250)', cursor: quizPageIndex < quizPageCount - 1 ? 'pointer' : 'default', whiteSpace: 'nowrap' }}
+              >
+                Next →
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {isMobile && filtersSheetOpen && (

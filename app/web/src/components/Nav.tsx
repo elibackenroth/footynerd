@@ -210,7 +210,7 @@ export default function Nav({
       </div>
 
       {isMobile && mobileMenuOpen && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'oklch(0.38 0.16 250)', display: 'flex', flexDirection: 'column', padding: '4px 20px 12px', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', zIndex: 50 }}>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: colors.primary, display: 'flex', flexDirection: 'column', padding: '4px 20px 12px', boxShadow: '0 8px 16px rgba(0,0,0,0.15)', zIndex: 50 }}>
           <SearchBox mobile {...searchBoxProps} />
           <div onClick={() => go2('home')} style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: 'white', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer' }}>Home</div>
           <div onClick={() => go2('quizzes')} style={{ fontFamily: fonts.heading, fontSize: 17, fontWeight: 600, color: 'white', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer' }}>Quizzes</div>

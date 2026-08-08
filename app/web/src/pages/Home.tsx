@@ -94,6 +94,7 @@ interface DailyGameCard {
   isDone: boolean;
   statusText: string;
   onPlay: () => void;
+  image: string;
 }
 
 export default function Home({
@@ -199,17 +200,17 @@ export default function Home({
     {
       key: 'wordle', title: 'Football Wordle', desc: todayWordle ? `${todayWordle.category} · ${todayWordle.word.length} letters` : '',
       statusText: !todayWordle ? 'No puzzle today' : (wDone ? (wProg!.status === 'won' ? `Solved in ${wProg!.guesses.length}` : 'Not solved') : (wStarted ? `${wProg!.guesses.length} guesses in` : 'Not played')),
-      isDone: wDone, onPlay: startWordlePicker, chip: chipFor(wDone, wStarted),
+      isDone: wDone, onPlay: startWordlePicker, chip: chipFor(wDone, wStarted), image: '/mode-images/wordle.webp',
     },
     {
       key: 'chain', title: 'Transfer Chain', desc: todayChain ? `${todayChain.rounds.length} rounds · name the link` : '',
       statusText: cProg ? `${cProg.score}/${cProg.total} solved` : 'Not played',
-      isDone: !!cProg, onPlay: startTransferChain, chip: chipFor(!!cProg, false),
+      isDone: !!cProg, onPlay: startTransferChain, chip: chipFor(!!cProg, false), image: '/mode-images/transferchain.webp',
     },
     {
       key: 'grid', title: 'FootyGrid', desc: '3×3 grid · 9 players to find',
       statusText: gDone ? (gProg!.status === 'won' ? `Solved ${gSolved}/9` : `Out of lives · ${gSolved}/9`) : (gStarted ? `${gSolved}/9 filled` : 'Not played'),
-      isDone: gDone, onPlay: startFootygrid, chip: chipFor(gDone, gStarted),
+      isDone: gDone, onPlay: startFootygrid, chip: chipFor(gDone, gStarted), image: '/mode-images/footygrid.png',
     },
   ];
   const dailyDoneCount = dailyGames.filter((g) => g.isDone).length;
@@ -251,21 +252,26 @@ export default function Home({
     );
   }
 
+  const totalQuizCount = quizzes.length;
+  const dailyDoneCountText = `${dailyDoneCount} of 3`;
+
   return (
     <main style={{ flex: 1, width: '100%' }}>
-      <div style={{ textAlign: 'center', padding: isMobile ? '26px 20px 6px' : '44px 48px 10px' }}>
-        <h1 style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: isMobile ? 44 : 86, lineHeight: 0.95, letterSpacing: isMobile ? 1 : 2, textTransform: 'uppercase', margin: 0, color: colors.primary }}>FootyNerd</h1>
-        <div style={{ fontFamily: fonts.heading, fontWeight: 500, fontSize: isMobile ? 13 : 17, letterSpacing: isMobile ? 2 : 4, textTransform: 'uppercase', color: 'oklch(0.55 0.02 250)', margin: isMobile ? '10px 0 0' : '14px 0 0' }}>Test your ball knowledge</div>
-      </div>
-
       {!hasAccountName && (
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: isMobile ? '28px 20px 4px' : '48px 48px 8px', textAlign: 'center' }}>
-          <div style={{ display: 'inline-block', background: 'white', border: `1px solid ${colors.panelBorder}`, color: colors.primary, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', padding: '6px 16px', borderRadius: 999, marginBottom: 20 }}>
-            New quizzes, wordles &amp; grids daily
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: isMobile ? '4px 20px 10px' : '4px 48px 14px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 19, lineHeight: 1, color: colors.primary }}>{totalQuizCount}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: 'oklch(0.55 0.01 250)' }}>Quizzes</div>
+            </div>
+            <div style={{ width: 1, height: 14, background: 'oklch(0.88 0.01 250)' }} />
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 19, lineHeight: 1, color: colors.primary }}>{dailyDoneCountText}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: 'oklch(0.55 0.01 250)' }}>Daily games today</div>
+            </div>
+            <div style={{ width: 1, height: 14, background: 'oklch(0.88 0.01 250)' }} />
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: 'oklch(0.55 0.01 250)' }}>{todayLabel}</div>
           </div>
-          <p style={{ fontSize: isMobile ? 16 : 19, color: 'oklch(0.45 0.01 250)', margin: isMobile ? '0 0 28px' : '0 0 40px', lineHeight: 1.5 }}>
-            Daily wordles, grids and transfer chains — plus quizzes across players, clubs and national teams.
-          </p>
         </div>
       )}
 
@@ -280,7 +286,9 @@ export default function Home({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {dailyGames.map((g) => (
                 <div key={g.key} onClick={g.onPlay} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 8, padding: 10, cursor: 'pointer', boxShadow: '0 1px 2px rgba(20,20,40,0.05)' }}>
-                  <div style={{ width: 62, height: 44, flexShrink: 0, borderRadius: 6, overflow: 'hidden', background: 'oklch(0.95 0.01 250)' }} />
+                  <div style={{ width: 62, height: 44, flexShrink: 0, borderRadius: 6, overflow: 'hidden', background: 'oklch(0.95 0.01 250)' }}>
+                    <img src={g.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 15, lineHeight: 1.2, color: 'oklch(0.22 0.01 250)' }}>{g.title}</div>
                     <div style={{ fontSize: 11.5, color: 'oklch(0.55 0.01 250)', marginTop: 3, lineHeight: 1.35 }}>{g.desc}</div>
