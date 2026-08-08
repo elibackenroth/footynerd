@@ -42,14 +42,14 @@ export default function QuizPlay({
     <div style={{ position: 'relative' }}>
       {backdropSrc && (
         <div style={isMobile
-          ? { position: 'fixed', top: 0, left: 0, right: 0, height: '58vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }
+          ? { position: 'absolute', top: 58, left: 0, right: 0, height: '42vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }
           : { position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}
         >
           <img
             src={backdropSrc}
             alt=""
             style={isMobile
-              ? { width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55, filter: 'saturate(0.9)', transform: 'scale(1.02)' }
+              ? { width: '100%', height: '100%', objectFit: 'cover', opacity: 0.24, filter: 'saturate(0.8) blur(3px)', transform: 'scale(1.06)' }
               : {
                   width: '100%', height: '100%', objectFit: 'cover', opacity: 0.24,
                   filter: 'saturate(0.8) blur(3px)', transform: 'scale(1.04)',
@@ -58,7 +58,7 @@ export default function QuizPlay({
                 }}
           />
           {isMobile && (
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.82) 38%, rgba(255,255,255,0.97) 72%, rgb(255,255,255) 100%)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.8) 42%, rgba(255,255,255,0.98) 78%, rgb(255,255,255) 100%)' }} />
           )}
         </div>
       )}

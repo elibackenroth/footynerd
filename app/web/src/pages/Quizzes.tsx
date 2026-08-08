@@ -126,7 +126,7 @@ export default function Quizzes({
   const quizPagerRangeText = filtered.length
     ? `Showing ${quizPageStart + 1}–${Math.min(quizPageStart + quizPageSize, filtered.length)} of ${filtered.length}`
     : '';
-  const goToPage = (i: number) => { setQuizPage(i); setQuizPageKey(pageKey); };
+  const goToPage = (i: number) => { setQuizPage(i); setQuizPageKey(pageKey); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const pagerPages = Array.from({ length: quizPageCount }, (_, i) => i).filter(
     (i) => i === 0 || i === quizPageCount - 1 || Math.abs(i - quizPageIndex) <= 1
   );

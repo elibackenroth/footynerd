@@ -16,7 +16,7 @@ function MiniStat({ value, label }: { value: number | string; label: string }) {
 
 function QuizPreviewCard({ quiz, attempt, questionCount, onStart, isMobile }: { quiz: Quiz; attempt?: QuizAttempt; questionCount?: number; onStart: () => void; isMobile?: boolean }) {
   return (
-    <div onClick={onStart} style={{ border: `1px solid ${colors.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', background: 'white', ...(isMobile ? { flex: '0 0 82%', scrollSnapAlign: 'start' } : {}) }}>
+    <div onClick={onStart} style={{ border: `1px solid ${colors.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', background: 'white', ...(isMobile ? { flex: '0 0 86%', scrollSnapAlign: 'start' } : {}) }}>
       <div style={{ width: '100%', height: 140, position: 'relative', filter: attempt ? 'grayscale(0.45) saturate(0.7) brightness(0.97)' : 'none' }}>
         <QuizImage quizId={quiz.id} fallback={quiz.image} alt={quiz.title} />
         {attempt && (
@@ -76,7 +76,7 @@ function QuizCategorySection({
       </div>
       <div style={{ fontSize: 13, color: 'oklch(0.55 0.02 250)', marginBottom: 22 }}>{quizzes.length} {quizzes.length === 1 ? 'quiz' : 'quizzes'}</div>
       <div style={isMobile
-        ? { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', gap: 16, margin: '0 -20px', padding: '4px 20px 12px', WebkitOverflowScrolling: 'touch' }
+        ? { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', gap: 14, margin: 0, padding: '4px 0 14px', WebkitOverflowScrolling: 'touch' }
         : { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}
       >
         {quizzes.map((quiz) => (
@@ -347,7 +347,7 @@ export default function Home({
               <div onClick={() => go('quizzes')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>View all →</div>
             </div>
             <div style={isMobile
-              ? { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', gap: 16, margin: '0 -20px', padding: '4px 20px 12px', WebkitOverflowScrolling: 'touch' }
+              ? { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', gap: 14, margin: 0, padding: '4px 0 14px', WebkitOverflowScrolling: 'touch' }
               : { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 22 }}
             >
               {recentQuizzes.map((quiz) => (
@@ -430,11 +430,11 @@ export default function Home({
           )}
         </div>
 
-        <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20, marginTop: 32 }}>
+        <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: isMobile ? '20px 16px' : 20, marginTop: isMobile ? 28 : 32 }}>
           <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: '0 0 8px', color: colors.primary }}>Play a Friend</h2>
           <p style={{ fontSize: 15, color: 'oklch(0.5 0.01 250)', margin: '0 0 24px' }}>Same quiz, head to head — or race to fill the grid.</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
-            <div style={{ background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 16, flex: 1, maxWidth: isMobile ? '100%' : '50%' }}>
+          <div style={isMobile ? { display: 'grid', gridTemplateColumns: '1fr', gap: 18 } : { display: 'flex', alignItems: 'stretch', gap: 32, flexWrap: 'wrap' }}>
+            <div style={{ background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, padding: isMobile ? 18 : 24, display: 'flex', flexDirection: 'column', gap: 16, ...(isMobile ? { width: '100%', minWidth: 0 } : { flex: 1, minWidth: 0, maxWidth: '50%' }) }}>
               <div style={{ width: '100%', height: 120 }}>
                 <img src="/mode-images/matchroom.webp" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
               </div>
@@ -452,7 +452,7 @@ export default function Home({
                 Start a Match
               </button>
             </div>
-            <div style={{ background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 16, flex: 1, maxWidth: isMobile ? '100%' : '50%' }}>
+            <div style={{ background: 'white', border: '1px solid oklch(0.9 0.02 250)', borderRadius: 10, padding: isMobile ? 18 : 24, display: 'flex', flexDirection: 'column', gap: 16, ...(isMobile ? { width: '100%', minWidth: 0 } : { flex: 1, minWidth: 0, maxWidth: '50%' }) }}>
               <div style={{ width: '100%', height: 120 }}>
                 <img src="/mode-images/gridduel.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
               </div>
