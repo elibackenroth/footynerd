@@ -141,7 +141,7 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
                           style={{
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
                             minHeight: cellMinHeight, borderRadius: 6, cursor: 'pointer', padding: 4,
-                            background: filled ? 'oklch(0.97 0.035 250)' : 'oklch(0.98 0.005 250)',
+                            background: filled ? 'oklch(0.965 0.006 60)' : 'oklch(0.98 0.005 250)',
                             border: filled ? `1.5px solid ${colors.primary}` : '1.5px dashed oklch(0.85 0.01 250)',
                           }}
                         >
@@ -255,7 +255,7 @@ export default function FootyGrid({ go, user, isMobile, players, grids }: { go: 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 280, overflowY: 'auto' }}>
               {suggestions.map((s) => (
                 <div key={s.id} onClick={() => pickPlayer(s.id)} style={{ padding: '10px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'oklch(0.97 0.02 250)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'oklch(0.965 0.006 60)')}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
                   <span style={{ fontSize: 14, fontWeight: 600, color: colors.textBody }}>{s.name}</span>

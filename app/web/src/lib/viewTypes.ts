@@ -1,6 +1,7 @@
 export type ViewName =
   | 'home'
   | 'quizzes'
+  | 'series'
   | 'playing'
   | 'result'
   | 'account'

@@ -29,6 +29,14 @@ const LOCAL_IMAGE_QUIZ_IDS = new Set([
   'ezrikonsa', 'footballmoney', 'franklampard', 'iagoaspas', 'josebordalas',
   'megaengland', 'megapremierleague', 'morocco', 'neymarsantos', 'ribery',
   'spainworldcup', 'sportinglisbon', 'megaworldcup',
+  'afcon', 'aleague', 'argentinant', 'argentineprimera', 'baggio',
+  'belgiumgolden', 'bocajuniors', 'bundesliga', 'cavani', 'cloughforest',
+  'clubbrugge', 'crystalpalace', 'danielolmo', 'davidraum', 'debruyne',
+  'egyptianleague', 'francent', 'galatasaray', 'germanynt', 'goalkeepers',
+  'greece2004', 'italynt', 'japannt', 'kaka', 'lewandowski',
+  'ligamx', 'ligaportugaldeep', 'lisbonlions', 'megachampionsleague', 'messi50',
+  'musiala', 'nigeriant', 'nordicleagues', 'realsociedad', 'riverplate',
+  'ronaldinho', 'salah', 'seriea', 'terstegen', 'thomasmuller', 'yamal',
 ]);
 
 export function getQuizImageSrc(quizId: string, fallback: string | null): string | null {

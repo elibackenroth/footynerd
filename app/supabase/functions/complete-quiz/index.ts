@@ -7,7 +7,7 @@ const cors = {
 };
 
 function passThresholdFor(total: number) {
-  return total >= 10 ? 7 : 3;
+  return Math.max(1, Math.ceil((total * 2) / 3));
 }
 
 function todayStr() {

@@ -1,12 +1,13 @@
 import { colors, fonts, AVATAR_COLORS, initials, passThresholdFor } from '../lib/tokens';
 import { todaysDaily } from '../lib/daily';
+import { SERIES } from '../lib/series';
 import type { Quiz, QuizAttempt, PointsLeaderboardRow, WordlePuzzlePublic, WordleGuess, TransferDaily, FootygridGrid, FootygridAttempt } from '../lib/types';
 import type { ViewName } from '../lib/viewTypes';
 import QuizImage, { getQuizImageSrc } from '../components/QuizImage';
 
 function MiniStat({ value, label }: { value: number | string; label: string }) {
   return (
-    <div style={{ background: 'oklch(0.97 0.02 250)', borderRadius: 6, padding: '8px 6px', textAlign: 'center' }}>
+    <div style={{ background: 'oklch(0.965 0.006 60)', borderRadius: 6, padding: '8px 6px', textAlign: 'center' }}>
       <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 17, lineHeight: 1, color: colors.primary }}>{value}</div>
       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: 'oklch(0.58 0.01 250)', marginTop: 3 }}>{label}</div>
     </div>
@@ -68,7 +69,7 @@ function QuizCategorySection({
 }) {
   if (quizzes.length === 0) return null;
   return (
-    <div style={{ background: 'oklch(0.97 0.02 250)', border: '1px solid oklch(0.91 0.02 250)', borderRadius: 12, padding: 20, marginTop: 32 }}>
+    <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20, marginTop: 32 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, marginBottom: 6 }}>
         <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: 0, color: colors.primary }}>{title}</h2>
         <div onClick={onViewAll} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>See all →</div>
@@ -119,6 +120,7 @@ export default function Home({
   startTransferChain,
   startFootygrid,
   startGridDuelSetup,
+  openSeries,
 }: {
   quizzes: Quiz[];
   attempts: Record<string, QuizAttempt>;
@@ -143,6 +145,7 @@ export default function Home({
   startTransferChain: () => void;
   startFootygrid: () => void;
   startGridDuelSetup: () => void;
+  openSeries: (id: string) => void;
 }) {
   const buildCategoryPreview = (category: string) => quizzes.filter((q) => q.category === category && !q.is_mega).slice().reverse().slice(0, 3);
   const playerQuizzes = buildCategoryPreview('players');
@@ -150,6 +153,23 @@ export default function Home({
 
   const nonMegaQuizzes = quizzes.filter((q) => !q.is_mega);
   const recentQuizzes = nonMegaQuizzes.slice(-4).reverse();
+
+  const seriesCards = SERIES.map((s) => {
+    const qs = s.quizIds.map((id) => quizzes.find((q) => q.id === id)).filter(Boolean) as Quiz[];
+    const doneCount = qs.filter((q) => attempts[q.id]?.passed).length;
+    const complete = qs.length > 0 && doneCount === qs.length;
+    const base = qs.reduce((sum, q) => sum + q.points, 0);
+    const heroQuiz = quizzes.find((q) => q.id === s.heroQuizId) || qs[0];
+    return {
+      id: s.id,
+      title: s.title,
+      heroImage: heroQuiz ? getQuizImageSrc(heroQuiz.id, heroQuiz.image) : null,
+      progressText: `${doneCount} of ${qs.length} complete`,
+      progressPct: qs.length ? Math.round((doneCount / qs.length) * 100) + '%' : '0%',
+      barColor: complete ? colors.success : colors.primary,
+      bonusText: complete ? `Bonus claimed · +${base} pts` : `Finish all ${qs.length} to double the series: +${base} bonus pts`,
+    };
+  });
 
   const megas = quizzes.filter((q) => q.is_mega);
   const megaQuiz = megas.length ? todaysDaily(megas.map((q) => ({ ...q, date: q.mega_date || '' }))) : null;
@@ -251,7 +271,7 @@ export default function Home({
 
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '48px 48px 100px' }}>
         <div style={isMobile ? { display: 'flex', flexDirection: 'column', gap: 32 } : { display: 'grid', gridTemplateColumns: '296px minmax(0,1fr)', gap: 40, alignItems: 'stretch' }}>
-          <div style={{ background: 'oklch(0.97 0.02 250)', border: '1px solid oklch(0.91 0.02 250)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column' }}>
             <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 19, margin: 0, color: colors.primary }}>Today's Daily Games</h2>
             <div style={{ fontSize: 11.5, fontWeight: 600, color: 'oklch(0.55 0.02 250)', margin: '4px 0 14px' }}>{todayLabel}</div>
             <div style={{ height: 4, borderRadius: 2, background: 'oklch(0.92 0.01 250)', overflow: 'hidden', marginBottom: 16 }}>
@@ -273,7 +293,7 @@ export default function Home({
             </div>
 
             {megaQuiz && (
-              <div style={{ borderTop: '1px solid oklch(0.91 0.02 250)', paddingTop: 16, marginTop: 16 }}>
+              <div style={{ borderTop: '1px solid oklch(0.915 0.006 60)', paddingTop: 16, marginTop: 16 }}>
                 <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 19, margin: 0, color: colors.primary }}>Today's Mega Quiz</h2>
                 <div style={{ fontSize: 11.5, fontWeight: 600, color: 'oklch(0.55 0.02 250)', margin: '4px 0 14px' }}>{todayLabel}</div>
                 <div
@@ -313,7 +333,7 @@ export default function Home({
             )}
           </div>
 
-          <div style={{ minWidth: 0, background: 'oklch(0.97 0.02 250)', border: '1px solid oklch(0.91 0.02 250)', borderRadius: 12, padding: 20 }}>
+          <div style={{ minWidth: 0, background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
               <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: 0, color: colors.primary }}>Latest Quizzes</h2>
               <div onClick={() => go('quizzes')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>View all →</div>
@@ -329,10 +349,39 @@ export default function Home({
           </div>
         </div>
 
+        <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20, marginTop: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, marginBottom: 6 }}>
+            <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: 0, color: colors.primary }}>Quiz Series</h2>
+          </div>
+          <div style={{ fontSize: 13, color: 'oklch(0.55 0.02 250)', marginBottom: 22 }}>Play a topic in order — finish every quiz in a series and its points double</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {seriesCards.map((ser) => (
+              <div key={ser.id} onClick={() => openSeries(ser.id)} style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'white', border: '1px solid oklch(0.92 0.01 250)', borderRadius: 8, padding: '12px 16px 12px 12px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(20,20,40,0.06)' }}>
+                <div style={{ width: 96, height: 66, flexShrink: 0, borderRadius: 6, overflow: 'hidden', position: 'relative', background: 'oklch(0.95 0.03 250)' }}>
+                  {ser.heroImage && <img src={ser.heroImage} alt={ser.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                </div>
+                <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 17, lineHeight: 1.2, color: 'oklch(0.22 0.01 250)' }}>{ser.title}</div>
+                  <div style={{ fontSize: 12, color: 'oklch(0.55 0.02 250)', lineHeight: 1.4 }}>{ser.bonusText}</div>
+                </div>
+                {!isMobile && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                    <div style={{ width: 88, height: 4, borderRadius: 2, background: 'oklch(0.93 0.01 250)', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 2, background: ser.barColor, width: ser.progressPct }} />
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase', color: 'oklch(0.55 0.01 250)', whiteSpace: 'nowrap' }}>{ser.progressText}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: colors.primary }}>→</div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
         <QuizCategorySection title="Players" quizzes={playerQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('players')} isMobile={isMobile} />
         <QuizCategorySection title="Clubs" quizzes={clubQuizzes} attempts={attempts} questionCounts={questionCounts} startQuiz={startQuiz} onViewAll={() => goCategory('clubs')} isMobile={isMobile} />
 
-        <div style={{ background: 'oklch(0.97 0.02 250)', border: '1px solid oklch(0.91 0.02 250)', borderRadius: 12, padding: 20, marginTop: 32 }}>
+        <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20, marginTop: 32 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, marginBottom: 6 }}>
             <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: 0, color: colors.primary }}>Leaderboard</h2>
             <div onClick={() => go('leaderboard')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>Full standings →</div>
@@ -373,7 +422,7 @@ export default function Home({
           )}
         </div>
 
-        <div style={{ background: 'oklch(0.97 0.02 250)', border: '1px solid oklch(0.91 0.02 250)', borderRadius: 12, padding: 20, marginTop: 32 }}>
+        <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20, marginTop: 32 }}>
           <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: '0 0 8px', color: colors.primary }}>Play a Friend</h2>
           <p style={{ fontSize: 15, color: 'oklch(0.5 0.01 250)', margin: '0 0 24px' }}>Same quiz, head to head — or race to fill the grid.</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>

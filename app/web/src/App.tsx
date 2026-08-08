@@ -33,6 +33,8 @@ import Footer from './components/Footer';
 import EmailGateModal from './components/EmailGateModal';
 import Home from './pages/Home';
 import Quizzes from './pages/Quizzes';
+import Series from './pages/Series';
+import { SERIES } from './lib/series';
 import QuizPlay from './pages/QuizPlay';
 import Result from './pages/Result';
 import Account from './pages/Account';
@@ -65,6 +67,7 @@ export default function App() {
   const [activeSort, setActiveSort] = useState('random');
   const [shuffleOrder, setShuffleOrder] = useState<string[]>([]);
   const [quizQuery, setQuizQuery] = useState('');
+  const [seriesId, setSeriesId] = useState<string | null>(null);
 
   // quiz play
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
@@ -265,6 +268,8 @@ export default function App() {
   }
 
   function go(v: ViewName) { setView(v); }
+
+  function openSeries(id: string) { setSeriesId(id); setView('series'); }
 
   function goCategory(category: string) {
     setActiveCategory(category);
@@ -554,6 +559,18 @@ export default function App() {
             startTransferChain={() => go('transferchain')}
             startFootygrid={() => go('footygrid')}
             startGridDuelSetup={startGridDuelSetup}
+            openSeries={openSeries}
+          />
+        )}
+
+        {view === 'series' && (
+          <Series
+            series={SERIES.find((s) => s.id === seriesId) || SERIES[0]}
+            quizzes={quizzes}
+            attempts={attempts}
+            isMobile={isMobile}
+            go={go}
+            startQuiz={startQuiz}
           />
         )}
 

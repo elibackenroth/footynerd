@@ -74,7 +74,7 @@ export default function Leaderboard({ pointsRows, myName, isMobile }: { pointsRo
                     {row.name}{isMe ? ' (You)' : ''}
                   </div>
                   <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 20, color: podiumColor, margin: '2px 0 10px' }}>{row.points}</div>
-                  <div style={{ width: '100%', height: podiumHeight, background: `linear-gradient(180deg, ${podiumColor}, oklch(0.97 0.02 250))`, borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 8 }}>
+                  <div style={{ width: '100%', height: podiumHeight, background: `linear-gradient(180deg, ${podiumColor}, oklch(0.965 0.006 60))`, borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 8 }}>
                     <div style={{ fontFamily: fonts.heading, fontWeight: 800, fontSize: 28, color: 'white' }}>{place}</div>
                   </div>
                 </div>
@@ -153,7 +153,7 @@ export default function Leaderboard({ pointsRows, myName, isMobile }: { pointsRo
 
 function StatTile({ value, label }: { value: number; label: string }) {
   return (
-    <div style={{ background: colors.panelBg, border: '1px solid oklch(0.9 0.03 250)', borderRadius: 10, padding: '16px 18px' }}>
+    <div style={{ background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 10, padding: '16px 18px' }}>
       <div style={{ fontFamily: fonts.heading, fontWeight: 700, fontSize: 26, color: colors.primary }}>{value}</div>
       <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{label}</div>
     </div>

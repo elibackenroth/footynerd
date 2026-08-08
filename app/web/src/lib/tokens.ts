@@ -1,7 +1,7 @@
 // Design tokens ported verbatim from Soccer Quiz.dc.html (see design_handoff_backend/README.md "Design Tokens").
 export const colors = {
-  primary: 'oklch(0.42 0.18 250)',
-  primaryLight: 'oklch(0.55 0.15 250)',
+  primary: 'oklch(0.31 0.1 258)',
+  primaryLight: 'oklch(0.5 0.19 258)',
   wordleAccent: 'oklch(0.55 0.15 70)',
   matchOpponent: 'oklch(0.6 0.17 60)',
   success: 'oklch(0.5 0.14 145)',
@@ -12,8 +12,8 @@ export const colors = {
   textFaint: 'oklch(0.6 0.01 250)',
   border: 'oklch(0.92 0.01 250)',
   borderLight: 'oklch(0.93 0.01 250)',
-  panelBg: 'oklch(0.97 0.035 250)',
-  panelBorder: 'oklch(0.88 0.05 250)',
+  panelBg: 'oklch(0.965 0.006 60)',
+  panelBorder: 'oklch(0.915 0.006 60)',
   badgeBg: 'oklch(0.96 0.04 250)',
   footerBg: 'oklch(0.24 0.045 250)',
   bodyBg: 'oklch(0.99 0.003 250)',
@@ -24,13 +24,7 @@ export const fonts = {
   body: "'Inter', sans-serif",
 };
 
-export const AVATAR_COLORS = [
-  'oklch(0.42 0.18 250)',
-  'oklch(0.55 0.15 250)',
-  'oklch(0.6 0.17 60)',
-  'oklch(0.6 0.16 25)',
-  'oklch(0.55 0.13 300)',
-];
+export const AVATAR_COLORS = ['oklch(0.31 0.1 258)'];
 
 export const CATEGORIES = [
   { id: 'all', label: 'All Quizzes' },
@@ -48,15 +42,15 @@ export const SORTS = [
 
 export const DIFFICULTIES = [
   { id: 'all', label: 'All Levels' },
-  { id: 'easy', label: 'Easy · 25 pts' },
-  { id: 'medium', label: 'Medium · 50 pts' },
-  { id: 'hard', label: 'Hard · 75 pts' },
+  { id: 'easy', label: 'Easy' },
+  { id: 'medium', label: 'Medium' },
+  { id: 'hard', label: 'Hard' },
 ];
 
 export const DIFFICULTY_LABEL: Record<string, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
 export function passThresholdFor(total: number) {
-  return total >= 20 ? 13 : total >= 10 ? 7 : 3;
+  return Math.max(1, Math.ceil((total * 2) / 3));
 }
 
 export function quizHash(id: string) {
