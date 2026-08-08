@@ -205,11 +205,20 @@ export default function App() {
 
   // keep the URL in sync with the current top-level view, so refresh and browser
   // back/forward work for the pages that don't depend on an in-progress session
-  // (an active quiz, a match room, a grid duel fall back to whatever view was last synced)
+  // (an active quiz, a match room, a grid duel keep the URL of whatever page launched
+  // them — but still leave a single history entry there, so Back from mid-session
+  // lands on that launching page instead of skipping past it to whatever came earlier)
+  const inEphemeralViewRef = useRef(false);
   useEffect(() => {
     const path = pathForView(view, seriesId);
-    if (path && window.location.pathname !== path) {
-      window.history.pushState({ view, seriesId }, '', path);
+    if (path) {
+      if (window.location.pathname !== path) {
+        window.history.pushState({ view, seriesId }, '', path);
+      }
+      inEphemeralViewRef.current = false;
+    } else if (!inEphemeralViewRef.current) {
+      window.history.pushState({ view, seriesId }, '', window.location.pathname);
+      inEphemeralViewRef.current = true;
     }
   }, [view, seriesId]);
 
