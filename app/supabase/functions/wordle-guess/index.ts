@@ -7,13 +7,14 @@ const cors = {
 };
 
 function evalWordleGuess(guess: string, answer: string) {
+  const len = answer.length;
   const g = guess.split(""), a = answer.split("");
-  const result = Array(5).fill("absent");
-  const used = Array(5).fill(false);
-  for (let i = 0; i < 5; i++) {
+  const result = Array(len).fill("absent");
+  const used = Array(len).fill(false);
+  for (let i = 0; i < len; i++) {
     if (g[i] === a[i]) { result[i] = "correct"; used[i] = true; }
   }
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < len; i++) {
     if (result[i] === "correct") continue;
     const idx = a.findIndex((ch, j) => ch === g[i] && !used[j]);
     if (idx > -1) { result[i] = "present"; used[idx] = true; }
@@ -21,20 +22,28 @@ function evalWordleGuess(guess: string, answer: string) {
   return result;
 }
 
+function maxGuessesFor(wordLength: number) {
+  return Math.max(6, wordLength + 1);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
     const { puzzleId, guess, priorGuesses } = await req.json();
-    if (!puzzleId || typeof guess !== "string" || guess.length !== 5) {
+    if (!puzzleId || typeof guess !== "string" || guess.length === 0) {
       return new Response(JSON.stringify({ error: "bad_request" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
     }
-    const upperGuess = guess.toUpperCase();
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: puzzle, error: pErr } = await admin.from("wordle_puzzles").select("word").eq("id", puzzleId).single();
     if (pErr || !puzzle) {
       return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { ...cors, "Content-Type": "application/json" } });
     }
+
+    if (guess.length !== puzzle.word.length) {
+      return new Response(JSON.stringify({ error: "bad_request" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
+    }
+    const upperGuess = guess.toUpperCase();
 
     const authHeader = req.headers.get("Authorization");
     let user = null;
@@ -61,9 +70,10 @@ Deno.serve(async (req) => {
     const priorArr = Array.isArray(priorGuesses) ? priorGuesses : [];
     const result = evalWordleGuess(upperGuess, puzzle.word);
     const guessNumber = priorArr.length + 1;
+    const maxGuesses = maxGuessesFor(puzzle.word.length);
     let status: "playing" | "won" | "lost" = "playing";
     if (upperGuess === puzzle.word) status = "won";
-    else if (guessNumber >= 6) status = "lost";
+    else if (guessNumber >= maxGuesses) status = "lost";
 
     const guesses = [...priorArr, { word: upperGuess, result }];
 
