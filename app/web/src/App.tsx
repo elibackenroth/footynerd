@@ -67,8 +67,7 @@ export default function App() {
   const [attempts, setAttempts] = useState<Record<string, QuizAttempt>>({});
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeDifficulty, setActiveDifficulty] = useState('all');
-  const [activeSort, setActiveSort] = useState('random');
-  const [shuffleOrder, setShuffleOrder] = useState<string[]>([]);
+  const [activeSort, setActiveSort] = useState('recent');
   const [quizQuery, setQuizQuery] = useState('');
   const [seriesId, setSeriesId] = useState<string | null>(() => { try { return routeFromPath(window.location.pathname).seriesId; } catch { return null; } });
 
@@ -121,17 +120,7 @@ export default function App() {
   const contentRef = useRef<HTMLDivElement>(null);
   const lastView = useRef(view);
 
-  function shuffle(ids: string[]) {
-    const order = ids.slice();
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [order[i], order[j]] = [order[j], order[i]];
-    }
-    return order;
-  }
-
   function setQuizSort(mode: string) {
-    if (mode === 'random') setShuffleOrder(shuffle(quizzes.map((q) => q.id)));
     setActiveSort(mode);
   }
 
@@ -140,7 +129,6 @@ export default function App() {
     fetchQuizzes().then((qs) => {
       setQuizzes(qs);
       setMatchSetupQuizId((prev) => prev || qs[0]?.id || '');
-      setShuffleOrder(shuffle(qs.map((q) => q.id)));
     });
     fetchQuizQuestionCounts().then(setQuestionCounts);
     fetchFootygridPlayers().then(setFootygridPlayers);
@@ -625,7 +613,6 @@ export default function App() {
             setDifficulty={setActiveDifficulty}
             activeSort={activeSort}
             setSort={setQuizSort}
-            shuffleOrder={shuffleOrder}
             quizQuery={quizQuery}
             setQuizQuery={setQuizQuery}
             startQuiz={startQuiz}
