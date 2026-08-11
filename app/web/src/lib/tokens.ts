@@ -33,10 +33,11 @@ export const CATEGORIES = [
   { id: 'leagues', label: 'Leagues' },
   { id: 'national', label: 'National' },
   { id: 'clubs', label: 'Clubs' },
+  { id: 'theme-managers', label: 'Managers' },
+  { id: 'other', label: 'Other' },
 ];
 
 export const SORTS = [
-  { id: 'random', label: '↻ Shuffle' },
   { id: 'recent', label: 'Most Recent' },
 ];
 
