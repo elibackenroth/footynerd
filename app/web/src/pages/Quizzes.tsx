@@ -45,7 +45,6 @@ export default function Quizzes({
   setDifficulty,
   activeSort,
   setSort,
-  shuffleOrder,
   quizQuery,
   setQuizQuery,
   startQuiz,
@@ -64,7 +63,6 @@ export default function Quizzes({
   setDifficulty: (id: string) => void;
   activeSort: string;
   setSort: (id: string) => void;
-  shuffleOrder: string[];
   quizQuery: string;
   setQuizQuery: (v: string) => void;
   startQuiz: (id: string) => void;
@@ -77,10 +75,6 @@ export default function Quizzes({
   const [filtersSheetOpen, setFiltersSheetOpen] = useState(false);
   const [quizPage, setQuizPage] = useState(0);
   const [quizPageKey, setQuizPageKey] = useState('');
-
-  const shuffleIndex: Record<string, number> = {};
-  shuffleOrder.forEach((id, i) => { shuffleIndex[id] = i; });
-  const seededRank = (id: string) => (id in shuffleIndex ? shuffleIndex[id] : 1e6);
 
   const quizQueryNorm = quizQuery.trim().toLowerCase();
 
@@ -106,8 +100,8 @@ export default function Quizzes({
   const filtered = filteredBase
     .slice()
     .sort((a, b) => {
-      if (quizQueryNorm && activeSort !== 'random') return titleMatchRank(a.q) - titleMatchRank(b.q) || a.q.title.localeCompare(b.q.title);
-      return activeSort === 'recent' ? b.idx - a.idx : seededRank(a.q.id) - seededRank(b.q.id);
+      if (quizQueryNorm) return titleMatchRank(a.q) - titleMatchRank(b.q) || a.q.title.localeCompare(b.q.title);
+      return b.idx - a.idx;
     })
     .map(({ q }) => q);
 
@@ -221,16 +215,6 @@ export default function Quizzes({
                 {hasActiveFilters && (
                   <span style={{ minWidth: 21, height: 21, padding: '0 6px', borderRadius: 999, background: 'white', color: colors.primary, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{activeFilterCount}</span>
                 )}
-              </div>
-              <div
-                onClick={() => setSort('random')}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, height: 46, padding: '0 16px', borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
-                  background: activeSort === 'random' ? 'oklch(0.95 0.03 250)' : 'white', color: colors.primary, border: '1px solid oklch(0.88 0.02 250)',
-                }}
-              >
-                <span style={{ fontSize: 15, lineHeight: 1 }}>↻</span>
-                <span>Shuffle</span>
               </div>
               <div style={{ flex: 1 }} />
               <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: colors.textMuted, whiteSpace: 'nowrap' }}>{filtered.length} {filtered.length === 1 ? 'quiz' : 'quizzes'}</div>
