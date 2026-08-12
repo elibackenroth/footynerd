@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { colors, fonts, CATEGORIES, DIFFICULTIES, SORTS, DIFFICULTY_LABEL } from '../lib/tokens';
+import { colors, fonts, CATEGORIES, DIFFICULTIES, SORTS, DIFFICULTY_LABEL, quizDateLabel } from '../lib/tokens';
 import type { Quiz, QuizAttempt } from '../lib/types';
 import QuizImage from '../components/QuizImage';
 
@@ -252,6 +252,7 @@ export default function Quizzes({
                       <div style={{ fontSize: 11, fontWeight: 700, color: 'oklch(0.5 0.15 250)', background: 'oklch(0.95 0.04 250)', padding: '3px 10px', borderRadius: 999, flexShrink: 0 }}>{questionCount} Qs</div>
                     )}
                   </div>
+                  <div style={{ fontSize: 11.5, color: 'oklch(0.62 0.01 250)' }}>{quizDateLabel(quiz.date)}</div>
                   <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 20, margin: 0, lineHeight: 1.15, minHeight: 46, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: colors.primary }}>{quiz.title}</h2>
                   <p style={{ fontSize: 13, color: colors.textMuted, margin: 0, lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{quiz.description}</p>
                   <div style={{ flex: 1 }} />
