@@ -101,7 +101,7 @@ export default function Quizzes({
     .slice()
     .sort((a, b) => {
       if (quizQueryNorm) return titleMatchRank(a.q) - titleMatchRank(b.q) || a.q.title.localeCompare(b.q.title);
-      return b.idx - a.idx;
+      return a.q.date < b.q.date ? 1 : a.q.date > b.q.date ? -1 : b.idx - a.idx;
     })
     .map(({ q }) => q);
 
