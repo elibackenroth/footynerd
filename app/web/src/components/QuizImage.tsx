@@ -50,6 +50,11 @@ const LOCAL_IMAGE_QUIZ_IDS: Record<string, string> = Object.fromEntries(
     'ancelotti', 'griezmann', 'saka', 'colepalmer', 'netherlandsnt',
     'uruguaynt', 'colombiant', 'romaclub', 'lazioclub', 'atalantaclub',
     'benficaclub', 'portoclub', 'leverkusen2024',
+    'neymarpsg', 'argentinaworldcup', 'xavihernandez', 'sadiomane', 'megamessi',
+    'buffon', 'marseille', 'southkorea', 'mls', 'handofgod',
+    'drogba', 'flamengo', 'libertadores', 'denmark', 'pirlo',
+    'redstar', 'trebles', 'ghana', 'etoo', 'facup',
+    'fenerbahce', 'rodri', 'sweden', 'shootouts', 'feyenoord',
   ].map((id) => [id, 'webp'])
 );
 
