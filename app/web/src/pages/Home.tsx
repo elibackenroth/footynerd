@@ -266,7 +266,7 @@ export default function Home({
         </div>
       )}
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 20px 100px' : '48px 48px 100px' }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: isMobile ? '32px 20px 28px' : '48px 48px 32px' }}>
         <div style={isMobile ? { display: 'flex', flexDirection: 'column', gap: 32 } : { display: 'grid', gridTemplateColumns: '296px minmax(0,1fr)', gap: 40, alignItems: 'stretch' }}>
           <div style={{ background: 'oklch(0.965 0.006 60)', border: '1px solid oklch(0.915 0.006 60)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column' }}>
             <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 19, margin: 0, color: colors.primary }}>Today's Daily Games</h2>
