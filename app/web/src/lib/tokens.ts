@@ -34,6 +34,7 @@ export const CATEGORIES = [
   { id: 'national', label: 'National' },
   { id: 'clubs', label: 'Clubs' },
   { id: 'theme-managers', label: 'Managers' },
+  { id: 'theme-moments', label: 'Moments & history' },
   { id: 'other', label: 'Other' },
 ];
 
