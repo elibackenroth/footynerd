@@ -651,6 +651,12 @@ export default function App() {
             needsAuth={!user}
             onAuthAndSave={handleAuthAndSave}
             go={go}
+            quizzes={quizzes}
+            activeQuizId={activeQuiz.id}
+            attempts={attempts}
+            questionCounts={questionCounts}
+            onStartQuiz={startQuiz}
+            isMobile={isMobile}
           />
         )}
 
