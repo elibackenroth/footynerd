@@ -61,6 +61,14 @@ export function quizHash(id: string) {
   return h;
 }
 
+const QUIZ_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export function quizDateLabel(dateStr: string | null | undefined) {
+  if (!dateStr) return '';
+  const p = String(dateStr).split('-');
+  if (p.length !== 3) return '';
+  return `${QUIZ_MONTHS[Number(p[1]) - 1]} ${Number(p[2])}, ${p[0]}`;
+}
+
 export function initials(name: string | null | undefined) {
   const n = (name || '').trim();
   if (!n) return '?';
