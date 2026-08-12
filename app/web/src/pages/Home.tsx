@@ -1,4 +1,4 @@
-import { colors, fonts, AVATAR_COLORS, initials, passThresholdFor } from '../lib/tokens';
+import { colors, fonts, AVATAR_COLORS, initials, passThresholdFor, quizDateLabel } from '../lib/tokens';
 import { todaysDaily } from '../lib/daily';
 import { SERIES } from '../lib/series';
 import type { Quiz, QuizAttempt, PointsLeaderboardRow, WordlePuzzlePublic, WordleGuess, TransferDaily, FootygridGrid, FootygridAttempt } from '../lib/types';
@@ -27,6 +27,7 @@ function QuizPreviewCard({ quiz, attempt, questionCount, onStart, isMobile }: { 
             <div style={{ fontSize: 11, fontWeight: 700, color: 'oklch(0.5 0.15 250)', background: 'oklch(0.95 0.04 250)', padding: '2px 8px', borderRadius: 999, flexShrink: 0 }}>{questionCount} Qs</div>
           )}
         </div>
+        <div style={{ fontSize: 11.5, color: 'oklch(0.62 0.01 250)' }}>{quizDateLabel(quiz.date)}</div>
         <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 19, margin: 0, lineHeight: 1.2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: colors.textBody }}>{quiz.title}</h3>
         <p style={{ fontSize: 13, color: 'oklch(0.52 0.01 250)', margin: 0, lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{quiz.description}</p>
         <div style={{ flex: 1 }} />
