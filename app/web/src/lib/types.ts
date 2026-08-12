@@ -9,6 +9,7 @@ export interface Quiz {
   points: number;
   is_mega: boolean;
   mega_date: string | null;
+  date: string;
 }
 
 export interface QuizQuestionPublic {
