@@ -18,7 +18,7 @@ import type {
 // ---------- quizzes ----------
 
 export async function fetchQuizzes(): Promise<Quiz[]> {
-  const { data, error } = await supabase.from('quizzes').select('*');
+  const { data, error } = await supabase.from('quizzes').select('*').order('date', { ascending: true }).order('id', { ascending: true });
   if (error) throw error;
   return data as Quiz[];
 }
