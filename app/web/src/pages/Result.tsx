@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { colors, fonts, passThresholdFor } from '../lib/tokens';
+import { colors, fonts, passThresholdFor, quizDateLabel, DIFFICULTY_LABEL } from '../lib/tokens';
 import type { ViewName } from '../lib/viewTypes';
+import type { Quiz, QuizAttempt } from '../lib/types';
+import QuizImage from '../components/QuizImage';
 
 export default function Result({
   quizTitle,
@@ -13,6 +15,12 @@ export default function Result({
   needsAuth,
   onAuthAndSave,
   go,
+  quizzes,
+  activeQuizId,
+  attempts,
+  questionCounts,
+  onStartQuiz,
+  isMobile,
 }: {
   quizTitle: string;
   score: number;
@@ -24,6 +32,12 @@ export default function Result({
   needsAuth: boolean;
   onAuthAndSave: (mode: 'signin' | 'signup', email: string, password: string, name: string) => Promise<string | null>;
   go: (v: ViewName) => void;
+  quizzes: Quiz[];
+  activeQuizId: string;
+  attempts: Record<string, QuizAttempt>;
+  questionCounts: Record<string, number>;
+  onStartQuiz: (id: string) => void;
+  isMobile?: boolean;
 }) {
   const isPerfect = score === total;
   const resultMessage = isPerfect
@@ -31,6 +45,13 @@ export default function Result({
     : passed
     ? 'You passed — solid performance.'
     : `Not quite — you needed ${passThresholdFor(total)} correct to pass. No retakes on this one.`;
+
+  const activeQuiz = quizzes.find((q) => q.id === activeQuizId) || null;
+  const simCat = activeQuiz ? activeQuiz.category : null;
+  const sameCat = quizzes.filter((q) => q.id !== activeQuizId && q.category === simCat);
+  const otherCat = quizzes.filter((q) => q.id !== activeQuizId && q.category !== simCat);
+  const unplayedFirst = (arr: Quiz[]) => arr.filter((q) => !attempts[q.id]).concat(arr.filter((q) => attempts[q.id]));
+  const similarQuizzes = unplayedFirst(sameCat).concat(unplayedFirst(otherCat)).slice(0, 6);
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
   const [name, setName] = useState('');
@@ -98,6 +119,56 @@ export default function Result({
           <div onClick={() => go('account')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.textBody, textDecoration: 'underline' }}>View Account</div>
         </div>
       </div>
+
+      {similarQuizzes.length > 0 && (
+        <div style={{ marginTop: 48, textAlign: 'left', background: colors.panelBg, border: `1px solid ${colors.panelBorder}`, borderRadius: 12, padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, marginBottom: 6 }}>
+            <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 22, margin: 0, color: colors.primary }}>More Like This</h2>
+            <div onClick={() => go('quizzes')} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 600, color: colors.primary }}>See all →</div>
+          </div>
+          <div style={{ fontSize: 13, color: 'oklch(0.55 0.02 250)', marginBottom: 22 }}>Six more quizzes to keep the streak going</div>
+          <div style={isMobile ? { display: 'grid', gridTemplateColumns: '1fr', gap: 14 } : { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            {similarQuizzes.map((quiz) => {
+              const attempt = attempts[quiz.id];
+              const questionCount = questionCounts[quiz.id];
+              return (
+                <div
+                  key={quiz.id}
+                  onClick={() => onStartQuiz(quiz.id)}
+                  style={{ border: `1px solid ${colors.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'white', cursor: 'pointer', boxShadow: '0 1px 3px rgba(20,20,40,0.06)' }}
+                >
+                  <div style={{ width: '100%', height: 120, position: 'relative', filter: attempt ? 'grayscale(0.45) saturate(0.7) brightness(0.97)' : 'none' }}>
+                    <QuizImage quizId={quiz.id} fallback={quiz.image} alt={quiz.title} />
+                  </div>
+                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: 'oklch(0.5 0.01 250)' }}>{DIFFICULTY_LABEL[quiz.difficulty]}</div>
+                      {questionCount != null && (
+                        <div style={{ fontSize: 11, fontWeight: 700, color: colors.primary, background: colors.badgeBg, padding: '2px 8px', borderRadius: 999, flexShrink: 0 }}>{questionCount} Qs</div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: 'oklch(0.62 0.01 250)' }}>{quizDateLabel(quiz.date)}</div>
+                    <h3 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: 18, margin: 0, lineHeight: 1.2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'oklch(0.22 0.01 250)' }}>{quiz.title}</h3>
+                    <div style={{ flex: 1 }} />
+                    {!attempt ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onStartQuiz(quiz.id); }}
+                        style={{ alignSelf: 'flex-start', background: colors.primary, color: 'white', border: 'none', padding: '10px 20px', fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontFamily: fonts.body }}
+                      >
+                        Start Quiz
+                      </button>
+                    ) : (
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: attempt.passed ? colors.success : colors.danger }}>
+                        {attempt.passed ? `Passed · ${attempt.score}/${attempt.total}` : `Failed · ${attempt.score}/${attempt.total}`}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
