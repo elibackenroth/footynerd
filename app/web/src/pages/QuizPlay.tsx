@@ -1,7 +1,16 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { colors, fonts } from '../lib/tokens';
 import { getQuizImageSrc } from '../components/QuizImage';
 import type { Quiz, QuizQuestionPublic } from '../lib/types';
+
+function shuffledIndices(n: number) {
+  const arr = Array.from({ length: n }, (_, i) => i);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 export default function QuizPlay({
   quiz,
@@ -33,6 +42,7 @@ export default function QuizPlay({
   const progressPct = Math.round(((qIndex + (hasAnswered ? 1 : 0)) / total) * 100) + '%';
   const nextButtonLabel = qIndex + 1 < total ? 'Next Question' : 'See Results';
   const backdropSrc = getQuizImageSrc(quiz.id, quiz.image);
+  const displayOrder = useMemo(() => shuffledIndices(question.options.length), [quiz.id, qIndex, question.options.length]);
 
   const optionMinHeight = isMobile ? 62 : 0;
   const optionGap = 14;
@@ -78,7 +88,8 @@ export default function QuizPlay({
       <h2 style={{ fontFamily: fonts.heading, fontWeight: 600, fontSize: isMobile ? 23 : 32, lineHeight: 1.3, margin: '0 0 32px' }}>{question.question}</h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: optionGap }}>
-        {question.options.map((text, idx) => {
+        {displayOrder.map((idx) => {
+          const text = question.options[idx];
           if (hasAnswered && idx !== correctIndex && idx !== selectedIndex) return null;
           let borderColor = 'oklch(0.9 0.01 250)';
           let bgColor = 'white';
