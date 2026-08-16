@@ -140,12 +140,15 @@ export default function Home({
   startGridDuelSetup: () => void;
   openSeries: (id: string) => void;
 }) {
-  const buildCategoryPreview = (category: string) => quizzes.filter((q) => q.category === category && !q.is_mega).slice().reverse().slice(0, 3);
+  // completed quizzes (passed or failed) always sort after unplayed ones within a list
+  const unplayedFirst = (arr: Quiz[]) => arr.filter((q) => !attempts[q.id]).concat(arr.filter((q) => attempts[q.id]));
+
+  const buildCategoryPreview = (category: string) => unplayedFirst(quizzes.filter((q) => q.category === category && !q.is_mega).slice().reverse().slice(0, 3));
   const playerQuizzes = buildCategoryPreview('players');
   const clubQuizzes = buildCategoryPreview('clubs');
 
   const nonMegaQuizzes = quizzes.filter((q) => !q.is_mega);
-  const recentQuizzes = nonMegaQuizzes.slice(-4).reverse();
+  const recentQuizzes = unplayedFirst(nonMegaQuizzes.slice(-4).reverse());
 
   const seriesCards = SERIES.map((s) => {
     const qs = s.quizIds.map((id) => quizzes.find((q) => q.id === id)).filter(Boolean) as Quiz[];
