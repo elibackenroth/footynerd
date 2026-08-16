@@ -69,7 +69,7 @@ export default function Result({
   }
 
   return (
-    <main style={{ flex: 1, maxWidth: 640, margin: '0 auto', padding: '96px 48px 120px', width: '100%', textAlign: 'center' }}>
+    <main style={{ flex: 1, maxWidth: 1000, margin: '0 auto', padding: '96px 48px 120px', width: '100%', textAlign: 'center' }}>
       <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', color: colors.primaryLight, marginBottom: 16 }}>
         {quizTitle} — Complete
       </div>
