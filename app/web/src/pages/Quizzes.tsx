@@ -100,6 +100,9 @@ export default function Quizzes({
   const filtered = filteredBase
     .slice()
     .sort((a, b) => {
+      const aDone = !!attempts[a.q.id];
+      const bDone = !!attempts[b.q.id];
+      if (aDone !== bDone) return aDone ? 1 : -1;
       if (quizQueryNorm) return titleMatchRank(a.q) - titleMatchRank(b.q) || a.q.title.localeCompare(b.q.title);
       return a.q.date < b.q.date ? 1 : a.q.date > b.q.date ? -1 : b.idx - a.idx;
     })
