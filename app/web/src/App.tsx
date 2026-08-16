@@ -28,6 +28,7 @@ import {
 } from './lib/api';
 import { loadDoneTransferDays } from './lib/daily';
 import { pathForView, routeFromPath } from './lib/routing';
+import { passThresholdFor } from './lib/tokens';
 
 import Nav from './components/Nav';
 import Footer from './components/Footer';
@@ -334,10 +335,20 @@ export default function App() {
   }
 
   async function finishRegularQuiz() {
-    if (!activeQuizId) return;
+    if (!activeQuizId || !activeQuiz) return;
+    // the correct answers are already loaded client-side (that's how the
+    // live reveal-after-answer works), so the score can be shown instantly
+    // instead of waiting on a network round-trip; the real save still
+    // happens via completeQuiz, just without blocking the results screen
+    let localScore = 0;
+    questions.forEach((q, i) => { if (answers[i] === q.correct_index) localScore++; });
+    const localTotal = questions.length;
+    const localPassed = localScore >= passThresholdFor(localTotal);
+    setResultData({ score: localScore, total: localTotal, passed: localPassed, points: localPassed ? activeQuiz.points : 0, persisted: false });
+    setView('result');
+
     const res = await completeQuiz(activeQuizId, answers);
     setResultData(res);
-    setView('result');
     if (!user) incrementGuestPlayCount();
     else {
       refreshAttempts();
