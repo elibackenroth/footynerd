@@ -337,13 +337,13 @@ export default function App() {
     if (!activeQuizId) return;
     const res = await completeQuiz(activeQuizId, answers);
     setResultData(res);
+    setView('result');
     if (!user) incrementGuestPlayCount();
     else {
-      await refreshAttempts();
-      await refreshProfile();
+      refreshAttempts();
+      refreshProfile();
       fetchPointsLeaderboard().then(setPointsRows);
     }
-    setView('result');
   }
 
   function nextQuestion() {
@@ -370,8 +370,8 @@ export default function App() {
     if (!activeQuizId) return null;
     const res = await completeQuiz(activeQuizId, answers);
     setResultData(res);
-    await refreshAttempts();
-    await refreshProfile();
+    refreshAttempts();
+    refreshProfile();
     fetchPointsLeaderboard().then(setPointsRows);
     return res.persisted ? null : 'Check your email to confirm your account, then come back and sign in to save this result.';
   }
