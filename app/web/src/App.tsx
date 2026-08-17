@@ -10,6 +10,7 @@ import {
   fetchMyAttempts,
   completeQuiz,
   updateProfile,
+  isUsernameAvailable,
   fetchPointsLeaderboard,
   createMatch,
   createNextRound,
@@ -28,11 +29,12 @@ import {
 } from './lib/api';
 import { loadDoneTransferDays } from './lib/daily';
 import { pathForView, routeFromPath } from './lib/routing';
-import { passThresholdFor } from './lib/tokens';
+import { passThresholdFor, USERNAME_RE, USERNAME_HINT } from './lib/tokens';
 
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import EmailGateModal from './components/EmailGateModal';
+import UsernameGateModal from './components/UsernameGateModal';
 import Home from './pages/Home';
 import Quizzes from './pages/Quizzes';
 import Series from './pages/Series';
@@ -56,7 +58,7 @@ function matchIdentityKey(matchId: string) { return 'footynerd_match_identity_' 
 function gridDuelIdentityKey(roomId: string) { return 'footynerd_gridduel_identity_' + roomId; }
 
 export default function App() {
-  const { user, profile, refreshProfile, signUp, signIn, signOut } = useAuth();
+  const { user, profile, refreshProfile, signUp, signIn, signInWithGoogle, signOut } = useAuth();
 
   const [isMobile, setIsMobile] = useState(() => { try { return window.innerWidth <= 767; } catch { return false; } });
   const [isTablet, setIsTablet] = useState(() => { try { return window.innerWidth > 767 && window.innerWidth <= 1024; } catch { return false; } });
@@ -397,10 +399,21 @@ export default function App() {
   }
 
   // ---------- account ----------
-  async function saveAccountSettings(name: string, email: string) {
-    if (!user) return;
-    await updateProfile(user.id, { name, email });
+  async function saveAccountSettings(name: string, email: string, username: string): Promise<string | null> {
+    if (!user) return null;
+    if (username !== (profile?.username || '')) {
+      if (!USERNAME_RE.test(username)) return USERNAME_HINT;
+      const available = await isUsernameAvailable(username);
+      if (!available) return 'That username is taken — try another.';
+    }
+    try {
+      await updateProfile(user.id, { name, email, username });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return msg.includes('duplicate') || msg.includes('unique') ? 'That username is taken — try another.' : 'Something went wrong — try again.';
+    }
     await refreshProfile();
+    return null;
   }
 
   async function handleAccountAuthSubmit(mode: 'signin' | 'signup', email: string, password: string, name: string): Promise<string | null> {
@@ -411,6 +424,11 @@ export default function App() {
       return error;
     }
     const { error } = await signIn(email, password);
+    return error;
+  }
+
+  async function handleGoogleSignIn(): Promise<string | null> {
+    const { error } = await signInWithGoogle();
     return error;
   }
 
@@ -661,6 +679,7 @@ export default function App() {
             streak={resultData.streak ?? profile?.current_streak ?? 0}
             needsAuth={!user}
             onAuthAndSave={handleAuthAndSave}
+            onGoogleSignIn={handleGoogleSignIn}
             go={go}
             quizzes={quizzes}
             activeQuizId={activeQuiz.id}
@@ -680,6 +699,7 @@ export default function App() {
             quizzesPassedCount={quizzesPassedCount}
             onSaveSettings={saveAccountSettings}
             onAuthSubmit={handleAccountAuthSubmit}
+            onGoogleSignIn={handleGoogleSignIn}
             onSignOut={signOut}
             onProfileChanged={refreshProfile}
           />
@@ -807,6 +827,7 @@ export default function App() {
       </div>
 
       {showEmailGate && <EmailGateModal onContinue={submitEmailGate} onClose={closeEmailGate} />}
+      {user && profile && !profile.username && <UsernameGateModal userId={user.id} onDone={refreshProfile} />}
 
       <Footer go={go} isMobile={isMobile} isTablet={isTablet} />
     </div>
