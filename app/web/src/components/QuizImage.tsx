@@ -61,7 +61,13 @@ const LOCAL_IMAGE_QUIZ_IDS: Record<string, string> = Object.fromEntries(
     'cameroon', 'copadelrey', 'shearer', 'olympiacos', 'poland',
     'europaleague', 'casillas', 'corinthians', 'chilent', 'laligaquiz',
     'xabialonso', 'schalke', 'socceroos', 'megacristiano',
-  ].map((id) => [id, 'webp'])
+    'anderlecht', 'argentineleague', 'austrianbundesliga', 'besiktas', 'brasileirao',
+    'bulgariant', 'cafuquiz', 'cannavaroquiz', 'celticfc', 'danishsuperliga',
+    'dfbpokal', 'dynamokyiv', 'figoquiz', 'fiorentina', 'ivorycoastnt',
+    'megalibertadores', 'northernirelandnt', 'norwaynt', 'paraguaynt', 'psveindhoven',
+    'rivaldoquiz', 'senegalnt', 'swisssuperleague', 'torinoclub', 'tottiquiz',
+    'vannistelrooy', 'coppaitalia', 'deportivolacoruna', 'nedved', 'perunt', 'puyol',
+  ].map((id) => [id, 'webp']).concat([['megabundesliga', 'jpg']])
 );
 
 export function getQuizImageSrc(quizId: string, fallback: string | null): string | null {
