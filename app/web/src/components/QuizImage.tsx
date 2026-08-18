@@ -70,20 +70,33 @@ const LOCAL_IMAGE_QUIZ_IDS: Record<string, string> = Object.fromEntries(
   ].map((id) => [id, 'webp']).concat([['megabundesliga', 'jpg']])
 );
 
+// Quizzes that reuse another quiz's photo instead of shipping their own file
+// (e.g. a mega quiz on a topic that already has a regular quiz with a good photo).
+const IMAGE_ALIASES: Record<string, string> = {
+  megalaliga: 'laligaquiz',
+  megamanutd: 'manutd',
+  megaeuros: 'eurochampionship',
+};
+
+function localImageSrc(quizId: string): string | null {
+  const sourceId = IMAGE_ALIASES[quizId] || quizId;
+  const ext = LOCAL_IMAGE_QUIZ_IDS[sourceId];
+  return ext ? `/quiz-images/${sourceId}.${ext}` : null;
+}
+
 export function getQuizImageSrc(quizId: string, fallback: string | null): string | null {
-  const ext = LOCAL_IMAGE_QUIZ_IDS[quizId];
-  return ext ? `/quiz-images/${quizId}.${ext}` : fallback;
+  return localImageSrc(quizId) || fallback;
 }
 
 export default function QuizImage({ quizId, fallback, alt, style }: { quizId: string; fallback: string | null; alt: string; style?: CSSProperties }) {
-  const ext = LOCAL_IMAGE_QUIZ_IDS[quizId];
-  const hasLocalImage = !!ext;
+  const localSrc = localImageSrc(quizId);
+  const hasLocalImage = !!localSrc;
   if (!hasLocalImage && !fallback) {
     return <div style={{ width: '100%', height: '100%', background: 'oklch(0.95 0.03 250)', ...style }} />;
   }
   return (
     <img
-      src={hasLocalImage ? `/quiz-images/${quizId}.${ext}` : fallback ?? undefined}
+      src={hasLocalImage ? localSrc! : fallback ?? undefined}
       alt={alt}
       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', ...style }}
       onError={(e) => {
