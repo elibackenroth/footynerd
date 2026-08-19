@@ -75,6 +75,7 @@ export interface TransferDaily {
 export interface Profile {
   id: string;
   name: string;
+  username: string | null;
   email: string | null;
   avatar_url: string | null;
   current_streak: number;
