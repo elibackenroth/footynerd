@@ -61,6 +61,9 @@ export function quizHash(id: string) {
   return h;
 }
 
+export const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
+export const USERNAME_HINT = '3-20 characters, start with a letter, letters/numbers/underscore only.';
+
 const QUIZ_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export function quizDateLabel(dateStr: string | null | undefined) {
   if (!dateStr) return '';
