@@ -72,9 +72,15 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
   return data as Profile;
 }
 
-export async function updateProfile(userId: string, fields: Partial<Pick<Profile, 'name' | 'email'>>) {
+export async function updateProfile(userId: string, fields: Partial<Pick<Profile, 'name' | 'email' | 'username'>>) {
   const { error } = await supabase.from('profiles').update(fields).eq('id', userId);
   if (error) throw error;
+}
+
+export async function isUsernameAvailable(username: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('is_username_available', { check_username: username });
+  if (error) throw error;
+  return data as boolean;
 }
 
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
