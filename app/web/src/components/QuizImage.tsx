@@ -76,6 +76,7 @@ const IMAGE_ALIASES: Record<string, string> = {
   megalaliga: 'laligaquiz',
   megamanutd: 'manutd',
   megaeuros: 'eurochampionship',
+  megaliverpool: 'liverpoolclub',
 };
 
 function localImageSrc(quizId: string): string | null {
