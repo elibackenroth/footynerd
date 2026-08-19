@@ -14,6 +14,7 @@ export default function Result({
   streak,
   needsAuth,
   onAuthAndSave,
+  onGoogleSignIn,
   go,
   quizzes,
   activeQuizId,
@@ -31,6 +32,7 @@ export default function Result({
   streak: number;
   needsAuth: boolean;
   onAuthAndSave: (mode: 'signin' | 'signup', email: string, password: string, name: string) => Promise<string | null>;
+  onGoogleSignIn: () => Promise<string | null>;
   go: (v: ViewName) => void;
   quizzes: Quiz[];
   activeQuizId: string;
@@ -59,12 +61,21 @@ export default function Result({
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
 
   async function submit() {
     setError(null);
     setBusy(true);
     const err = await onAuthAndSave(mode, email.trim(), password, name.trim());
     setBusy(false);
+    if (err) setError(err);
+  }
+
+  async function submitGoogle() {
+    setError(null);
+    setGoogleBusy(true);
+    const err = await onGoogleSignIn();
+    setGoogleBusy(false);
     if (err) setError(err);
   }
 
@@ -97,6 +108,19 @@ export default function Result({
         {needsAuth && (
           <div style={{ maxWidth: 340, margin: '0 auto', textAlign: 'left' }}>
             <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: 0.3, margin: '0 0 18px', textAlign: 'center' }}>Sign in to save this result</p>
+            <button
+              onClick={submitGoogle}
+              disabled={googleBusy}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'white', color: 'oklch(0.25 0.01 250)', border: `1px solid ${colors.border}`, padding: '12px 14px', fontSize: 14, fontWeight: 600, borderRadius: 4, cursor: googleBusy ? 'default' : 'pointer', fontFamily: fonts.body, marginBottom: 14 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34 5.1 29.3 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.5-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34 5.1 29.3 3 24 3 16.3 3 9.6 7.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 36.4 26.7 37 24 37c-5.2 0-9.6-3.3-11.2-7.9l-6.5 5C9.5 40.6 16.2 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C40.9 36 44 30.5 44 24c0-1.4-.1-2.5-.4-3.5z"/></svg>
+              {googleBusy ? 'Connecting…' : 'Continue with Google'}
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 14px', color: colors.textMuted, fontSize: 12 }}>
+              <div style={{ flex: 1, height: 1, background: colors.border }} />
+              or
+              <div style={{ flex: 1, height: 1, background: colors.border }} />
+            </div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16, justifyContent: 'center' }}>
               <button onClick={() => setMode('signup')} style={{ flex: 1, padding: '8px 0', borderRadius: 4, border: `1px solid ${colors.primary}`, background: mode === 'signup' ? colors.primary : 'white', color: mode === 'signup' ? 'white' : colors.primary, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sign up</button>
               <button onClick={() => setMode('signin')} style={{ flex: 1, padding: '8px 0', borderRadius: 4, border: `1px solid ${colors.primary}`, background: mode === 'signin' ? colors.primary : 'white', color: mode === 'signin' ? 'white' : colors.primary, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sign in</button>
