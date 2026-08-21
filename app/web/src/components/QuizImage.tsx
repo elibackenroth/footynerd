@@ -67,6 +67,9 @@ const LOCAL_IMAGE_QUIZ_IDS: Record<string, string> = Object.fromEntries(
     'megalibertadores', 'northernirelandnt', 'norwaynt', 'paraguaynt', 'psveindhoven',
     'rivaldoquiz', 'senegalnt', 'swisssuperleague', 'torinoclub', 'tottiquiz',
     'vannistelrooy', 'coppaitalia', 'deportivolacoruna', 'nedved', 'perunt', 'puyol',
+    'stadiums', 'penaltyshootouts', 'captains', 'derbies', 'youthacademies',
+    'numbertens', 'napoliseriea', 'leverkusenafter', 'comebacks', 'wcqual2026',
+    'nicknames', 'pedri', 'donnarumma', 'refereeing', 'gyokeres',
   ].map((id) => [id, 'webp']).concat([['megabundesliga', 'jpg']])
 );
 
@@ -78,25 +81,7 @@ const IMAGE_ALIASES: Record<string, string> = {
   megaeuros: 'eurochampionship',
   megaliverpool: 'liverpoolclub',
   megabayern: 'bayernclub',
-  captains: 'legends',
-  comebacks: 'istanbul2005',
-  derbies: 'rivalries',
   megayamal: 'yamal',
-  nicknames: 'nationalrecords',
-  penaltyshootouts: 'shootouts',
-  refereeing: 'anthonytaylor',
-  youthacademies: 'dortmundacademy',
-  // Placeholder photos below — these quizzes are new enough that no matching
-  // photo has been uploaded yet, so they borrow a thematically-close existing
-  // one rather than showing a blank box. Swap these out once real photos exist.
-  donnarumma: 'buffon',
-  gyokeres: 'sportingcp',
-  leverkusenafter: 'leverkusen2024',
-  napoliseriea: 'napoliclub',
-  numbertens: 'messi',
-  pedri: 'barcelonaclub',
-  stadiums: 'wcfinal1966',
-  wcqual2026: 'worldcup',
 };
 
 function localImageSrc(quizId: string): string | null {
