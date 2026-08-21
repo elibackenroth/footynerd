@@ -77,6 +77,15 @@ const IMAGE_ALIASES: Record<string, string> = {
   megamanutd: 'manutd',
   megaeuros: 'eurochampionship',
   megaliverpool: 'liverpoolclub',
+  megabayern: 'bayernclub',
+  captains: 'legends',
+  comebacks: 'istanbul2005',
+  derbies: 'rivalries',
+  megayamal: 'yamal',
+  nicknames: 'nationalrecords',
+  penaltyshootouts: 'shootouts',
+  refereeing: 'anthonytaylor',
+  youthacademies: 'dortmundacademy',
 };
 
 function localImageSrc(quizId: string): string | null {
