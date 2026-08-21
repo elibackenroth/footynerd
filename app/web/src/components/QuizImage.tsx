@@ -86,6 +86,17 @@ const IMAGE_ALIASES: Record<string, string> = {
   penaltyshootouts: 'shootouts',
   refereeing: 'anthonytaylor',
   youthacademies: 'dortmundacademy',
+  // Placeholder photos below — these quizzes are new enough that no matching
+  // photo has been uploaded yet, so they borrow a thematically-close existing
+  // one rather than showing a blank box. Swap these out once real photos exist.
+  donnarumma: 'buffon',
+  gyokeres: 'sportingcp',
+  leverkusenafter: 'leverkusen2024',
+  napoliseriea: 'napoliclub',
+  numbertens: 'messi',
+  pedri: 'barcelonaclub',
+  stadiums: 'wcfinal1966',
+  wcqual2026: 'worldcup',
 };
 
 function localImageSrc(quizId: string): string | null {
