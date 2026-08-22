@@ -82,6 +82,12 @@ const IMAGE_ALIASES: Record<string, string> = {
   megaliverpool: 'liverpoolclub',
   megabayern: 'bayernclub',
   megayamal: 'yamal',
+  megambappe: 'mbappe',
+  clfinals: 'championsleague',
+  freekicks: 'robertocarlos',
+  hattricks: 'shearer',
+  managersmasterclass: 'ancelotti',
+  wingers: 'ribery',
 };
 
 function localImageSrc(quizId: string): string | null {
